@@ -18,7 +18,7 @@ canvas{display:block;box-shadow:0 0 50px rgba(0,0,0,.6)}
 <meta name="theme-color" content="#160d06">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="英雄守关">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script>if(location.protocol.startsWith('http')&&'serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
@@ -48,25 +48,15 @@ let SC=1;
 // 画质：只记玩家手动选的（hero_q2）；自动降画质只在本次打开有效
 let LOWQ=false;try{LOWQ=localStorage.getItem('hero_q2')==='low'}catch(e){}
 let ROT=false,ROTPREF='auto';try{ROTPREF=localStorage.getItem('hero_rot')||'auto'}catch(e){}
-let SL=0,SR=0,DPR=1,_safeP=null;
-function safeInsets(){try{if(!_safeP){_safeP=document.createElement('div');_safeP.style.cssText='position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';document.body.appendChild(_safeP)}const c=getComputedStyle(_safeP);return [parseFloat(c.paddingTop)||0,parseFloat(c.paddingRight)||0,parseFloat(c.paddingBottom)||0,parseFloat(c.paddingLeft)||0]}catch(_){return [0,0,0,0]}}
-// 桌面图标（PWA）打开时：网页显示区域可能比屏幕短（底部那截 iOS 不给网页用），此时底部安全区不用再预留
-function screenGap(){try{const sa=navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);if(!sa||!(screen.height>0))return 0;const L=Math.max(screen.width,screen.height),S=Math.min(screen.width,screen.height);const port=innerHeight>=innerWidth;const g=(port?L-innerHeight:S-innerHeight);return g>4&&g<160?g:0}catch(_){return 0}}
-function fit(){const dpr0=devicePixelRatio||1;let dpr=LOWQ?Math.min(1.5,dpr0):Math.min(3,dpr0);const [pt,pr,pb,pl]=safeInsets();const wrap=document.getElementById('wrap');let VW=innerWidth,VH=innerHeight;const gap=screenGap();let pbE=Math.max(0,pb-gap);
-  // iPhone 桌面 App + 透明状态栏的已知问题：网页高度被扣掉状态栏那截。把页面高度补回去，铺满整屏
-  if(gap>0&&Math.abs(gap-pt)<=6){document.documentElement.style.height=document.body.style.height='calc(100vh + env(safe-area-inset-top))';if(wrap){wrap.style.position='absolute';wrap.style.inset='auto';wrap.style.left='0';wrap.style.top='0';wrap.style.width='100%';wrap.style.height='100%'}
-    const rh=wrap?wrap.getBoundingClientRect().height:0;if(rh>VH+gap*.6){VH=Math.round(rh);pbE=pb}}
-  ROT=VH>VW*1.1&&ROTPREF!=='off';
-  // 竖屏自动旋转：画布铺满整个屏幕，灵动岛/底部横条那两条只画背景，按钮放在安全区以内
-  if(wrap)wrap.style.padding=ROT?'0':'';
-  const aw=ROT?VH-pt-pbE:VW-pl-pr,ah=ROT?VW:VH-pt-pb;const asp=aw/ah;
+// 屏幕适配：浏览器/桌面 App 给多大就铺多大（按比例）。竖屏时整体转 90 度当横屏玩；横屏时左右避开刘海（CSS 安全区）
+function fit(){const dpr0=devicePixelRatio||1;let dpr=LOWQ?Math.min(1.5,dpr0):Math.min(3,dpr0);const wrap=document.getElementById('wrap');
+  ROT=innerHeight>innerWidth*1.1&&ROTPREF!=='off';if(wrap)wrap.style.padding=ROT?'0':'';
+  let pl=0,pr=0,pt=0,pb=0;if(!ROT&&wrap){const cs=getComputedStyle(wrap);pl=parseFloat(cs.paddingLeft)||0;pr=parseFloat(cs.paddingRight)||0;pt=parseFloat(cs.paddingTop)||0;pb=parseFloat(cs.paddingBottom)||0}
+  const aw=ROT?innerHeight:innerWidth-pl-pr,ah=ROT?innerWidth:innerHeight-pt-pb;const asp=aw/ah;
   if(asp>=WW/WH){H=WH;W=Math.round(Math.min(WH*asp,WH*2.2))}else{W=WW;H=Math.round(Math.min(WW/asp,WW*.85))}OX=Math.round((W-WW)/2);OY=Math.round((H-WH)/2);try{vignette=null}catch(_){}
-  const s=Math.min(aw/W,ah/H);SC=s;SL=ROT?pt/s:0;SR=ROT?pbE/s:0;const CW=W+SL+SR;{const px=CW*s*H*s*dpr*dpr;if(px>4.5e6)dpr=Math.max(1,Math.sqrt(4.5e6/(CW*s*H*s)))}DPR=dpr;
-  cv.style.width=CW*s+'px';cv.style.height=H*s+'px';cv.style.transform=ROT?'rotate(90deg)':'';cv.width=Math.round(CW*s*dpr);cv.height=Math.round(H*s*dpr);ctx.setTransform(s*dpr,0,0,s*dpr,SL*s*dpr,0);ctx.imageSmoothingQuality=LOWQ?'low':'high';
-  document.getElementById('rot').style.display=(VH>VW*1.1&&!ROT)?'flex':'none'}
-function fillSafe(){if(!(SL||SR))return;const d=cv.width/(W+SL+SR),sl=Math.round(SL*d),sr=Math.round(SR*d),cw=cv.width,ch=cv.height,k=Math.round(24*d);ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.filter='none';ctx.globalAlpha=1;
-  if(sl){ctx.drawImage(cv,sl,0,k,ch,0,0,sl,ch);ctx.fillStyle='rgba(12,8,4,.78)';ctx.fillRect(0,0,sl,ch)}
-  if(sr){ctx.drawImage(cv,cw-sr-k,0,k,ch,cw-sr,0,sr,ch);ctx.fillStyle='rgba(12,8,4,.78)';ctx.fillRect(cw-sr,0,sr,ch)}ctx.restore()}
+  const s=Math.min(aw/W,ah/H);SC=s;if(W*s*H*s*dpr*dpr>4.5e6)dpr=Math.max(1,Math.sqrt(4.5e6/(W*s*H*s)));
+  cv.style.width=W*s+'px';cv.style.height=H*s+'px';cv.style.transform=ROT?'rotate(90deg)':'';cv.width=Math.round(W*s*dpr);cv.height=Math.round(H*s*dpr);ctx.setTransform(s*dpr,0,0,s*dpr,0,0);ctx.imageSmoothingQuality=LOWQ?'low':'high';
+  document.getElementById('rot').style.display=(innerHeight>innerWidth*1.1&&!ROT)?'flex':'none'}
 addEventListener('resize',fit);addEventListener('orientationchange',()=>{setTimeout(fit,250);setTimeout(fit,800)});document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(fit,200)});fit();setTimeout(fit,600);
 // 分批加载：先加载界面、标题页和英雄，其余素材在后台加载，开局更快
 const IMG={};let loadedN=0,totalN=0,bgN=0,bgTotal=0;
@@ -1496,7 +1486,7 @@ function drawLoad(){hits=[];ctx.fillStyle='#160d06';ctx.fillRect(0,0,W,H);gtxt(T
   txt(TR('加载中 ')+Math.round(f*100)+'%',W/2,H/2+100,20,'#ffe9b0','center',3);if(loadedN>=totalN)scene='title'}
 
 // ====================== 输入 ======================
-function toLogical(e){const r=cv.getBoundingClientRect();if(ROT){const s=r.height/(W+SL+SR);return{x:(e.clientY-r.top)/s-SL,y:(r.right-e.clientX)/s}}return{x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}
+function toLogical(e){const r=cv.getBoundingClientRect();if(ROT){const s=r.height/W;return{x:(e.clientY-r.top)/s,y:(r.right-e.clientX)/s}}return{x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}
 cv.addEventListener('pointerdown',e=>{e.preventDefault();AUD.unlock();let p=toLogical(e);
   for(let i=hits.length-1;i>=0;i--){const h=hits[i];if(p.x>=h.x&&p.x<=h.x+h.w&&p.y>=h.y&&p.y<=h.y+h.h){
       if(scene==='battle'&&G&&!G.over&&!paused&&G.spellMode&&(h.tag==='tower'||h.tag==='hero'))continue;
@@ -1536,7 +1526,7 @@ function loopBody(now){const rdt=Math.min(.05,(now-last)/1000);last=now;try{perf
   else if(scene==='rebirth')drawRebirth(rdt);
   else if(scene==='battle'&&G){if(!paused&&!G.over){for(let i=0;i<speed;i++){update(rdt);for(const a of G.allies)if(a.hero&&a.anim==='atk'&&a.at>.6)a.anim='idle'}}drawBattle(rdt)}
   }finally{if(MENU){ctx.restore();W=_W;H=_H;HOX=0;HOY=0}}
-  drawPOP();adTick(rdt);drawAD();try{fillSafe()}catch(_){}
+  drawPOP();adTick(rdt);drawAD();
 }
 requestAnimationFrame(loop);
 window.__G=()=>G;window.__api={startLevel,callWave,build,upgrade,heroSkill,castSpell,endBattle,sell,spawnEnemy,setSpeed:v=>speed=v,get scene(){return scene},set scene(v){scene=v},SAVE,update,AUD};
@@ -1988,7 +1978,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794907937';
+const BUILD_VER='1794908263';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

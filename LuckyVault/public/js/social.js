@@ -238,9 +238,12 @@
   ];
   function tour(force) {
     if (document.querySelector('.tour-tip') || (!force && (S.tourDone || (API.user && API.user.tour)))) return;
-    if ($('#game').classList.contains('show') || document.querySelector('.ov.show')) { if (!force) setTimeout(() => tour(false), 4000); return; }
+    const inGame = () => ($('#game').classList.contains('show') || (typeof TT !== 'undefined' && TT.g));
+    if (inGame() || document.querySelector('.ov.show')) { if (!force) setTimeout(() => tour(false), 4000); return; }
     let i = 0; const dim = document.createElement('div'); dim.className = 'tour-dim'; const hole = document.createElement('div'); hole.className = 'tour-hole'; const tip = document.createElement('div'); tip.className = 'tour-tip';
     document.body.append(dim, hole, tip);
+    // the tour points at lobby buttons: if a game or table opens, put it away and pick it up again back in the lobby
+    const guard = setInterval(() => { if (!tip.isConnected) return clearInterval(guard); if (inGame()) { clearInterval(guard); dim.remove(); hole.remove(); tip.remove(); setTimeout(() => tour(false), 4000); } }, 400);
     const end = () => { dim.remove(); hole.remove(); tip.remove(); S.tourDone = true; save(); if (srv() && API.user) { API.user.tour = true; API.call('/api/tour/done', {}); } };
     const show = () => {
       while (i < STEPS.length) { const el = document.querySelector(STEPS[i][0]); if (el && el.offsetParent !== null) break; i++; }

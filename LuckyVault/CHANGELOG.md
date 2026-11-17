@@ -340,3 +340,4 @@ Platform release: everything on the "do all of these" list except the public dep
 - 中文 mode: all table rules, side-bet tables, keno / scratch / crash texts translated (about 130 more phrases). The translator never re-writes an unchanged text (guards against an endless update loop).
 - Maths: "20 Lines · Cash Collect" games were paying ~104% (more than they take in) — retuned to ~96.5% (4M-spin simulation). "Expanding Wilds" ways games trimmed from ~97.2% to ~95.7%. Full test suite incl. RTP: 120/120.
 - Lobby search understands Chinese in every language mode (百家乐, 21点, 轮盘, 龙虎, 骰宝, 奖池, 刮刮卡 …).
+- New players: the first-time lobby tour no longer pops up on top of a table or slot (it pauses and continues back in the lobby).

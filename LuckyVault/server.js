@@ -22,6 +22,7 @@ const FRIENDS = require('./lib/friends.js');
 const ADMINS = require('./lib/admins.js'); let ADM = null;
 const SUPPORT = require('./lib/support.js');
 const CLUBS = require('./lib/clubs.js');
+const IAP = require('./lib/iap.js').create(process.env);
 
 const PORT = +process.env.PORT || 8080;
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
@@ -366,7 +367,7 @@ R['POST /api/heartbeat'] = userRoute(async ({ uid, b }) => { // playtime per gam
 });
 
 // --- store, bonuses, limits ---
-R['GET /api/store'] = userRoute(async ({ uid }) => { const u = await repo.userById(uid); return [200, { packages: SET.packages.map(p => Object.assign({}, p, { coins: pkgCoins(p), base: p.coins })), promo: promoActive(), bonus: { amount: SET.bonusAmount, nextAt: u.bonusAt || 0, now: now() }, sandbox: SET.sandbox }]; });
+R['GET /api/store'] = userRoute(async ({ uid }) => { const u = await repo.userById(uid); return [200, { packages: SET.packages.map(p => Object.assign({}, p, { coins: pkgCoins(p), base: p.coins, sku: IAP.skuOf(p) })), iap: IAP.enabled, promo: promoActive(), bonus: { amount: SET.bonusAmount, nextAt: u.bonusAt || 0, now: now() }, sandbox: SET.sandbox }]; });
 R['POST /api/bonus'] = userRoute(async ({ uid, ip, b }) => {
   let out; await repo.withUser(uid, async (u, t) => {
     if (now() < (u.bonusAt || 0)) { out = [400, { err: 'early', msg: 'Bonus not ready yet' }]; return { skip: true }; }
@@ -419,7 +420,22 @@ R['POST /api/limits'] = userRoute(async ({ uid, b }) => {
   out.spent = await repo.monthSpend(uid); return [200, out];
 });
 // Native app builds verify Apple App Store / Google Play receipts here, then credit the order (see README).
-R['POST /api/iap/verify'] = async () => [501, { err: 'not_configured', msg: 'Store receipt verification is not configured on this server' }];
+R['POST /api/iap/verify'] = userRoute(async ({ uid, b }) => {
+  const plat = b.platform === 'ios' ? 'ios' : b.platform === 'android' ? 'android' : null;
+  if (!plat) return [400, { err: 'platform', msg: 'Unknown platform' }];
+  if (!IAP.enabled[plat]) return [501, { err: 'not_configured', msg: 'Store receipt verification is not configured on this server' }];
+  const o = await repo.order(String(b.order || '')); if (!o || o.uid !== uid) return [400, { err: 'order', msg: 'Unknown order' }];
+  const p = SET.packages.find(x => x.id === o.pkg); if (!p) return [400, { err: 'pkg', msg: 'Unknown package' }];
+  const sku = IAP.skuOf(p); if (b.productId && b.productId !== sku) return [400, { err: 'product', msg: 'Product does not match the order' }];
+  if (o.status === 'paid') return [200, { already: true, user: pubUser(await repo.userById(uid)) }];
+  if (o.status !== 'pending') return [400, { err: 'order', msg: 'Order not payable' }];
+  let v; try { v = plat === 'ios' ? await IAP.apple(b.receipt, sku) : await IAP.google(b.token, sku); } catch (e) { return [502, { err: 'store', msg: 'Could not reach the store, please try again' }]; }
+  if (!v || v.err) return [400, v || { err: 'invalid' }];
+  const key = 'iaptx:' + v.txId; if (await repo.kvGet(key, null)) return [400, { err: 'used', msg: 'This purchase was already used' }];
+  await repo.kvSet(key, { order: o.id, uid, at: now(), sandbox: !!v.sandbox });
+  const r = await creditOrder(o.id, 'iap:' + plat + (v.sandbox ? ':sandbox' : '')); if (!r) return [400, { err: 'order', msg: 'Order not payable' }];
+  return [200, { user: pubUser(r.u), coins: r.o.coins, order: r.o.id }];
+});
 
 // --- engagement ---
 R['GET /api/onboarding'] = userRoute(async ({ uid }) => { const u = await repo.userById(uid); return [200, EN.onbView(u)]; });

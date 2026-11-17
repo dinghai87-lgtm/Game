@@ -74,7 +74,7 @@
     "LUCKY": "LUCKY",
     "Next": "下一步",
     "Skip": "跳过",
-    "Browse 100 games": "浏览 100 款游戏",
+    "Browse all games": "浏览全部游戏",
     "Lucky Vault is a social casino for adults aged 18 and over. It is for entertainment only: coins have no cash value and nothing can be won as real money.": "Lucky Vault 是面向 18 岁以上成年人的社交娱乐场，仅供娱乐：金币没有现金价值，不能赢得真钱。",
     "Slots, jackpots, blackjack, roulette, poker and more. Use the tabs or search to find a game.": "老虎机、奖池、21点、轮盘、扑克等应有尽有。用上方分类或搜索找游戏。",
     "2x chance": "2倍",

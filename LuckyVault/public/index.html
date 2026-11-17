@@ -334,6 +334,7 @@ button:focus-visible,input:focus-visible,.tile:focus-visible{outline:3px solid #
 @media(max-width:420px){.lvl i{width:30px}.brand{font-size:15px}}
 @media(max-width:520px){#top{gap:6px;padding:8px 8px}#top .brand{font-size:0;gap:0}#top .brand .emo{font-size:22px}#top .ib{min-width:34px;padding-left:6px;padding-right:6px}#userBtn .un{display:none}.lvl i{display:none}}
 @media(max-width:400px){#top>div:first-child{display:none!important}#top{gap:4px!important;padding:8px 6px!important}#top .brand{display:none}#top .bal{padding-left:6px}}
+@media(max-width:430px){#top{gap:3px!important}#top .ib:not(#addBtn){min-width:31px!important;width:31px;padding:0!important}#addBtn{padding:0 8px!important;font-size:12px!important}#bal{gap:4px!important}}
 @media(max-width:370px){#top #lvl{display:none}}
 @media(max-width:345px){#top .bal b{font-size:13px}#top #addBtn{padding-left:7px;padding-right:7px;font-size:11px}#top .ib{min-width:32px}}
 
@@ -482,6 +483,7 @@ button:focus-visible,input:focus-visible,.tile:focus-visible{outline:3px solid #
 <script src="js/replay.js"></script>
 <script src="js/fx2.js"></script>
 <script src="js/i18n.js"></script>
+<script src="js/iap.js"></script>
 <script>
 
 const ROYAL=['A','K','Q','J','10'];
@@ -844,7 +846,7 @@ async function openStore(){if(needLogin())return;let pk,bonus;
  const skew=Date.now()-(bonus.now||Date.now());
  let h='<h2>Coin Store</h2><p>Top up coins to keep playing. Coins are for entertainment only.</p>';
  h+='<div class="bonus"><div><div style="font-size:12px;font-weight:800;opacity:.9">FREE BONUS</div><b><span class="coin"></span> '+fmt(bonus.amount)+'</b></div><button id="bonusBtn">Claim</button></div>';
- h+='<button class="bigbtn alt" style="margin-top:10px;width:100%" id="dailyBtn">🎁 Daily reward</button>';h+='<h3>Coin packages</h3><div class="pk">'+pk.map(p=>'<button data-pk="'+p.id+'">'+(p.tag?'<span class="tg">'+p.tag+'</span>':'')+'<div class="cn"><span class="coin"></span>'+p.coins.toLocaleString()+'</div><div class="pr">$'+p.price.toFixed(2)+'</div></button>').join('')+'</div>';
+ h+='<button class="bigbtn alt" style="margin-top:10px;width:100%" id="dailyBtn">🎁 Daily reward</button>';h+='<h3>Coin packages</h3><div class="pk">'+pk.map(p=>'<button data-pk="'+p.id+'">'+(p.tag?'<span class="tg">'+p.tag+'</span>':'')+'<div class="cn"><span class="coin"></span>'+p.coins.toLocaleString()+'</div><div class="pr">'+(window.LVIAP&&LVIAP.native&&LVIAP.price(p)||'$'+p.price.toFixed(2))+'</div></button>').join('')+'</div>';
  h+='<p class="note">Coins are a virtual item with no real-world value. They cannot be withdrawn, exchanged for money or transferred. Purchases are final. 18+ only.'+(API.mode==='local'?' <b>Demo mode: purchases are simulated and nothing is charged.</b>':'')+'</p>';
  h+='<div class="btnrow"><button class="bigbtn alt" id="storeClose">Close</button></div>';
  $('#storeC').innerHTML=h;$('#store').classList.add('show');$('#storeClose').onclick=()=>{closeOv('#store');clearInterval(storeTimer)};$('#dailyBtn').onclick=()=>{closeOv('#store');clearInterval(storeTimer);checkDaily(true)};
@@ -853,7 +855,7 @@ async function openStore(){if(needLogin())return;let pk,bonus;
   else{if(Date.now()<(S.bonusAt||0))return;S.bal=r2(S.bal+LOCAL_BONUS.amount);S.bonusAt=Date.now()+LOCAL_BONUS.everyMs;bonus.nextAt=S.bonusAt;save()}
   setBal();updUI();sfx.coins();toast('+'+fmt(bonus.amount)+' free coins');tick()};
  $('#storeC').querySelectorAll('[data-pk]').forEach(b=>b.onclick=()=>buyPkg(pk.find(p=>p.id===b.dataset.pk)))}
-async function buyPkg(p){let order;
+async function buyPkg(p){let order;if(window.LVIAP&&LVIAP.native)return LVIAP.buy(p);if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()&&API.mode==='server'){toast('In-app purchases are not available yet');return}
  if(API.mode==='server'){const o=await API.call('/api/orders',{pkg:p.id});if(o.err){toast(o.msg||o.err);return}order=o.order}else order={id:'DEMO-'+Date.now().toString(36).toUpperCase(),price:p.price,coins:p.coins,local:true};
  $('#payC').innerHTML='<h2>Confirm purchase</h2><p>Order '+order.id+'</p><div class="pk" style="grid-template-columns:1fr"><button disabled style="cursor:default"><div class="cn"><span class="coin"></span>'+order.coins.toLocaleString()+' coins</div><div class="pr">$'+order.price.toFixed(2)+'</div></button></div><p class="note">'+(API.mode==='server'&&!API.cfg.sandbox?'You will be redirected to the payment provider.':'Sandbox payment: no real money is charged.')+'</p><div class="btnrow"><button class="bigbtn" id="payGo">Pay $'+order.price.toFixed(2)+'</button><button class="bigbtn alt" id="payNo">Cancel</button></div>';
  $('#pay').classList.add('show');$('#payNo').onclick=()=>closeOv('#pay');

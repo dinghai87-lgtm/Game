@@ -16,7 +16,7 @@
 .nbadge{position:absolute;top:-4px;right:-4px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#ef4444;color:#fff;font:800 10px/17px system-ui;font-style:normal;text-align:center}
 .card.wide{max-width:560px;width:calc(100vw - 24px);max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow:auto;text-align:left}
 .xh{display:flex;align-items:center;gap:10px;margin-bottom:10px}.xh h2{flex:1;margin:0}.xx{background:none;border:0;color:#8a9bb0;font-size:26px;cursor:pointer;line-height:1}
-.xtabs{display:flex;gap:6px;margin:0 0 12px;overflow-x:auto}.xtabs button{flex:0 0 auto;border:1px solid var(--line);background:#0e1724;color:#cfe;padding:7px 12px;border-radius:20px;font-weight:800;font-size:13px;cursor:pointer}.xtabs button.on{background:var(--acc,#22c55e);color:#04140b;border-color:transparent}
+.xtabs{display:flex;gap:6px;margin:0 0 12px;overflow-x:auto}.xtabs button{flex:0 0 auto;border:1px solid var(--line);background:#0e1724;color:#cfe;padding:7px 12px;border-radius:20px;font-weight:800;font-size:13px;cursor:pointer}.xtabs button.on{background:var(--acc,#22c55e);color:#04140b;border-color:transparent}@media(max-width:420px){.xtabs{gap:4px;scrollbar-width:none}.xtabs button{padding:6px 8px;font-size:11.5px}}
 .xrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #ffffff12}.xrow:last-child{border-bottom:0}.xrow .grow{flex:1;min-width:0}.xrow small{display:block;color:#8a9bb0;font-size:12px;margin-top:2px}
 .xbtn{border:0;border-radius:10px;padding:8px 12px;font-weight:800;cursor:pointer;background:#22c55e;color:#04140b;font-size:13px;white-space:nowrap}.xbtn.alt{background:#1e2b3c;color:#e6eef8}.xbtn.red{background:#3b1220;color:#ff8fa3}.xbtn:disabled{opacity:.45;cursor:default}
 .xbar{height:8px;background:#ffffff14;border-radius:5px;overflow:hidden;margin-top:6px}.xbar i{display:block;height:100%;background:linear-gradient(90deg,#22c55e,#a3e635);border-radius:5px}
@@ -229,7 +229,7 @@
 
   // ---------------- onboarding tour ----------------
   const STEPS = [
-    ['#tabs', 'Browse 100 games', 'Slots, jackpots, blackjack, roulette, poker and more. Use the tabs or search to find a game.'],
+    ['#tabs', 'Browse all games', 'Slots, jackpots, blackjack, roulette, poker and more. Use the tabs or search to find a game.'],
     ['#games .tile', 'Tap a game to play', 'Each game shows its features in the paytable (the ⓘ button). Tap and hold a symbol to see what it pays.'],
     ['.bal', 'Your coins', 'Coins are for fun only — they have no cash value. Tap STORE for free coins every few hours.'],
     ['#lvl', 'Level up', 'Every coin you play earns XP. Each new level pays a coin reward.'],

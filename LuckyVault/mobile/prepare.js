@@ -9,3 +9,7 @@ fs.rmSync(dst, { recursive: true, force: true });
 fs.rmSync(path.join(dst, 'admin.html'), { force: true }); // the back office stays on the server, not in the app
 fs.writeFileSync(path.join(dst, 'config.js'), 'window.LV_CONFIG = { server: ' + JSON.stringify(server) + ' };\n');
 console.log('www ready. Server: ' + (server || '(none — offline demo mode)'));
+// Release builds talk to an HTTPS server only: switch off plain-http and mixed content for store review.
+{ const cp = path.join(__dirname, 'capacitor.config.json'); const c = JSON.parse(fs.readFileSync(cp, 'utf8')); const secure = /^https:\/\//.test(server);
+  c.server = Object.assign({}, c.server, { cleartext: !secure }); c.android = Object.assign({}, c.android, { allowMixedContent: !secure });
+  fs.writeFileSync(cp, JSON.stringify(c, null, 2) + '\n'); if (secure) console.log('Release mode: HTTPS only (cleartext off).'); }

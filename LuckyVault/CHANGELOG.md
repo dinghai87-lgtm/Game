@@ -338,3 +338,5 @@ Platform release: everything on the "do all of these" list except the public dep
 - Leaving a table in the middle of a deal animation no longer logs errors. Memory test: 120 game opens/closes, no growth in timers or listeners.
 - 中文 mode: table results and error messages are now translated too (龙赢 / 庄家赢 / 平局 / 赢 10.00 / 10 手中赢了 3 手 …). Accessibility labels on the account and friends buttons.
 - 中文 mode: all table rules, side-bet tables, keno / scratch / crash texts translated (about 130 more phrases). The translator never re-writes an unchanged text (guards against an endless update loop).
+- Maths: "20 Lines · Cash Collect" games were paying ~104% (more than they take in) — retuned to ~96.5% (4M-spin simulation). "Expanding Wilds" ways games trimmed from ~97.2% to ~95.7%. Full test suite incl. RTP: 120/120.
+- Lobby search understands Chinese in every language mode (百家乐, 21点, 轮盘, 龙虎, 骰宝, 奖池, 刮刮卡 …).

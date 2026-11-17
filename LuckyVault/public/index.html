@@ -960,7 +960,7 @@ function renderLobby(){const all=GAMES.filter(vis);renderTabs();$('#gcount').tex
  if(tab==='lobby'&&!q){$('#secTitle').innerHTML='';$('#games').className='';
   $('#games').innerHTML=SECS.map(([t,f,k])=>{const l=all.filter(f);if(!l.length)return'';return'<div class="rowsec"><div class="rowhd"><h2>'+t+'<span>'+l.length+'</span></h2><button data-tab="'+k+'">See all ›</button></div><div class="row">'+l.map(tileHTML).join('')+'</div></div>'}).join('')+
    (S.recent.length?'<div class="rowsec"><div class="rowhd"><h2>Recently played</h2></div><div class="row">'+S.recent.map(i=>GAMES[i]).filter(Boolean).map(tileHTML).join('')+'</div></div>':'');setBal();return}
- let list=q?all.filter(g=>(g.name+' '+gsub(g)).toLowerCase().includes(q)):filt(tab,all);$('#games').className='grid';
+ let list=q?all.filter(g=>{const t=g.name+' '+gsub(g);const z=window.LVLang?LVLang.zhOf(g.name)+' '+LVLang.zhOf(gsub(g))+' '+(g.slot?'老虎机':'')+' '+gsub(g).split(' · ').map(x=>LVLang.zhOf(x)).join(' '):'';return (t+' '+z).toLowerCase().includes(q)}):filt(tab,all);$('#games').className='grid';
  $('#secTitle').innerHTML=(q?'Search results':(TABS.find(t=>t[0]===tab)||['','Games'])[1])+' <span>'+list.length+' games</span>';
  $('#games').innerHTML=list.length?list.map(tileHTML).join(''):'<div class="empty">'+(tab==='fav'?'Tap ☆ on a game to add it to favorites.':tab==='recent'?'No recently played games yet.':'No games found.')+'</div>';setBal()}
 $('#games').onclick=e=>{const sa=e.target.closest('[data-tab]');if(sa){const k=sa.dataset.tab;tab=TABS.some(t=>t[0]===k)?k:'lobby';if(k==='hot'||k==='new'){tab='lobby';}renderTabs();if(k==='hot'||k==='new'){q='';tab=k;renderLobbyCustom(k);return}renderLobby();scrollTo({top:0});return}

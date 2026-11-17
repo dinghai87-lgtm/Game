@@ -31,7 +31,7 @@
     'SPIN': '旋转', 'SPIN!': '旋转！', 'Spin': '旋转', 'Auto': '自动', 'Turbo': '极速', 'Bet': '投注', 'BET': '投注', 'Bet max': '最大投注', 'Win': '赢', 'Max win': '最高赢取',
     'Paytable': '赔付表', 'Paylines': '赔付线', 'Features': '特色玩法', 'FEATURE:': '特色：', 'Free spins': '免费旋转', 'FREE SPINS': '免费旋转', 'FS': '免费', 'BONUS': '奖励',
     'WILD': '百搭', 'SCATTER': '分散', 'Respins': '重转', 'BIG WIN': '大赢', 'MEGA WIN': '巨赢', 'EPIC WIN': '史诗级大赢', 'GRAND': '超级', 'MAJOR': '大奖', 'MINOR': '中奖', 'MINI': '小奖',
-    'Grand': '超级', 'Major': '大奖', 'Minor': '中奖', 'Mini': '小奖', 'Buy': '购买', 'Ante': '加注', 'GAMBLE': '博倍', 'COLLECT': '收取', 'pays': '赔付',
+    'Grand': '超级', 'Jackpots': '奖池', 'Major': '大奖', 'Minor': '中奖', 'Mini': '小奖', 'Buy': '购买', 'Ante': '加注', 'GAMBLE': '博倍', 'COLLECT': '收取', 'pays': '赔付',
     'Buy free spins for 100x the bet.': '花 100 倍投注额直接购买免费旋转。', 'Buy free spins for 80x the bet.': '花 80 倍投注额直接购买免费旋转。',
     'Wins pay left to right on 20 fixed lines. Only the highest win per line is paid.': '20 条固定赔付线，从左到右计算，每条线只计最高奖。',
     'Maximum win per spin is capped at 5,000x the bet.': '每次旋转最高赢取为投注额的 5,000 倍。',
@@ -359,7 +359,7 @@
   }
   const NAMES = { zh: '中文', en: 'English', bi: '双语 Bilingual' };
   window.LVLang = {
-    get: () => mode, name: () => NAMES[mode], tr: (t) => (mode === 'en' ? t : (tr(t) || t)),
+    get: () => mode, name: () => NAMES[mode], zhOf: (t) => tr(t) || '',   // Chinese name for search (works in every language mode) tr: (t) => (mode === 'en' ? t : (tr(t) || t)),
     next() { const order = ['zh', 'en', 'bi']; const n = order[(order.indexOf(mode) + 1) % 3]; try { localStorage.setItem(KEY, n); } catch (e) {} location.reload(); },
     set(n) { try { localStorage.setItem(KEY, n); } catch (e) {} location.reload(); },
   };

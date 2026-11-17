@@ -341,3 +341,5 @@ Platform release: everything on the "do all of these" list except the public dep
 - Maths: "20 Lines · Cash Collect" games were paying ~104% (more than they take in) — retuned to ~96.5% (4M-spin simulation). "Expanding Wilds" ways games trimmed from ~97.2% to ~95.7%. Full test suite incl. RTP: 120/120.
 - Lobby search understands Chinese in every language mode (百家乐, 21点, 轮盘, 龙虎, 骰宝, 奖池, 刮刮卡 …).
 - New players: the first-time lobby tour no longer pops up on top of a table or slot (it pauses and continues back in the lobby).
+- Baccarat / Dragon Tiger on landscape tablets and phones: bets on the left, roadmap on the right, so the whole table fits without scrolling on tablets.
+- Test tools: ui_smoke.py supports LV_VIEWS=desktop,phone,tablet-land,phone-land; fixed a false "round did not finish" report on Craps. All tables × 3 screen sizes × 2 rounds: 0 problems.

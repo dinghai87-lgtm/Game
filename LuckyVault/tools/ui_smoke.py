@@ -21,7 +21,9 @@ ACT = """(()=>{const sq=document.querySelector('#sqz.show #sqAll');if(sq){sq.cli
 fails = []
 with sync_playwright() as p:
   b = p.chromium.launch(executable_path=CHROME, args=['--no-sandbox']) if CHROME else p.chromium.launch()
-  for vw, vh, tag in [(1280, 800, 'desktop'), (390, 844, 'phone')]:
+  VIEWS = {'desktop': (1280, 800), 'phone': (390, 844), 'tablet-land': (1024, 600), 'phone-land': (844, 390)}
+  for tag in os.environ.get('LV_VIEWS', 'desktop,phone').split(','):
+    vw, vh = VIEWS[tag]
     pg = b.new_page(viewport={'width': vw, 'height': vh}); errs = []
     pg.on('pageerror', lambda e: errs.append(str(e)[:200]))
     pg.goto(URL); pg.wait_for_timeout(800); pg.evaluate("localStorage.setItem('lv_lang','%s')" % os.environ.get('LV_LANG','en'))
@@ -37,7 +39,7 @@ with sync_playwright() as p:
         log.append(pg.evaluate(BET)); pg.wait_for_timeout(1800)
         for k in range(140 if "Craps" in name else 60):
           a = pg.evaluate(ACT)
-          if not a and pg.evaluate("!TT.busy"): break
+          if not a and pg.evaluate("!TT.busy&&TT.phase!=='act'"): break
           if a: log.append(a)
           pg.wait_for_timeout(900)
       pg.wait_for_timeout(600)

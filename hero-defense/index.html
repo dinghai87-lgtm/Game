@@ -1034,8 +1034,12 @@ function drawSprite(set,anim,t,x,y,sc,flip,alpha,loop,tint){const S=SETS[set];co
 function shadow(x,y,r){ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(x,y,r,r*.38,0,0,7);ctx.fill()}
 const ok=k=>{const i=IMG[k];return i&&i.complete&&i.width};
 const TC={};function tinted(k,filter){const key=k+'|'+filter;if(TC[key])return TC[key];const i=IMG[k];const P=8;const c=document.createElement('canvas');c.width=i.width+P*2;c.height=i.height+P*2;const g=c.getContext('2d');g.filter=filter;g.drawImage(i,P,P);TC[key]=c;return c}
-// 模糊背景只算一次（低分辨率缓存），不再每帧实时模糊
-const _bgC={};function blurBg(k,f,x,y,w,h){if(LOWQ||!ok(k)){img(k,x,y,w,h);return}const key=k+'|'+f;let c=_bgC[key];if(!c){const i=IMG[k];c=document.createElement('canvas');c.width=480;c.height=Math.round(480*i.height/i.width);const g=c.getContext('2d');g.filter=f;g.drawImage(i,0,0,c.width,c.height);_bgC[key]=c}ctx.drawImage(c,x,y,w,h)}
+// 宽屏/高屏多出来的边：把地图向外镜像延伸再稍微压暗（不模糊），和中间画面无缝衔接
+function mirrorBg(k,dark){if(!(OX||OY)||!ok(k))return;
+  if(OX){ctx.save();ctx.translate(OX,OY);ctx.scale(-1,1);img(k,0,0,WW,WH);ctx.restore();ctx.save();ctx.translate(OX+WW,OY);ctx.scale(-1,1);img(k,-WW,0,WW,WH);ctx.restore();
+    ctx.fillStyle='rgba(8,5,2,'+dark+')';ctx.fillRect(0,0,OX,H);ctx.fillRect(OX+WW,0,W-OX-WW,H)}
+  if(OY){ctx.save();ctx.translate(OX,OY);ctx.scale(1,-1);img(k,0,0,WW,WH);ctx.restore();ctx.save();ctx.translate(OX,OY+WH);ctx.scale(1,-1);img(k,0,-WH,WW,WH);ctx.restore();
+    ctx.fillStyle='rgba(8,5,2,'+dark+')';ctx.fillRect(0,0,W,OY);ctx.fillRect(0,OY+WH,W,H-OY-WH)}}
 function img(k,x,y,w,h,filter){const i=IMG[k];if(!ok(k))return;if(filter){const c=tinted(k,filter);const sx=w/i.width,sy=h/i.height;ctx.drawImage(c,x-8*sx,y-8*sy,c.width*sx,c.height*sy)}else ctx.drawImage(i,x,y,w,h)}
 function imgC(k,cx,cy,w,filter){const i=IMG[k];if(!ok(k))return 0;const h=w*i.height/i.width;img(k,cx-w/2,cy-h/2,w,h,filter);return h}
 function imgW(k,cx,by,w,filter){const i=IMG[k];if(!ok(k))return 0;const h=w*i.height/i.width;img(k,cx-w/2,by-h,w,h,filter);return h}
@@ -1117,7 +1121,7 @@ function drawAmb(m,dt,t){if(LOWQ)return;if(!G.ambS)G.ambS=ambInit(m);const A=G.a
 
 // ====================== 战斗绘制 ======================
 function drawBattle(dt){hits=[];const t=G.time;
-  if(OX||OY){const k=Math.max(W/WW,H/WH)*1.04;blurBg('map'+G.map,'blur(2px) brightness(.55)',(W-WW*k)/2,(H-WH*k)/2,WW*k,WH*k);if(LOWQ){ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(0,0,W,H)}}
+  if(OX||OY){const k=Math.max(W/WW,H/WH)*1.04;mirrorBg('map'+G.map,.25);}
   ctx.save();ctx.translate(OX,OY);HOX=OX;HOY=OY;if(G.shake>0)ctx.translate(rnd(-6,6)*Math.min(1,G.shake*4),rnd(-5,5)*Math.min(1,G.shake*4));
   img('map'+G.map,-4,-4,WW+8,WH+8);
   ctx.fillStyle=AMB[G.map].tint;ctx.fillRect(0,0,WW,WH);
@@ -1370,7 +1374,7 @@ const NODES=[[190,560],[350,510],[600,400],[505,560],[875,215],[1150,205],[1060,
 let lvPop=null,chainNext=false;
 function maxChapter(){let m=0;for(const k in SAVE.stars)if(SAVE.stars[k]>0)m=Math.max(m,+k+1);return Math.floor(m/8)}
 let chapter=null;
-function drawLevels(dt){if(chapter==null||chapter<0||!(chapter>=0))chapter=maxChapter();hits=[];titleT+=dt;const t=titleT;if(OX||OY){const k=Math.max(W/WW,H/WH)*1.04;blurBg('lm_LevelMap_Notext_NoLine','blur(2px) brightness(.7)',(W-WW*k)/2,(H-WH*k)/2,WW*k,WH*k)}ctx.save();ctx.translate(OX,OY);HOX=OX;HOY=OY;img('lm_LevelMap_Notext_NoLine',0,0,WW,WH);
+function drawLevels(dt){if(chapter==null||chapter<0||!(chapter>=0))chapter=maxChapter();hits=[];titleT+=dt;const t=titleT;if(OX||OY){const k=Math.max(W/WW,H/WH)*1.04;mirrorBg('lm_LevelMap_Notext_NoLine',.2)}ctx.save();ctx.translate(OX,OY);HOX=OX;HOY=OY;img('lm_LevelMap_Notext_NoLine',0,0,WW,WH);
   // route
   ctx.save();ctx.lineCap='round';for(let i=0;i<NODES.length-1;i++){const a=NODES[i],b=NODES[i+1];const un=(SAVE.stars[chapter*8+i]||0)>0;ctx.strokeStyle=un?'rgba(120,40,10,.85)':'rgba(90,60,30,.35)';ctx.lineWidth=5;ctx.setLineDash([2,12]);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.quadraticCurveTo((a[0]+b[0])/2,(a[1]+b[1])/2-40,b[0],b[1]);ctx.stroke()}ctx.restore();
   for(let n=0;n<8;n++){const i=chapter*8+n;const L=getLevel(i);const [x,y]=NODES[n];const un=i===0||(SAVE.stars[i-1]||0)>0;const st=SAVE.stars[i]||0;const cur=un&&!st;
@@ -1513,7 +1517,7 @@ function loopBody(now){const rdt=Math.min(.05,(now-last)/1000);last=now;try{perf
   if(scene==='battle'&&G){const alive=G.enemies.filter(e=>!e.dead).length;AUD.setIntensity(G.firstWave?.2:clamp(.3+alive/16+G.wave/(G.L.endless?40:G.L.waves)*.3,0,1))}
   ctx.clearRect(0,0,W,H);
   const MENU=(OX||OY)&&['title','heroes','talents','endless','shop','tasks','pass','gacha','bag','pick','rebirth'].includes(scene);let _W=W,_H=H;
-  if(MENU){const k=Math.max(W/WW,H/WH)*1.04;const bgk=scene==='title'?'map3':'map'+({heroes:3,talents:2,shop:1,tasks:2,pass:4,gacha:3,bag:1,pick:3,endless:4,rebirth:2}[scene]||1);blurBg(bgk,'blur(2px) brightness(.45)',(W-WW*k)/2,(H-WH*k)/2,WW*k,WH*k);ctx.save();ctx.translate(OX,OY);HOX=OX;HOY=OY;W=WW;H=WH}
+  if(MENU){const k=Math.max(W/WW,H/WH)*1.04;const bgk=scene==='title'?'map3':'map'+({heroes:3,talents:2,shop:1,tasks:2,pass:4,gacha:3,bag:1,pick:3,endless:4,rebirth:2}[scene]||1);mirrorBg(bgk,.5);ctx.save();ctx.translate(OX,OY);HOX=OX;HOY=OY;W=WW;H=WH}
   try{
   if(scene==='load')drawLoad();
   else if(scene==='title')drawTitle(rdt);
@@ -1981,7 +1985,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794908920';
+const BUILD_VER='1794909140';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

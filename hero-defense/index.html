@@ -1514,7 +1514,7 @@ function drawEndless(){hits=[];bgMenu(4,.5);ibtn('ui_Icon_Arrow_Left',46,46,66,(
   txt(TR('敌人无穷无尽，每 10 波出现一个 BOSS，看你能坚持多久！'),W/2,112,20,'#ffe9b0','center',4);
   const EP=window.endPage|0;ibtn('ui_Icon_Arrow_Left',26,370,44,()=>{window.endPage=(EP+2)%3},{});ibtn('ui_Icon_Arrow_Right',W-26,370,44,()=>{window.endPage=(EP+1)%3},{});txt((EP+1)+' / 3',W/2,140,15,'#e9d3a8','center',3);
   for(let m=1+EP*4;m<=4+EP*4;m++){const x=50+((m-1)%4)*302,y=160,cw=276,ch=420;ns('ui_Window_Background',x,y,cw,ch,150,.3);ctx.save();rr(x+18,y+18,cw-36,220,12);ctx.clip();img('map'+m,x+18-60,y+18,390,220);ctx.restore();
-    plate(x+40,y+254,cw-80,44);txt(MAP_NAMES[m],x+cw/2,y+276,24,'#fff','center',3);imgC('ui_Icon_Cup',x+70,y+330,30,'drop-shadow(0 1px 1px #000)');txt(TR('最高 ')+(SAVE.endless['m'+m]||0)+TR(' 波'),x+cw/2+14,y+331,20,'#ffe27a','center',3);
+    plate(x+40,y+254,cw-80,44);txt(MAP_NAMES[m],x+cw/2,y+276,24,'#fff','center',3);{const bs=TR('最高 ')+(SAVE.endless['m'+m]||0)+TR(' 波');ctx.font=`700 20px ${FONT}`;const bw=Math.min(cw-80,ctx.measureText(bs).width);imgC('ui_Icon_Cup',x+cw/2-bw/2-6,y+330,30,'drop-shadow(0 1px 1px #000)');fitTxt(bs,x+cw/2+14,y+331,20,cw-80,'#ffe27a','center',3,null,700)}
     button(TR('开战'),x+38,y+ch-80,cw-76,58,()=>pickStart(0,m),{style:'green',icon:'ui_Icon_Swords'})}try{drawEndlessWeekly()}catch(_){}}
 function drawLoad(){hits=[];ctx.fillStyle='#160d06';ctx.fillRect(0,0,W,H);gtxt(TR('英雄守关'),W/2,H/2-70,90,'#fff6d0','#ffb320',12,'#4a1406');
   const f=loadedN/totalN;img('ui_LoadingBar_Background',W/2-260,H/2+20,520,52);ctx.save();ctx.beginPath();ctx.rect(W/2-250,H/2+20,500*f,52);ctx.clip();img('ui_LoadingBar_Fill',W/2-250,H/2+30,500,32);ctx.restore();
@@ -2069,7 +2069,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794923862';
+const BUILD_VER='1794926062';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

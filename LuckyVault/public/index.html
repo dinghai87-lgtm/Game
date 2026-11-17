@@ -281,7 +281,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .stats div{background:var(--panel2);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:800}
 .stats b{color:var(--acc)}
-.btnrow{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}.btnrow .bigbtn{min-width:120px}
+.btnrow{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}@media (max-height:440px){.ov .card{max-height:96vh;padding:12px 14px}.ov .card h2{margin:2px 0 4px}.ov .btnrow{margin-top:10px;gap:6px}.ov .btnrow .bigbtn{padding:8px 10px;font-size:13px}}.btnrow .bigbtn{min-width:120px}
 .bigbtn{flex:1;background:var(--acc);color:#04140b;border:0;border-radius:12px;padding:13px;font-weight:900;font-size:15px;text-transform:uppercase}
 .bigbtn.alt{background:var(--panel2);color:#fff}
 #fsov .card,#msgov .card{text-align:center;background:linear-gradient(160deg,#2a1450,#120a24);border-color:rgba(255,200,61,.5)}
@@ -505,7 +505,7 @@ let S={bal:START,bi:3,fav:[],recent:[],snd:true,turbo:false};
 try{const d=JSON.parse(localStorage.getItem('lv_state')||'null');if(d)Object.assign(S,d)}catch(e){}
 if(!(S.bal>=0))S.bal=START;
 function save(){try{localStorage.setItem('lv_state',JSON.stringify(S))}catch(e){}}
-function LVVolume(){let d=document.getElementById('volov');if(!d){d=document.createElement('div');d.id='volov';d.className='ov';d.innerHTML='<div class="box" style="max-width:340px"><h2>音量 Volume</h2><label style="display:block;margin:14px 0 6px">音效 Sound effects <b id="vS"></b></label><input id="vSfx" type="range" min="0" max="100" style="width:100%"><label style="display:block;margin:14px 0 6px">音乐 Music <b id="vM"></b></label><input id="vMus" type="range" min="0" max="100" style="width:100%"><div class="btnrow" style="margin-top:16px"><button class="bigbtn" id="vOk">OK</button></div></div>';document.body.appendChild(d);
+function LVVolume(){let d=document.getElementById('volov');if(!d){d=document.createElement('div');d.id='volov';d.className='ov';d.innerHTML='<div class="card" style="max-width:340px;text-align:left"><h2 style="text-align:center">音量 Volume</h2><label style="display:block;margin:14px 0 6px">音效 Sound effects <b id="vS"></b></label><input id="vSfx" type="range" min="0" max="100" style="width:100%;accent-color:var(--acc);height:28px"><label style="display:block;margin:14px 0 6px">音乐 Music <b id="vM"></b></label><input id="vMus" type="range" min="0" max="100" style="width:100%;accent-color:var(--acc);height:28px"><div class="btnrow" style="margin-top:16px"><button class="bigbtn" id="vOk">OK</button></div></div>';document.body.appendChild(d);
  const upd=()=>{$('#vS').textContent=Math.round((S.sfxVol==null?1:S.sfxVol)*100)+'%';$('#vM').textContent=Math.round((S.musVol==null?1:S.musVol)*100)+'%'};
  d.querySelector('#vSfx').oninput=e=>{S.sfxVol=e.target.value/100;if(window.LVBus)LVBus.gain.value=.85*S.sfxVol;upd();save()};d.querySelector('#vSfx').onchange=()=>{try{sfx.click()}catch(e){}};
  d.querySelector('#vMus').oninput=e=>{S.musVol=e.target.value/100;upd();save();try{window.LVX&&LVX.musicSync&&LVX.musicSync()}catch(q){}};

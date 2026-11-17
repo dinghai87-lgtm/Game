@@ -346,3 +346,4 @@ Platform release: everything on the "do all of these" list except the public dep
 - Account deletion: typing a wrong password no longer logs the player out (it used to end the session, so the second, correct try failed). Required by Apple's account-deletion rule — now verified end to end.
 - 中文 mode: every slot paytable / feature description translated (29 slot types checked).
 - Settings → 音量 Volume: separate sound-effect and music sliders (0–100%), saved per device.
+- Short landscape screens: popups use compact buttons so the whole settings menu fits; volume panel styled as a card with themed sliders.

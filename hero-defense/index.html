@@ -74,8 +74,9 @@ function fit(){const dpr0=devicePixelRatio||1;let dpr=LOWQ?Math.min(1.5,dpr0):Ma
 addEventListener('resize',fit);addEventListener('orientationchange',()=>{setTimeout(fit,250);setTimeout(fit,800)});document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(fit,200)});fit();setTimeout(fit,600);
 // 分批加载：先加载界面、标题页和英雄，其余素材在后台加载，开局更快
 const IMG={};let loadedN=0,totalN=0,bgN=0,bgTotal=0;
-const CRIT=/^(ui_|lm_|sk_|sp_|tl_|shop_|map3$|monk_|archer_|old_|blade_|assassin_|whiteninja_|mage_|healer_)/;
+const CRIT=/^(ui_|lm_|sk_|sp_|tl_|shop_|map3$|monk_|archer_|old_|blade_|assassin_|whiteninja_|mage_|healer_|ghostk_|hunter_|m_anubis_|m_succubus_)/;
 const _later=[];for(const k in A){if(CRIT.test(k)){totalN++;const i=new Image();i.onload=i.onerror=()=>loadedN++;i.src=A[k];IMG[k]=i}else{bgTotal++;_later.push(k)}}
+function prioLoad(pre){if(!_later.length)return;const keep=[];for(const k of _later){if(pre.some(p=>k.startsWith(p))){const i=new Image();i.onload=i.onerror=()=>bgN++;i.src=A[k];IMG[k]=i}else keep.push(k)}_later.length=0;_later.push(...keep)}
 function bgLoad(){let n=0;while(_later.length&&n<24){const k=_later.shift();const i=new Image();i.onload=i.onerror=()=>bgN++;i.src=A[k];IMG[k]=i;n++}if(_later.length)setTimeout(bgLoad,30)}
 setTimeout(bgLoad,50);
 function setRot(on){try{localStorage.setItem('hero_rot',on?'auto':'off')}catch(e){}ROTPREF=on?'auto':'off';fit()}
@@ -264,7 +265,7 @@ let scene='load',G=null,levelSel=0,heroFocus='monk',endlessMap=0,toast=null;
 let paused=false,speed=1;
 function showToast(s){toast={s,t:2.2}}
 
-function startLevel(li,endless){fixTeam();
+function startLevel(li,endless){try{prioLoad(['map','e_','m_','boss','fx_','tw_'])}catch(_){}fixTeam();
   const L=endless?{name:TR('无尽模式·')+MAP_NAMES[endless],map:endless,paths:PATHS[endless].map((_,i)=>i),waves:9999,gold:400,pool:Object.keys(ENEMIES).filter(k=>!ENEMIES[k].boss).sort((a,b)=>ENEMIES[a].bounty-ENEMIES[b].bounty),diff:1.1,endless:true}:li===-1?challengeLevel():li===-2?eventLevel():li===-3?trialLevel():getLevel(li);
   const paths=L.paths.map(i=>buildPath(PATHS[L.map][i]));
   const allPaths=PATHS[L.map].map(p=>buildPath(p));
@@ -2069,7 +2070,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794930700';
+const BUILD_VER='1794935576';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

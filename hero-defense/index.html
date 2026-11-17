@@ -1539,7 +1539,7 @@ addEventListener('keydown',e=>{if(scene!=='battle'||!G)return;if(e.key===' '){pa
 // ====================== 主循环 ======================
 let last=performance.now();
 function musicFor(){if(scene==='load')return null;if(scene!=='battle'||!G)return 'menu';if(G.over)return null;return G.bossBar&&!G.bossBar.dead?'boss':'battle'}
-let loopErr=0;function loop(now){requestAnimationFrame(loop);try{loopBody(now)}catch(e){if(loopErr++<5)console.error('loop',e);try{ctx.restore();ctx.restore()}catch(_){}}}
+let loopErr=0;function loop(now){requestAnimationFrame(loop);try{loopBody(now)}catch(e){if(loopErr++<5){console.error('loop',e);try{reportErr('loop:'+(e&&e.message),e&&e.stack)}catch(_){}}try{ctx.restore();ctx.restore()}catch(_){}}}
 function loopBody(now){const rdt=Math.min(.05,(now-last)/1000);last=now;try{perfWatch(rdt)}catch(_){}if(toast){toast.t-=rdt;if(toast.t<=0)toast=null}if(pressed){pressed.t-=rdt;if(pressed.t<=0)pressed=null}
   AUD.music(musicFor());
   if(scene==='battle'&&G){const alive=G.enemies.filter(e=>!e.dead).length;AUD.setIntensity(G.firstWave?.2:clamp(.3+alive/16+G.wave/(G.L.endless?40:G.L.waves)*.3,0,1))}
@@ -2069,7 +2069,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794926062';
+const BUILD_VER='1794930700';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);
@@ -2103,6 +2103,8 @@ async function openStats(){let p=localStorage.getItem('hero_admin')||prompt('开
     h+=sec('每天新增玩家（近 14 天）');h+=(d.daily||[]).map(x=>'<span style="display:inline-block;margin:0 12px 6px 0">'+x.day+'：<b>'+x.n+'</b></span>').join('')||'<div style="color:#a8977c">暂无</div>';
     h+=sec('行为次数');h+=(d.events||[]).map(x=>'<span style="display:inline-block;margin:0 12px 6px 0">'+esc(x.name)+'：<b>'+x.n+'</b></span>').join('');
     h+=sec('最近反馈');h+=(d.fb_recent||[]).map(x=>'<div style="background:#211b15;border-radius:8px;padding:8px 10px;margin:6px 0"><div style="color:#a8977c;font-size:11px">'+esc(x.t)+'</div>'+esc(x.msg)+'</div>').join('')||'<div style="color:#a8977c">暂无</div>';
+    try{const er=await sbFetch('/rest/v1/rpc/admin_errors',{method:'POST',headers:{apikey:SB.k,'Content-Type':'application/json'},body:JSON.stringify({pass:p})});const E=er.ok?await er.json():[];
+      h+=sec('玩家遇到的报错（最近 40 条）');h+=(E||[]).map(x=>{const d=x.data||{};return '<div style="background:#2a1515;border-radius:8px;padding:8px 10px;margin:6px 0;font-size:12px"><div style="color:#a8977c;font-size:11px">'+esc(String(x.created_at).slice(0,16).replace('T',' '))+' · '+esc(d.v||'')+' · '+esc(d.sc||'')+'</div><b>'+esc(d.m||'')+'</b><div style="color:#a8977c">'+esc(d.at||'')+'</div><div style="color:#7d6e57;font-size:10px">'+esc(d.ua||'')+'</div></div>'}).join('')||'<div style="color:#9fe39a">没有报错 👍</div>'}catch(_){}
     box.innerHTML=h;box.querySelectorAll('button').forEach(b=>b.style.cssText='font:inherit;color:#2a1a05;background:#ffb320;border:0;border-radius:8px;padding:6px 12px');
     box.querySelector('#sx').onclick=close;box.querySelector('#sr').onclick=()=>{close();openStats()};
   }catch(e){box.innerHTML='<p>网络不通：'+esc(e.message)+'</p><button id="sx">关闭</button>';box.querySelector('#sx').onclick=close}}
@@ -2137,6 +2139,13 @@ async function deleteMyData(){
   if(!ok){SB.dead=false;alert(TR('删除失败：请联网后再试，或发邮件到 ding.hai87@gmail.com'));return}
   try{for(const k of Object.keys(localStorage))if(/^hero/.test(k))localStorage.removeItem(k)}catch(e){}
   alert(TR('你的数据已全部删除。'));location.reload()}
+
+// 线上报错收集：真实玩家遇到的 JS 错误进统计（每次最多 5 条，同一条只报一次）
+const _errSeen=new Set();function reportErr(m,st){m=String(m||'').slice(0,160);if(!m||_errSeen.has(m)||_errSeen.size>=5)return;_errSeen.add(m);
+  const at=String(st||'').split('\n').slice(1,3).join(' | ').replace(/file:\/\/[^ )]*|https?:\/\/[^ )]*/g,'').slice(0,200);
+  try{track('js_error',{m,at,v:BUILD_VER,sc:typeof __api!=='undefined'?__api.scene:'',ua:navigator.userAgent.slice(0,90)})}catch(_){}}
+addEventListener('error',e=>{if(e&&e.message)reportErr(e.message,e.error&&e.error.stack)});
+addEventListener('unhandledrejection',e=>{const r=e&&e.reason;reportErr('promise:'+(r&&r.message||r),r&&r.stack)});
 
 </script>
 </body>

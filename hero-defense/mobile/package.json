@@ -1,0 +1,19 @@
+{
+  "name": "hero-defense-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hero Defense / 英雄守关 — native app wrapper (Capacitor) for Android and iOS. © 2026 万泰游戏开发",
+  "scripts": {
+    "prepare-web": "node prepare.js",
+    "assets": "npx --yes @capacitor/assets@3 generate --assetPath assets --iconBackgroundColor \"#15100b\" --iconBackgroundColorDark \"#15100b\" --splashBackgroundColor \"#15100b\" --splashBackgroundColorDark \"#15100b\"",
+    "sync": "node prepare.js && npx cap sync && node patch-native.js"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0"
+  }
+}

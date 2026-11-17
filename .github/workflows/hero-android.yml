@@ -1,0 +1,27 @@
+name: Hero Defense Android APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['hero-defense/index.html', 'hero-defense/mobile/**']
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: hero-defense/mobile } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - run: npm install
+      - run: node prepare.js
+      - run: npx cap add android
+      - run: npx cap sync android
+      - run: node patch-native.js
+      - run: npm run assets
+      - run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HeroDefense-debug-apk
+          path: hero-defense/mobile/android/app/build/outputs/apk/debug/app-debug.apk

@@ -1,0 +1,15 @@
+{
+  "appId": "com.wantai.herodefense",
+  "appName": "Hero Defense",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#15100b"
+  },
+  "ios": {
+    "backgroundColor": "#15100b",
+    "contentInset": "never"
+  }
+}

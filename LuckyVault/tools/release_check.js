@@ -45,6 +45,7 @@ for (const f of ['assets/fonts/Anton.woff2', 'assets/fonts/Cinzel.woff2', 'asset
 { const c = ex(path.join(ROOT, 'COPYRIGHT.txt')) ? rd(path.join(ROOT, 'COPYRIGHT.txt')) : ''; if (!c.includes('万泰游戏开发')) err('COPYRIGHT.txt must name 万泰游戏开发 as copyright owner');
   for (const w of ['Kenney', 'Sonniss', 'Open Font License']) if (!c.includes(w)) err('COPYRIGHT.txt missing credit: ' + w); ok('credits present'); }
 { const t = ex(path.join(PUB, 'legal/terms.html')) ? rd(path.join(PUB, 'legal/terms.html')) : ''; if (!/18/.test(t)) err('terms.html must state the 18+ age limit'); if (!/cash value/i.test(t)) err('terms.html must state coins have no cash value');
+  for (const lp of ['legal/terms.html', 'legal/privacy.html']) { const f = path.join(PUB, lp); if (ex(f) && /@example\.com|example\.com\b/.test(rd(f))) err(lp + ' still has the placeholder contact (example.com) — put your real support email / company before submitting to the stores'); }
   const idx = rd(path.join(PUB, 'index.html')); if (!/no cash value/i.test(idx)) err('index.html must show the "no cash value" notice'); ok('legal wording'); }
 
 // 6. forbidden third-party IP / leftovers

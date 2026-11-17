@@ -16,21 +16,22 @@
 1. **正式服务器 + 域名（HTTPS）**——App 必须连一个固定的 https 网址。
    - 可以用你们的 AWS：上传 LuckyVault 文件夹，进入 `deploy/`，按 `.env.example` 填好域名和密码，然后运行 `docker compose up -d --build`。
    - 需要的话我可以帮你部署，但需要你提供服务器登录方式。
-2. **开发者账号**
+2. **法律页面填真实信息**：`legal/terms.html` 和 `legal/privacy.html` 里的联系邮箱现在是占位的 example.com，要换成你们真实的客服邮箱，并写上发行公司名称（以哪家公司名义上架）。`release-check.bat` 会一直报这项，直到改好。
+3. **开发者账号**
    - Apple Developer Program：每年 99 美元。用公司名义注册需要 D-U-N-S 邓白氏编码。
    - Google Play Console：一次性 25 美元。**建议用公司（组织）账号注册**：个人账号要先做 14 天封闭测试，组织账号可以免掉（需要 D-U-N-S）。
-3. **在两个商店后台建 5 个"消耗型"商品**，ID 必须完全一样：
+4. **在两个商店后台建 5 个"消耗型"商品**，ID 必须完全一样：
    `lv_coins_p1` (4.99) · `lv_coins_p2` (9.99) · `lv_coins_p3` (19.99) · `lv_coins_p4` (49.99) · `lv_coins_p5` (99.99)
-4. **把收据核验用的密钥填进服务器 `.env`**：
+5. **把收据核验用的密钥填进服务器 `.env`**：
    - 苹果：App Store Connect → App 信息 → App 专用共享密钥 → 填 `APPLE_SHARED_SECRET`
    - Google：Google Cloud 建一个服务账号并下载 JSON 密钥，在 Play Console「用户和权限」里给它"查看财务数据 + 管理订单"权限 → 填 `GOOGLE_SERVICE_ACCOUNT`
-5. **打包上传**：运行上面的打包脚本，把安卓 .aab 传到 Play Console，iOS 用 Xcode Archive 上传。
-6. **填写审核问卷**：
+6. **打包上传**：运行上面的打包脚本，把安卓 .aab 传到 Play Console，iOS 用 Xcode Archive 上传。
+7. **填写审核问卷**：
    - 年龄分级：苹果选 17+ 并勾选「模拟赌博：频繁/强烈」；Google 内容分级里如实填写模拟赌博，目标人群 18+。
    - 隐私表格：两家都要填（收集用户名、可选邮箱、游戏记录，不出售数据）。
    - 苹果审核备注：提供一个测试账号和密码。
-7. **第三方登录（可选）**：如果在 iOS App 里开启 Google 登录（`GOOGLE_CLIENT_ID`），苹果规定必须同时提供「通过 Apple 登录」（`APPLE_CLIENT_ID`）。只用用户名/邮箱登录则不需要。
-8. **发行地区**：部分国家 / 地区限制模拟赌博类 App（例如韩国对社交娱乐场有特别规定），上架时按商店提示选择地区。
+8. **第三方登录（可选）**：如果在 iOS App 里开启 Google 登录（`GOOGLE_CLIENT_ID`），苹果规定必须同时提供「通过 Apple 登录」（`APPLE_CLIENT_ID`）。只用用户名/邮箱登录则不需要。
+9. **发行地区**：部分国家 / 地区限制模拟赌博类 App（例如韩国对社交娱乐场有特别规定），上架时按商店提示选择地区。
 
 ## 三、预计时间
 - 有公司 Google 组织账号：打包上传后，审核一般几天。

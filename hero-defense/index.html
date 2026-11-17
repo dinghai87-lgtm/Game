@@ -2006,9 +2006,9 @@ function doInstall(){if(installEvt){installEvt.prompt();installEvt.userChoice.th
   if(isIOS())popup(TR('添加到主屏幕'),[TR('1. 用 Safari 打开本页'),TR('2. 点底部「分享」按钮（方框加向上箭头）'),TR('3. 选「添加到主屏幕」，桌面就会出现游戏图标')]);
   else popup(TR('添加到桌面'),[TR('1. 用 Chrome 打开本页'),TR('2. 点右上角「⋮」菜单'),TR('3. 选「添加到主屏幕」或「安装应用」')])}
 const isMobile=()=>/android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent)||isIOS();
-function installAsk(){if(isStandalone()||!isMobile()||POP||SAVE.instAsk===today())return;SAVE.instAsk=today();save();
+function installAsk(){if(APP_FREE||isStandalone()||!isMobile()||POP||SAVE.instAsk===today())return;SAVE.instAsk=today();save();
   popup(TR('添加到手机桌面'),[TR('添加后像 App 一样全屏玩，打开更快，断网也能玩'),isIOS()?TR('苹果手机：点底部「分享」→「添加到主屏幕」'):TR('点下面按钮即可安装到桌面')],[{label:TR('添加到桌面'),style:'green',fn:doInstall},{label:TR('以后再说'),style:'gray'}])}
-function drawInstallBtn(){try{installAsk()}catch(_){}if(isStandalone()||SAVE.installHide)return;const x=140,y=84,w=176,h=34;ctx.fillStyle='rgba(20,60,30,.9)';rr(x,y,w,h,12);ctx.fill();ctx.strokeStyle='#8ef59a';ctx.lineWidth=1.5;rr(x,y,w,h,12);ctx.stroke();
+function drawInstallBtn(){if(APP_FREE)return;try{installAsk()}catch(_){}if(isStandalone()||SAVE.installHide)return;const x=140,y=84,w=176,h=34;ctx.fillStyle='rgba(20,60,30,.9)';rr(x,y,w,h,12);ctx.fill();ctx.strokeStyle='#8ef59a';ctx.lineWidth=1.5;rr(x,y,w,h,12);ctx.stroke();
   txt('📲 '+TR('添加到桌面'),x+w/2-8,y+h/2+.5,14,'#e8ffe0','center',2);hit(x,y,w-24,h,doInstall);txt('×',x+w-12,y+h/2,14,'#9fbf9a','center',0);hit(x+w-24,y,24,h,()=>{SAVE.installHide=1;save()})}
 
 // ====================== 内测反馈 ======================
@@ -2061,7 +2061,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794922289';
+const BUILD_VER='1794922610';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

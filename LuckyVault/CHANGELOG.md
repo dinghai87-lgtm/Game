@@ -343,3 +343,4 @@ Platform release: everything on the "do all of these" list except the public dep
 - New players: the first-time lobby tour no longer pops up on top of a table or slot (it pauses and continues back in the lobby).
 - Baccarat / Dragon Tiger on landscape tablets and phones: bets on the left, roadmap on the right, so the whole table fits without scrolling on tablets.
 - Test tools: ui_smoke.py supports LV_VIEWS=desktop,phone,tablet-land,phone-land; fixed a false "round did not finish" report on Craps. All tables × 3 screen sizes × 2 rounds: 0 problems.
+- Account deletion: typing a wrong password no longer logs the player out (it used to end the session, so the second, correct try failed). Required by Apple's account-deletion rule — now verified end to end.

@@ -251,7 +251,8 @@ R['POST /api/account/delete'] = userRoute(async ({ uid, b }) => {
     const old = u.name; u.name = 'deleted_' + u.id; u.email = null; u.emailVerified = false; u.phone = null; u.googleSub = null; u.appleSub = null; u.hash = null; u.salt = null; u.banned = true; u.deleted = now(); u.bal = 0;
     await repo.audit('account_deleted', old + ' (#' + u.id + ')'); out = [200, { ok: true }];
   });
-  await repo.sessionsDelUser(uid); return out;
+  if (out && out[0] === 200) await repo.sessionsDelUser(uid);   // a wrong password must not log the player out
+  return out;
 });
 
 // --- games ---

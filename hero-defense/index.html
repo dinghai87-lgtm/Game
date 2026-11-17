@@ -884,6 +884,9 @@ const AUD=(()=>{
     const wake=()=>{if(!ac||document.hidden)return;ac.resume().then(()=>{const t=ac.currentTime;master.gain.cancelScheduledValues(t);master.gain.setValueAtTime(0,t);master.gain.linearRampToValueAtTime(.95,t+.4)}).catch(()=>{})};
     document.addEventListener('visibilitychange',()=>{if(document.hidden)hush();else wake()});
     addEventListener('pagehide',hush);addEventListener('freeze',hush);addEventListener('blur',hush);addEventListener('focus',wake);addEventListener('pageshow',wake);
+    // iPhone 上划退出时，系统会先把触摸「收走」（touchcancel/pointercancel），这比切后台的通知早得多：此时就静音；没退出的话 0.7 秒后再恢复
+    const early=()=>{hush();setTimeout(()=>{if(!document.hidden&&document.hasFocus())wake()},700)};
+    addEventListener('touchcancel',early,true);addEventListener('pointercancel',early,true);
     startScheduler()}
   function unlock(){init();if(ac&&ac.state==='suspended')ac.resume()}
   function applyVol(){if(!ac)return;const on=typeof SAVE==='undefined'||SAVE.sound!==false;musicBus.gain.setTargetAtTime(on?V.music*(track==='menu'?1.25:.75):0,ac.currentTime,.1);sfxBus.gain.setTargetAtTime(on?V.sfx:0,ac.currentTime,.05)}
@@ -1978,7 +1981,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794908263';
+const BUILD_VER='1794908625';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

@@ -1343,7 +1343,7 @@ function drawPause(){if(!pauseMenu){const t=performance.now()/1000;ctx.fillStyle
   volumeRows(x+60,y+320,w-120);
   button(TR('提意见'),x+w-150,y+270,120,38,()=>doFeedback(),{style:'blue',size:14});
   button(TR('拆除本图所有塔（返还 60%）'),W/2-170,y+h-34,340,46,()=>{clearLayout();paused=false;showToast(TR('已拆除，金币已返还'))},{size:16,style:'gray'})}
-function volumeRows(x,y,w){txt(TR('音乐'),x,y,20,'#ffe9b0','left',3);slider('music',AUD.V.music,x+80,y,w-200,v=>{AUD.setVol('music',v);save()});
+function volumeRows(x,y,w){fitTxt(TR('音乐'),x,y,20,78,'#ffe9b0','left',3);slider('music',AUD.V.music,x+80,y,w-200,v=>{AUD.setVol('music',v);save()});
   txt(TR('音效'),x,y+52,20,'#ffe9b0','left',3);slider('sfx',AUD.V.sfx,x+80,y+52,w-200,v=>{AUD.setVol('sfx',v);save()});
   toggle(SAVE.sound!==false,x+w-50,y+26,()=>{SAVE.sound=SAVE.sound===false;AUD.applyVol();save()})}
 function drawOver(dt){const o=G.over;o.t+=dt;hits=[];ctx.fillStyle=`rgba(0,0,0,${Math.min(.65,o.t)})`;ctx.fillRect(0,0,W,H);if(o.t<.5)return;
@@ -1385,17 +1385,17 @@ function drawTitle(dt){hits=[];titleT+=dt;const t=titleT;img('map3',0,0,W,H);ctx
   button('🌐 '+langName(),24,20,190,54,()=>{langPick=true;AUD.sfx('open')},{style:'purple',size:20});
   copyright();legalLinks(H-14);
   if(showSettings)drawSettings();if(langPick)drawLangPick()}
-function rotRow(x,y){txt(TR('竖屏手机'),x,y,20,'#ffe9b0','left',3);[[true,TR('自动旋转')],[false,TR('提示横屏')]].forEach(([on,n],i)=>button(n,x+130+i*150,y-26,140,52,()=>setRot(on),{style:(ROTPREF!=='off')===on?'green':'gray',size:18}))}
-function qualRow(x,y){txt(TR('画质'),x,y,20,'#ffe9b0','left',3);[[false,TR('高清')],[true,TR('流畅')]].forEach(([lo,n],i)=>button(n,x+130+i*150,y-26,140,52,()=>{if(lo!==LOWQ)setQuality(lo)},{style:lo===LOWQ?'green':'gray',size:20}))}
-function voiceRow(x,y){txt(TR('英雄语音'),x,y,20,'#ffe9b0','left',3);[[true,TR('开')],[false,TR('关')]].forEach(([on,n],i)=>button(n,x+130+i*150,y-26,140,52,()=>{SAVE.voice=on;save();if(on)heroVoice('monk',true)},{style:(SAVE.voice!==false)===on?'green':'gray',size:20}))}
+function rotRow(x,y){fitTxt(TR('竖屏手机'),x,y,20,125,'#ffe9b0','left',3);[[true,TR('自动旋转')],[false,TR('提示横屏')]].forEach(([on,n],i)=>button(n,x+130+i*150,y-26,140,52,()=>setRot(on),{style:(ROTPREF!=='off')===on?'green':'gray',size:18}))}
+function qualRow(x,y){fitTxt(TR('画质'),x,y,20,125,'#ffe9b0','left',3);[[false,TR('高清')],[true,TR('流畅')]].forEach(([lo,n],i)=>button(n,x+130+i*150,y-26,140,52,()=>{if(lo!==LOWQ)setQuality(lo)},{style:lo===LOWQ?'green':'gray',size:20}))}
+function voiceRow(x,y){fitTxt(TR('英雄语音'),x,y,20,125,'#ffe9b0','left',3);[[true,TR('开')],[false,TR('关')]].forEach(([on,n],i)=>button(n,x+130+i*150,y-26,140,52,()=>{SAVE.voice=on;save();if(on)heroVoice('monk',true)},{style:(SAVE.voice!==false)===on?'green':'gray',size:20}))}
 function langName(){const l=LANGS.find(x=>x[0]===LANG);return l?l[1]:'English'}
 let langPick=false;
-function langRow(x,y,w){txt(TR('语言'),x,y,20,'#ffe9b0','left',3);button('🌐 '+langName(),x+130,y-26,290,52,()=>{langPick=true;AUD.sfx('open')},{style:'green',size:20})}
+function langRow(x,y,w){fitTxt(TR('语言'),x,y,20,125,'#ffe9b0','left',3);button('🌐 '+langName(),x+130,y-26,290,52,()=>{langPick=true;AUD.sfx('open')},{style:'green',size:20})}
 function drawLangPick(){ctx.fillStyle='rgba(0,0,0,.65)';ctx.fillRect(0,0,W,H);hit(0,0,W,H,()=>{langPick=false});const w=620,h=420,x=W/2-w/2,y=H/2-h/2;panel(x,y,w,h,'🌐 '+TR('选择语言'));hit(x,y,w,h,()=>{});
   LANGS.forEach(([k,n],i)=>{const bx=x+50+(i%2)*270,by=y+90+Math.floor(i/2)*80;button(n,bx,by,250,62,()=>{langPick=false;if(k!==LANG)setLang(k)},{style:k===LANG?'green':'gray',size:22})});
   button(TR('关闭'),W/2-90,y+h-76,180,50,()=>{langPick=false},{style:'blue',size:18})}
-function drawSettings(){hits=[];ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,0,W,H);const x=W/2-260,y=H/2-300,w=520,h=600;panel(x,y,w,h,TR('设置'));volumeRows(x+60,y+90,w-120);voiceRow(x+60,y+214);langRow(x+60,y+276,w-120);qualRow(x+60,y+338);rotRow(x+60,y+400);
-  txt(TR('提示：第一次点击屏幕后才会出声音（浏览器限制）'),W/2,y+446,13,'#e9d3a8','center',3);{const dl=TR('删除我的数据');ctx.font=`700 13px ${FONT}`;const dw=ctx.measureText(dl).width;txt(dl,x+w-40-dw/2,y+h-26,13,'#ff9e9e','center',3);hit(x+w-50-dw,y+h-42,dw+20,30,()=>{try{deleteMyData()}catch(_){}})}button(TR('确定'),W/2-100,y+h-90,200,58,()=>{showSettings=false},{style:'green',icon:'ui_Icon_Accept'});if(langPick)drawLangPick()}
+function drawSettings(){hits=[];ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,0,W,H);const x=W/2-260,y=H/2-300,w=520,h=600;panel(x,y,w,h,TR('设置'));volumeRows(x+60,y+90,w-120);voiceRow(x+60,y+214);langRow(x+60,y+276,w-120);qualRow(x+60,y+338);if(!window.Capacitor)rotRow(x+60,y+400);
+  if(!APP_FREE)txt(TR('提示：第一次点击屏幕后才会出声音（浏览器限制）'),W/2,y+446,13,'#e9d3a8','center',3);{const dl=TR('删除我的数据');ctx.font=`700 13px ${FONT}`;const dw=ctx.measureText(dl).width;txt(dl,x+w-40-dw/2,y+h-26,13,'#ff9e9e','center',3);hit(x+w-50-dw,y+h-42,dw+20,30,()=>{try{deleteMyData()}catch(_){}})}button(TR('确定'),W/2-100,y+h-90,200,58,()=>{showSettings=false},{style:'green',icon:'ui_Icon_Accept'});if(langPick)drawLangPick()}
 const NODES=[[190,560],[350,510],[600,400],[505,560],[875,215],[1150,205],[1060,370],[715,300]];const ENDLESS_NODE=[830,450];
 let lvPop=null,chainNext=false;
 function maxChapter(){let m=0;for(const k in SAVE.stars)if(SAVE.stars[k]>0)m=Math.max(m,+k+1);return Math.floor(m/8)}
@@ -2067,7 +2067,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794923255';
+const BUILD_VER='1794923553';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

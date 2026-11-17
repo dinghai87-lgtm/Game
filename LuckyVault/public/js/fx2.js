@@ -4,10 +4,10 @@
 (function () {
   const RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const IMG = {}; ['star', 'star2', 'spark', 'sym', 'flare'].forEach(n => { const i = new Image(); i.src = 'assets/fx/' + n + '.webp'; IMG[n] = i; });
-  const cv = document.createElement('canvas'); cv.id = 'fx2'; cv.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9800'; document.body.appendChild(cv); const cx = cv.getContext('2d');
+  const cv = document.createElement('canvas'); cv.id = 'fx2'; cv.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9800;display:none'; document.body.appendChild(cv); const cx = cv.getContext('2d');
   const P = []; let run = false;
   function size() { const d = Math.min(2, devicePixelRatio || 1), w = innerWidth, h = innerHeight; if (cv.width !== w * d || cv.height !== h * d) { cv.width = w * d; cv.height = h * d; cv.style.width = w + 'px'; cv.style.height = h + 'px'; } cx.setTransform(d, 0, 0, d, 0, 0); }
-  function add(p) { P.push(p); if (!run) { run = true; requestAnimationFrame(loop); } }
+  function add(p) { P.push(p); if (!run) { run = true; cv.style.display = 'block'; requestAnimationFrame(loop); } }
   // burst of sparkles from a point
   function sparkle(x, y, n, spread) { if (RM || document.hidden) return; size(); n = Math.min(120, n || 24); const S = ['star', 'star2', 'spark', 'sym'];
     for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, sp = (spread || 1) * (2 + Math.random() * 6);
@@ -22,7 +22,7 @@
       const tw = .65 + .35 * Math.sin(p.life * 20 + p.rot * 3); const s = p.s * (.6 + .4 * p.life);
       cx.globalAlpha = Math.min(1, p.life * 1.4) * tw; cx.save(); cx.translate(p.x, p.y); cx.rotate(p.rot); cx.drawImage(im, -s / 2, -s / 2, s, s); cx.restore(); }
     cx.globalAlpha = 1; cx.globalCompositeOperation = 'source-over';
-    if (P.length) requestAnimationFrame(loop); else { run = false; cx.clearRect(0, 0, innerWidth, innerHeight); } }
+    if (P.length) requestAnimationFrame(loop); else { run = false; cx.clearRect(0, 0, innerWidth, innerHeight); cv.style.display = 'none'; } }
   window.LVSparkle = sparkle;
   window.LVSparkleAt = (el, n) => { if (!el) return; const r = el.getBoundingClientRect(); sparkle(r.left + r.width / 2, r.top + r.height / 2, n || 30, 1.2); };
   // slot wins: sparkles from the reels, more for bigger wins

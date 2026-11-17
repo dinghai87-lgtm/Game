@@ -329,3 +329,5 @@ Platform release: everything on the "do all of these" list except the public dep
 - New slot mechanic: 4,096 Ways (6 reels × 4 rows, any-position adjacent wins, free spins ×2) — first game "Dragon Empire 4096" (RTP 95.9% over 1M simulated spins). Slot screens now use each variant's own grid size.
 - Weekly events run automatically when no manual event is set: Lucky Monday (1.5× XP), Bonus Wednesday (free bonus ×1.5), Weekend Double XP (Fri 18:00 – Sun). Turn off with setting autoEvents=false.
 - Shared tables: bet updates are batched (max 4 per second per room) — tested with 800 players in one room: 1,600 bets, 0 errors, p95 26 ms, ledger 0 mismatched (tools/load_test.js).
+- Phones (Samsung Fold etc.): fixed slot flicker — no blur filter on very tall spinning reels on touch screens, shorter reel strips, stopped reels keep their symbols instead of being rebuilt, browser-bar resizes no longer rebuild the reels, sparkle canvas only shown while sparkles play.
+- Fixed Dragon Empire 4096: the 6th reel errored while spinning and started empty.

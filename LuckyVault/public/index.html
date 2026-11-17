@@ -91,7 +91,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .reel{position:relative;overflow:hidden;width:var(--cell);height:calc(var(--cell) * var(--rows));background:linear-gradient(rgba(0,0,0,.35),rgba(255,255,255,.04) 50%,rgba(0,0,0,.35));border-radius:6px}
 .reel.antic{box-shadow:0 0 0 2px var(--gold),0 0 24px 6px rgba(255,200,61,.75);animation:ant .25s infinite alternate}
 @keyframes ant{to{box-shadow:0 0 0 2px #fff,0 0 34px 10px rgba(255,200,61,.95)}}
-.reel.moving .strip{filter:blur(1.6px) brightness(1.1)}
+.reel.moving .strip{filter:blur(1.6px) brightness(1.1)}@media (pointer:coarse),(max-width:900px){.reel.moving .strip{filter:none}}.strip{backface-visibility:hidden;transform:translateZ(0)}
 .strip{position:absolute;left:0;top:0;width:100%;will-change:transform}
 .cell{width:var(--cell);height:var(--cell);display:flex;align-items:center;justify-content:center}
 #board.drop .cell{position:absolute;left:0;top:0;will-change:transform}
@@ -585,12 +585,12 @@ class ReelView{
  cellPos(c,r){return[c*(CELL+4)+CELL/2,r*CELL+CELL/2]}
  spin(grid,turbo){const R=this.m.rows;let sc=0,extra=0;const ps=[];const base=turbo?260:560,step=turbo?80:170,ant=turbo?600:1300;this.live=[];
   for(let c=0;c<this.m.cols;c++){const {r,st}=this.reels[c];const ant0=sc>=2;if(ant0)extra+=ant;const dur=base+step*c+extra;
-   const nFill=Math.max(4,Math.round(dur/(turbo?28:42)));const old=Array.from(st.children).slice(0,R);
+   const nFill=Math.min(22,Math.max(4,Math.round(dur/(turbo?28:42))));const old=Array.from(st.children).slice(0,R);
    st.style.transition='none';st.innerHTML='';grid[c].forEach(o=>st.appendChild(cellEl(this.g,o)));
-   for(let i=0;i<nFill;i++)st.appendChild(cellEl(this.g,E.gen(this.g.e,c,false)));old.forEach(e=>st.appendChild(e));
+   for(let i=0;i<nFill;i++)st.appendChild(cellEl(this.g,E.gen(this.g.mk||this.g.e,c,false)));old.forEach(e=>st.appendChild(e));
    const len=R+nFill+old.length;st.style.transform='translateY('+(-(len-R)*CELL)+'px)';r.classList.add('moving');
    let at=null;if(ant0)at=setTimeout(()=>{r.classList.add('antic');sfx.antic()},Math.max(0,dur-ant));
-   ps.push(new Promise(res=>{const rec={done:false,t:null,finish:()=>{if(rec.done)return;rec.done=true;clearTimeout(rec.t);clearTimeout(at);r.classList.remove('antic','moving');sfx.stop();this.setCol(c,grid[c]);this.cells[c].forEach(e=>e.classList.add('land'));res()}};
+   ps.push(new Promise(res=>{const rec={done:false,t:null,finish:()=>{if(rec.done)return;rec.done=true;clearTimeout(rec.t);clearTimeout(at);r.classList.remove('antic','moving');sfx.stop();{const kids=Array.from(st.children);if(kids.length>=R){st.style.transition='none';st.style.transform='translateY(0)';for(let i=kids.length-1;i>=R;i--)kids[i].remove();this.cells[c]=kids.slice(0,R)}else this.setCol(c,grid[c])}this.cells[c].forEach(e=>e.classList.add('land'));res()}};
     rec.slam=()=>{if(rec.done)return;clearTimeout(rec.t);clearTimeout(at);const cur=getComputedStyle(st).transform;st.style.transition='none';st.style.transform=cur;void st.offsetHeight;
      st.style.transition='transform 140ms cubic-bezier(.2,.8,.3,1.08)';st.style.transform='translateY(0)';rec.t=setTimeout(rec.finish,150)};
     this.live.push(rec);
@@ -658,7 +658,7 @@ function openGame(id){if(needLogin())return;try{sfx.enter&&sfx.enter()}catch(e){
  if(location.hash!=='#'+g.slug)history.pushState({g:id},'','#'+g.slug);
  updUI();layout();const m=E.MATH[g.mk||g.e];
  T.view=m.type==='reel'?new ReelView($('#board'),g):new DropView($('#board'),g);
- let grid;do{grid=E.genGrid(g.e,false)}while(grid.flat().some(o=>o.s==='S'||o.s==='M'));T.grid=grid;T.view.set(grid);
+ let grid;do{grid=E.genGrid(g.mk||g.e,false)}while(grid.flat().some(o=>o.s==='S'||o.s==='M'));T.grid=grid;T.view.set(grid);
  setWin(T.fs?'<span>Resuming free spins</span>':'<span>Good luck!</span>');sfx.unlock();if(T.fs&&T.fs.left>0)T.timers.push(setTimeout(()=>doSpin(),1200))}
 function closeGame(){if(T.busy||T.fs){toast('Please wait for the round to finish');return false}if(T.pend&&window.LVF)LVF.collect(true);
  clearTimers();T.auto=0;$('#game').classList.remove('show');document.body.style.overflow='';T.g=null;T.view=null;renderLobby();return true}
@@ -829,7 +829,7 @@ function autoCheck(r){const c=T.autoCfg;if(!c||T.auto<=0)return;let why='';
  if(c.loss&&c.bal0-S.bal>=c.loss-1e-9)why='Loss limit reached';else if(c.win&&r.win>=c.win)why='Single win limit reached';else if(c.stopFS&&(r.ev==='start'||r.res.hold))why='Bonus won';
  if(why){T.auto=0;updUI();toast('Autoplay stopped: '+why)}}
 document.addEventListener('keydown',e=>{if(!T.g)return;if(e.code==='Space'&&!$('.ov.show')){e.preventDefault();$('#spin').click()}else if(e.code==='Escape'){$('#info').classList.remove('show')}});
-let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(T.g&&!T.busy&&T.view){layout();const g=T.grid;T.view=E.MATH[T.g.mk||T.g.e].type==='reel'?new ReelView($('#board'),T.g):new DropView($('#board'),T.g);T.view.set(g)}},200)});
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(T.g&&!T.busy&&T.view){const c0=CELL;layout();if(CELL===c0)return;const g=T.grid;T.view=E.MATH[T.g.mk||T.g.e].type==='reel'?new ReelView($('#board'),T.g):new DropView($('#board'),T.g);T.view.set(g)}},200)});
 addEventListener('popstate',()=>{const slug=location.hash.slice(1);const g=GAMES.find(x=>x&&x.slug===slug);if(g&&!T.g&&!TT.g)openGame(g.id);else if(!g&&T.g){if(!closeGame())history.pushState({},'','#'+T.g.slug)}else if(!g&&TT.g){if(!closeTable())history.pushState({},'','#'+TT.g.slug)}});
 
 // ===================== STORE / AUTH =====================

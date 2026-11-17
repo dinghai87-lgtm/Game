@@ -421,7 +421,7 @@ function updateEnemies(dt){for(const e of G.enemies){e.at+=dt;if(e.hitT>0)e.hitT
     if(e.anim==='atk'&&e.at>.5)e.anim='walk';continue}
   e.anim='walk';const sp=e.spd*sm*(e.charge>0?3:1);e.d+=sp*dt;
   const q=pathAt(e.p,e.d);const nx=-q.dy,ny=q.dx;e.x=q.x+nx*e.off;e.y=q.y+ny*e.off;e.flip=q.dx<-.2;
-  if(e.d>=e.p.len){e.dead=true;e.gone=true;const lv=e.D.lives||1;G.lives-=lv;floatText('-'+lv,e.x,e.y-20,'#ff5e5e');sfx('leak');G.lifeFlash=.6;G.shake=.3;if(G.bossBar===e)G.bossBar=null;
+  if(e.d>=e.p.len){e.dead=true;e.gone=true;const lv=e.D.lives||1;G.lives=Math.max(0,G.lives-lv);floatText('-'+lv,e.x,e.y-20,'#ff5e5e');sfx('leak');G.lifeFlash=.6;G.shake=.3;if(G.bossBar===e)G.bossBar=null;
     if(G.lives<=0&&!G.over){G.lives=0;endBattle(false)}}}
   G.enemies=G.enemies.filter(e=>!(e.gone||(e.dead&&e.deadT>1.4)))}
 
@@ -483,6 +483,8 @@ function update(dt){if(!G||G.over)return;G.time+=dt;if(G.proj.push!==pushSrc)G.p
   for(const f of G.floats){f.l-=dt;f.y-=28*dt}G.floats=G.floats.filter(f=>f.l>0);
   if(G.shake>0)G.shake-=dt;if(G.lifeFlash>0)G.lifeFlash-=dt;if(G.banner){G.banner.t+=dt;if(G.banner.t>2.4)G.banner=null}if(G.skillFlash){G.skillFlash.t+=dt;if(G.skillFlash.t>1)G.skillFlash=null}
   for(const c of G.coins)c.t+=dt;G.coins=G.coins.filter(c=>c.t<.9);
+  // 保险：最后一波已全部放出，150 秒后仍有残留敌人（例如卡在地形里），自动清掉并结算
+  if(!G.L.endless&&G.wave>=G.L.waves&&!G.spawnQ.length&&!G.over){G.tailT=(G.tailT||0)+dt;if(G.tailT>150){for(const e of G.enemies)if(!e.dead){e.dead=true;e.deadT=9}track('stall_clear',{li:G.li,map:G.map})}}
   if(G.wave>=G.L.waves&&!G.spawnQ.length&&!G.enemies.some(e=>!e.dead)&&!G.over)endBattle(true);
 }
 function endBattle(win){G.over={win,t:0};const L=G.L;track('level_end',{li:G.li,win,wave:G.wave,lives:G.lives,endless:!!L.endless,t:Math.round(G.time)});
@@ -493,7 +495,7 @@ function endBattle(win){G.over={win,t:0};const L=G.L;track('level_end',{li:G.li,
   if(win)dailyAdd('wins');passAdd(win?50:15);G.over.drops=(G.over_drops||[]).slice();G.over.canRevive=!win;G.over.adOk=!win&&!L.endless&&!G.revived;
   if(win&&!L.endless){const boss=!!L.boss;if(boss||Math.random()<(evOn('weekend')?.7:.35)){const g=rollGear(boss?'boss':'rand',Math.max(0,G.li));G.over.drops.push(g)}}if(win&&L.boss&&!L.endless&&G.li>=0){SAVE.bossFirst=SAVE.bossFirst||{};if(!SAVE.bossFirst[G.li]){SAVE.bossFirst[G.li]=1;const g=rollGear(Math.random()<.3?3:2,Math.max(0,G.li));G.over.drops.push(g);const tm=SAVE.team.filter(owns);for(const h of tm)addShards(h,10);SAVE.yb+=100;save();
     setTimeout(()=>{try{popup(TR('首通 BOSS 奖励'),[gearName(g),TR('每位出战英雄碎片 +10'),'+100 '+SHOP_CFG.cur]);AUD.sfx('starup')}catch(_){}},900)}}try{afterLoot()}catch(_){}try{onBattleEnd(win)}catch(err){console.warn(err)}
-  if(L.chal&&L.chal!=='event'){const t=today();const first=!(SAVE.chal[t]&&SAVE.chal[t].win);SAVE.chal[t]={win:win||(SAVE.chal[t]&&SAVE.chal[t].win),best:Math.max((SAVE.chal[t]&&SAVE.chal[t].best)||0,G.wave-(win?0:1))};netBoard(G.wave-(win?0:1));if(win&&first){dailyAdd('chal');G.over.chalR=grant({yb:100,gear:'boss'})}}
+  if(L.chal&&L.chal!=='event'&&L.chal!=='trial'){const t=today();const first=!(SAVE.chal[t]&&SAVE.chal[t].win);SAVE.chal[t]={win:win||(SAVE.chal[t]&&SAVE.chal[t].win),best:Math.max((SAVE.chal[t]&&SAVE.chal[t].best)||0,G.wave-(win?0:1))};netBoard(G.wave-(win?0:1));if(win&&first){dailyAdd('chal');G.over.chalR=grant({yb:100,gear:'boss'})}}
   let stars=0;if(win&&!L.endless&&!L.chal){stars=G.lives>=G.maxLives-2?3:G.lives>=G.maxLives/2?2:1;SAVE.stars[G.li]=Math.max(SAVE.stars[G.li]||0,stars)}
   G.over.stars=stars;const bonus=Math.round((win?120:30)*Math.sqrt(L.diff||1));G.over.lvUp=[];let tot=0;
   for(const a of G.allies)if(a.hero){heroXP(a,bonus);tot=Math.max(tot,a.xpGot);if(a.lvl>a.lvl0)G.over.lvUp.push(a.hero)}G.over.xp=tot;
@@ -1898,27 +1900,28 @@ const TRIAL_AFF=[
   {k:'twin',n:'双王',d:'最后一波出现两个 BOSS',f:L=>{L.boss2=true}},
   {k:'limit',n:'限塔',d:'只能建造三种塔',f:(L,R)=>{const a=TOWER_ORDER.slice(0,8);const o=[];while(o.length<3){const t=a.splice(Math.floor(R()*a.length),1)[0];o.push(t)}L.allow=o}}];
 function mulberry(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function floorName(f){return isZh()?TR('第 ')+f+TR(' 层'):LANG==='ja'?f+'階':LANG==='ko'?f+'층':LANG==='es'?'Piso '+f:'Floor '+f}
 function trialState(){const wk=weekNo();if(!SAVE.trial||SAVE.trial.wk!==wk)SAVE.trial={wk,floor:0,best:(SAVE.trial&&SAVE.trial.best)||0};return SAVE.trial}
 const trialReward=f=>({gems:20+5*f+(f%5===0?50:0),shards:f%5===0?10:0});
 function trialLevel(fl){const T=trialState();const f=fl||T.floor+1;const wk=weekNo();const seed=wk*977+f*131;const R=mulberry(seed);const map=1+Math.floor(R()*12);const mc=Math.max(0,maxCleared());
   const norm=Object.keys(ENEMIES).filter(k=>!ENEMIES[k].boss&&k!=='ogre');
-  const L={name:TR('试炼之塔')+' · '+TR('第 ')+f+TR(' 层'),map,paths:PATHS[map].map((_,i)=>i),waves:10,gold:650,pool:norm.slice(0,Math.min(norm.length,6+Math.floor(mc/3)+Math.floor(f/3))),
+  const L={name:TR('试炼之塔')+' · '+floorName(f),map,paths:PATHS[map].map((_,i)=>i),waves:10,gold:650,pool:norm.slice(0,Math.min(norm.length,6+Math.floor(mc/3)+Math.floor(f/3))),
     boss:f%5===0?['mino','golem','reaper'][(f/5-1)%3]:'ogre',diff:Math.max(1,.95+.1*mc)*(1+.08*(f-1)),chal:'trial',floor:f,seed,affs:[]};
   const n=Math.min(3,1+Math.floor((f-1)/3));const pool=TRIAL_AFF.slice();for(let i=0;i<n;i++){const a=pool.splice(Math.floor(R()*pool.length),1)[0];a.f(L,R);L.affs.push(a)}return L}
 function trialEnd(win){const L=G.L,T=trialState();track('trial_end',{f:L.floor,win,wave:G.wave});if(!win)return;T.best=Math.max(T.best||0,L.floor);
-  if(L.floor>T.floor){T.floor=L.floor;const r=trialReward(L.floor);SAVE.yb+=r.gems;const out=[TR('第 ')+L.floor+TR(' 层')+' '+TR('通关！'),'+'+r.gems+' '+SHOP_CFG.cur];
+  if(L.floor>T.floor){T.floor=L.floor;const r=trialReward(L.floor);SAVE.yb+=r.gems;const out=[floorName(L.floor)+' '+TR('通关！'),'+'+r.gems+' '+SHOP_CFG.cur];
     if(r.shards){const tm=SAVE.team.filter(owns);const h=tm[Math.floor(Math.random()*tm.length)];if(h){addShards(h,r.shards);out.push(TR(HEROES[h].name)+' '+TR('碎片')+' +'+r.shards)}}
     out.push(TR('下一层敌人更强、词缀更多'));save();setTimeout(()=>{try{popup(TR('试炼之塔'),out)}catch(_){}},1200)}}
 function drawTrial(x,y,w){const T=trialState(),L=trialLevel();const f=L.floor,r=trialReward(f);
   img('map'+L.map,x+40,y+30,360,203);ctx.strokeStyle='#c9984b';ctx.lineWidth=3;ctx.strokeRect(x+40,y+30,360,203);
-  gtxt(TR('试炼之塔')+' · '+TR('第 ')+f+TR(' 层'),x+660,y+52,32,'#fff6d0','#a65cff',6);
+  gtxt(TR('试炼之塔')+' · '+floorName(f),x+660,y+52,32,'#fff6d0','#a65cff',6);
   txt(TR('每周一重置 · 层数越高越难，词缀越多'),x+660,y+92,15,'#e9d3a8','center',3);
   L.affs.forEach((a,i)=>{const cy=y+122+i*38;ctx.fillStyle='rgba(60,20,80,.75)';rr(x+460,cy,400,32,10);ctx.fill();txt(TR(a.n),x+520,cy+17,16,'#e3c4ff','center',3);
     fitTxt(TR(a.d)+(a.k==='limit'?'：'+L.allow.map(t=>TOWERS[t].name).join('、'):''),x+700,cy+17,14,300,'#fff','center',2)});
   txt(TR('通关奖励：')+r.gems+' '+SHOP_CFG.cur+(r.shards?' + '+TR('英雄碎片')+' ×'+r.shards:'')+(L.boss!=='ogre'?'  · BOSS':''),x+220,y+262,16,'#9ef0ff','center',3);
   txt(TR('本周已登顶 ')+T.floor+TR(' 层')+'  ·  '+TR('历史最高 ')+(T.best||0)+TR(' 层'),x+220,y+292,16,'#ffe27a','center',3);
   txt(TR('每 5 层一个 BOSS 层，奖励翻倍'),x+660,y+262,14,'#b9a27a','center',2);
-  button(TR('挑战第 ')+f+TR(' 层'),W/2-150,y+360,300,72,()=>{pickStart(-3,0)},{style:'red',size:24,icon:'ui_Icon_Swords'})}
+  button(isZh()?TR('挑战第 ')+f+TR(' 层'):TR('挑战')+' · '+floorName(f),W/2-150,y+360,300,72,()=>{pickStart(-3,0)},{style:'red',size:24,icon:'ui_Icon_Swords'})}
 
 // ====================== 炮塔皮肤（全部炮塔统一换色，钻石购买） ======================
 const TW_SKINS=[{k:'',n:'原版',p:0},{k:'gold',n:'鎏金',b:{d:.06},bd:'塔伤害 +6%',f:'sepia(.85) saturate(2.4) hue-rotate(-10deg) brightness(1.12)',p:300},{k:'frost',n:'冰晶',b:{r:.06},bd:'塔射程 +6%',f:'sepia(.8) hue-rotate(165deg) saturate(1.9) brightness(1.12)',p:300},
@@ -2055,7 +2058,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794921169';
+const BUILD_VER='1794921675';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

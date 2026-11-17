@@ -336,3 +336,4 @@ Platform release: everything on the "do all of these" list except the public dep
 - New test tools: tools/slot_smoke.py (every slot, phone + desktop: 200 runs, 0 problems) and tools/panel_smoke.py (all panels on 5 screen sizes × 2 languages).
 - Phones: short vibration on wins and a pattern on BIG WIN (Android / app; Settings → 震动 Vibration to turn off).
 - Leaving a table in the middle of a deal animation no longer logs errors. Memory test: 120 game opens/closes, no growth in timers or listeners.
+- 中文 mode: table results and error messages are now translated too (龙赢 / 庄家赢 / 平局 / 赢 10.00 / 10 手中赢了 3 手 …). Accessibility labels on the account and friends buttons.

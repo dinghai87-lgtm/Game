@@ -51,6 +51,6 @@
     '.fr-row{display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid rgba(255,255,255,.07)}.fr-row i{width:9px;height:9px;border-radius:50%;background:#555}.fr-row i.on{background:#22c55e;box-shadow:0 0 6px #22c55e}.fr-row b{flex:0 1 auto}.fr-row small{flex:1;opacity:.6}.fr-box .fr-rm{background:transparent;color:#99a;padding:4px}.fr-empty{opacity:.7;text-align:center;margin:14px 0}';
   document.head.appendChild(st);
   window.LVFriends = { open, clubs };
-  const t = setInterval(() => { const q = document.getElementById('questBtn'); if (!q) return; clearInterval(t); const b = document.createElement('button'); b.className = 'ib emo'; b.id = 'friendBtn'; b.title = '好友 Friends'; b.textContent = '👥'; b.style.display = q.style.display; b.onclick = open; q.insertAdjacentElement('afterend', b);
+  const t = setInterval(() => { const q = document.getElementById('questBtn'); if (!q) return; clearInterval(t); const b = document.createElement('button'); b.className = 'ib emo'; b.id = 'friendBtn'; b.title = '好友 Friends'; b.setAttribute('aria-label', 'Friends'); b.textContent = '👥'; b.style.display = q.style.display; b.onclick = open; q.insertAdjacentElement('afterend', b);
     new MutationObserver(() => { b.style.display = q.style.display; }).observe(q, { attributes: true, attributeFilter: ['style'] }); }, 300);
 })();

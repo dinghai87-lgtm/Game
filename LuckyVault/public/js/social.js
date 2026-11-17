@@ -312,6 +312,7 @@
       }
     }
     function start(level) {
+      level *= (S.musVol == null ? 1 : S.musVol);
       const custom = musicSrc();
       if (custom) { if (!el) { el = new Audio(); el.loop = true; } if (el.dataset.src !== custom) { el.dataset.src = custom; el.src = custom; } el.volume = level * .5; el.play().catch(() => {});
         // table games: quiet bar-crowd murmur under the lounge music (Sonniss GDC bundle)
@@ -327,6 +328,7 @@
       const ok = musicOn() && S.snd !== false && document.visibilityState === 'visible' && (S.age18 || srv());
       if (!ok) return stop(); start(curGame() != null ? .55 : .3); // quieter in the lobby
     }
+    X.musicSync = sync;
     document.addEventListener('visibilitychange', sync); document.addEventListener('pointerdown', () => setTimeout(sync, 30), true); document.addEventListener('keydown', () => setTimeout(sync, 30), true);
     setInterval(sync, 1500);
     return { sync };

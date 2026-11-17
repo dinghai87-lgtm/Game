@@ -345,3 +345,4 @@ Platform release: everything on the "do all of these" list except the public dep
 - Test tools: ui_smoke.py supports LV_VIEWS=desktop,phone,tablet-land,phone-land; fixed a false "round did not finish" report on Craps. All tables × 3 screen sizes × 2 rounds: 0 problems.
 - Account deletion: typing a wrong password no longer logs the player out (it used to end the session, so the second, correct try failed). Required by Apple's account-deletion rule — now verified end to end.
 - 中文 mode: every slot paytable / feature description translated (29 slot types checked).
+- Settings → 音量 Volume: separate sound-effect and music sliders (0–100%), saved per device.

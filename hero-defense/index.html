@@ -49,19 +49,23 @@ let LOWQ=false;try{LOWQ=localStorage.getItem('hero_q')==='low'}catch(e){}
 let ROT=false,ROTPREF='auto';try{ROTPREF=localStorage.getItem('hero_rot')||'auto'}catch(e){}
 let SL=0,SR=0,_safeP=null;
 function safeInsets(){try{if(!_safeP){_safeP=document.createElement('div');_safeP.style.cssText='position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';document.body.appendChild(_safeP)}const c=getComputedStyle(_safeP);return [parseFloat(c.paddingTop)||0,parseFloat(c.paddingRight)||0,parseFloat(c.paddingBottom)||0,parseFloat(c.paddingLeft)||0]}catch(_){return [0,0,0,0]}}
-function fit(){const dpr=LOWQ?1:Math.min(2,devicePixelRatio||1);const [pt,pr,pb,pl]=safeInsets();const wrap=document.getElementById('wrap');
-  ROT=innerHeight>innerWidth*1.1&&ROTPREF!=='off';
+// 桌面图标（PWA）打开时，iPhone 有时报给网页的高度会少一截，这里改用整块屏幕的尺寸
+function screenBox(){let w=innerWidth,h=innerHeight;try{const sa=navigator.standalone===true||(window.matchMedia&&(matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches));
+  if(sa&&screen.width>0&&screen.height>0){const a=Math.min(screen.width,screen.height),b=Math.max(screen.width,screen.height);const port=h>=w;const sw=port?a:b,sh=port?b:a;if(sw>=w-2&&sh>=h-2&&sh<=h*1.25+80&&sw<=w*1.25+80){w=sw;h=sh}}}catch(_){}return [w,h]}
+function fit(){const dpr=LOWQ?1:Math.min(2,devicePixelRatio||1);const [pt,pr,pb,pl]=safeInsets();const wrap=document.getElementById('wrap');const [VW,VH]=screenBox();
+  if(wrap){wrap.style.width=VW+'px';wrap.style.height=VH+'px';wrap.style.right='auto';wrap.style.bottom='auto'}
+  ROT=VH>VW*1.1&&ROTPREF!=='off';
   // 竖屏自动旋转：画布铺满整个屏幕，灵动岛/底部横条那两条只画背景，按钮放在安全区以内
   if(wrap)wrap.style.padding=ROT?'0':'';
-  const aw=ROT?innerHeight-pt-pb:innerWidth-pl-pr,ah=ROT?innerWidth:innerHeight-pt-pb;const asp=aw/ah;
+  const aw=ROT?VH-pt-pb:VW-pl-pr,ah=ROT?VW:VH-pt-pb;const asp=aw/ah;
   if(asp>=WW/WH){H=WH;W=Math.round(Math.min(WH*asp,WH*2.2))}else{W=WW;H=Math.round(Math.min(WW/asp,WW*.85))}OX=Math.round((W-WW)/2);OY=Math.round((H-WH)/2);try{vignette=null}catch(_){}
   const s=Math.min(aw/W,ah/H);SC=s;SL=ROT?pt/s:0;SR=ROT?pb/s:0;const CW=W+SL+SR;
   cv.style.width=CW*s+'px';cv.style.height=H*s+'px';cv.style.transform=ROT?'rotate(90deg)':'';cv.width=Math.round(CW*s*dpr);cv.height=Math.round(H*s*dpr);ctx.setTransform(s*dpr,0,0,s*dpr,SL*s*dpr,0);ctx.imageSmoothingQuality=LOWQ?'low':'high';
-  document.getElementById('rot').style.display=(innerHeight>innerWidth*1.1&&!ROT)?'flex':'none'}
+  document.getElementById('rot').style.display=(VH>VW*1.1&&!ROT)?'flex':'none'}
 function fillSafe(){if(!(SL||SR))return;const d=cv.width/(W+SL+SR),sl=Math.round(SL*d),sr=Math.round(SR*d),cw=cv.width,ch=cv.height,k=Math.round(24*d);ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.filter='none';ctx.globalAlpha=1;
-  if(sl){ctx.drawImage(cv,sl,0,k,ch,0,0,sl,ch);ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(0,0,sl,ch)}
-  if(sr){ctx.drawImage(cv,cw-sr-k,0,k,ch,cw-sr,0,sr,ch);ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(cw-sr,0,sr,ch)}ctx.restore()}
-addEventListener('resize',fit);fit();
+  if(sl){ctx.drawImage(cv,sl,0,k,ch,0,0,sl,ch);ctx.fillStyle='rgba(12,8,4,.78)';ctx.fillRect(0,0,sl,ch)}
+  if(sr){ctx.drawImage(cv,cw-sr-k,0,k,ch,cw-sr,0,sr,ch);ctx.fillStyle='rgba(12,8,4,.78)';ctx.fillRect(cw-sr,0,sr,ch)}ctx.restore()}
+addEventListener('resize',fit);addEventListener('orientationchange',()=>{setTimeout(fit,250);setTimeout(fit,800)});document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(fit,200)});fit();setTimeout(fit,600);
 // 分批加载：先加载界面、标题页和英雄，其余素材在后台加载，开局更快
 const IMG={};let loadedN=0,totalN=0,bgN=0,bgTotal=0;
 const CRIT=/^(ui_|lm_|sk_|sp_|tl_|shop_|map3$|monk_|archer_|old_|blade_|assassin_|whiteninja_|mage_|healer_)/;
@@ -123,7 +127,7 @@ function buyHero(id){const p=SHOP_CFG.price[id]||0;if(owns(id))return 'owned';if
 function recharge(pack,cb){track('purchase_try',{sku:pack.sku});const grant=()=>{SAVE.paid=(SAVE.paid||0)+(parseFloat(String(pack.price||'').replace(/[^0-9.]/g,''))||0);track('purchase_ok',{sku:pack.sku});if(pack.sku==='limit'){SAVE.limitDone=1;const out=window.grant({yb:1000,shards:30,gear:3});save();cb&&cb(true,null,out);return}SAVE.firstBuy=SAVE.firstBuy||{};if(/^yb_\d/.test(pack.sku)&&!SAVE.firstBuy[pack.sku]){SAVE.firstBuy[pack.sku]=1;SAVE.yb=(SAVE.yb||0)+pack.yb}if(pack.sku==='month'){SAVE.month.until=Math.max(Date.now(),SAVE.month.until||0)+30*86400000;SAVE.yb+=300;save();cb&&cb(true);return}if(pack.sku==='prep'){SAVE.prep={gold:1500,nuke:2,revive:1};save();cb&&cb(true);return}if(pack.sku==='pass'){SAVE.pass.prem=true;save();cb&&cb(true);return}SAVE.yb=(SAVE.yb||0)+pack.yb+(pack.bonus||0);if(pack.hero&&!SAVE.owned.includes(pack.hero))SAVE.owned.push(pack.hero);if(pack.sku==='yb_newbie')SAVE.newbieDone=1;save();cb&&cb(true)};
   if(window.HeroPay&&HeroPay.purchase){Promise.resolve(HeroPay.purchase(pack.sku,pack)).then(ok=>ok?grant():cb&&cb(false)).catch(()=>cb&&cb(false))}
   else if(SHOP_CFG.testMode)grant();else cb&&cb(false,TR('支付暂未开通'))}
-function fixTeam(){SAVE.team=SAVE.team.filter(owns).slice(0,MAX_TEAM);if(!SAVE.team.length)SAVE.team=['monk']}
+function fixTeam(){SAVE.team=SAVE.team.filter(h=>owns(h)&&HERO_ORDER.includes(h)).slice(0,MAX_TEAM);if(!SAVE.team.length)SAVE.team=['monk']}
 Object.assign(HEROES,{
  ghostk:{name:TR('玄甲'),title:TR('幽灵骑士'),set:'ghostk',role:TR('近战·坦克'),melee:true,cap:3,hp:760,dmg:[16,24],rate:1.0,armor:.35,spd:80,color:'#7fa6c9',
    skill:TR('幽影斩'),scd:16,sdesc:TR('旋身斩击周围所有敌人'),unlock:0},
@@ -1976,7 +1980,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794906748';
+const BUILD_VER='1794906976';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);
@@ -1985,6 +1989,7 @@ async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.s
   try{const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(x=>x.update().catch(()=>{})))}catch(_){}
   setTimeout(()=>location.reload(),600)}catch(e){}}
 checkUpdate();document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
+try{fixTeam();localSave()}catch(_){}
 
 </script>
 </body>

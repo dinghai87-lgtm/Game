@@ -15,6 +15,7 @@
 @keyframes dockPulse{50%{transform:scale(1.1);box-shadow:0 3px 0 #5a3a00,0 0 0 2px #fff inset,0 0 22px #ffd60a}}
 body.ingame #hovDock{display:none}
 #lobby{padding-bottom:96px}
+@media (max-height:480px) and (orientation:landscape){#hovDock{padding:3px 6px 2px;bottom:4px;gap:2px}#hovDock button{width:60px;font-size:9px}#hovDock button .ic{width:34px;height:34px}#hovDock button .ic img{width:26px;height:26px}#hovDock button .tm{font-size:8px;min-height:9px}#lobby{padding-bottom:72px}}
 @media(max-width:520px){#hovDock{gap:2px;padding:6px 6px 4px;bottom:6px}#hovDock button{width:62px;font-size:9px}#hovDock button .ic{width:42px;height:42px}#hovDock button .ic img{width:32px;height:32px}}
 .jpbar{display:flex;gap:8px;justify-content:center;align-items:stretch;margin:10px 14px 4px;flex-wrap:wrap}
 .jpbar .jp{flex:1;min-width:130px;max-width:300px;border-radius:14px;padding:6px 10px 7px;text-align:center;background:linear-gradient(#2a0f4f,#12062a);box-shadow:0 0 0 2px var(--jc),0 0 18px color-mix(in srgb,var(--jc) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.2)}

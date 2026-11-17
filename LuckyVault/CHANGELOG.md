@@ -347,3 +347,4 @@ Platform release: everything on the "do all of these" list except the public dep
 - 中文 mode: every slot paytable / feature description translated (29 slot types checked).
 - Settings → 音量 Volume: separate sound-effect and music sliders (0–100%), saved per device.
 - Short landscape screens: popups use compact buttons so the whole settings menu fits; volume panel styled as a card with themed sliders.
+- Phone landscape lobby: brand text hidden below 900px so the level bar no longer overlaps it; rewards dock compact on short screens.

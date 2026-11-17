@@ -300,7 +300,7 @@
   function checkRule() { const f = document.getElementById('felt'); if (!f || !f.classList.contains('oval')) return; f.classList.remove('norule'); const R = f.getBoundingClientRect(); const lineTop = R.bottom - R.height * 0.13 - 26;
     let low = 0; f.querySelectorAll(':scope > *').forEach(e => { if (e.classList.contains('roadmap') && getComputedStyle(e).position === 'absolute') return; const r = e.getBoundingClientRect(); if (r.height && r.width) low = Math.max(low, r.bottom); }); if (low > lineTop) f.classList.add('norule'); }
   window.addEventListener('resize', () => setTimeout(checkRule, 50));
-  function showRes(txt, win) { if (TT.rsess !== undefined && TT.rsess !== TT.sess) return; const r = document.getElementById('tRes'); if (win > 0 && win <= (TT.curStake || 0) + 1e-9 && txt) txt = String(txt).replace(/\bWIN (\d)/, 'RETURN $1'); if (r) r.innerHTML = txt || ''; if (win > (TT.curStake || 0) + 1e-9) { sfx.coins(); winBanner(win); try { if (sfx.jingle) setTimeout(sfx.jingle, 250); if (window.LVSparkleAt) LVSparkleAt(r, Math.min(70, 18 + Math.round(win / Math.max(1, TT.curStake || 1)) * 4)); } catch (e) {} } else if (win > 0) { try { (sfx.chip || sfx.click)(); } catch (e) {} } }
+  function showRes(txt, win) { if (TT.rsess !== undefined && TT.rsess !== TT.sess) return; const r = document.getElementById('tRes'); if (win > 0 && win <= (TT.curStake || 0) + 1e-9 && txt) txt = String(txt).replace(/\bWIN (\d)/, 'RETURN $1'); if (r) r.innerHTML = txt || ''; if (win > (TT.curStake || 0) + 1e-9) { sfx.coins(); winBanner(win); try { if (sfx.jingle) setTimeout(sfx.jingle, 250); if (window.LVHaptic) LVHaptic.win(); if (window.LVSparkleAt) LVSparkleAt(r, Math.min(70, 18 + Math.round(win / Math.max(1, TT.curStake || 1)) * 4)); } catch (e) {} } else if (win > 0) { try { (sfx.chip || sfx.click)(); } catch (e) {} } }
   function winBanner(win) { if (!TART) return; const t = document.getElementById('table'); let b = document.getElementById('tWinB'); if (b) b.remove();
     b = document.createElement('div'); b.id = 'tWinB'; b.innerHTML = '<img class="sl" src="' + TA + 'stars_l.webp" alt=""><div><img class="yw" src="' + TA + 'youwin.webp" alt=""><b>' + fmt(win) + '</b></div><img class="sr" src="' + TA + 'stars_r.webp" alt="">'; t.appendChild(b);
     if (window.LVFX && LVFX.coins) try { LVFX.coins(Math.min(24, 6 + Math.round(win))); } catch (e) {}
@@ -343,7 +343,7 @@
   }
   async function handle(r) {
     const R = REND[TT.g.tk]; TT.view = r.view; TT.phase = r.done ? 'done' : 'act'; const my = TT.rsess = TT.sess; TT.curStake = (TT.roundStake || 0) + (r.cost || 0);
-    try { await R.render(r.view, r); } catch (e) { console.error(e); }
+    try { await R.render(r.view, r); } catch (e) { if (my === TT.sess) console.error(e); }   // errors after leaving the table mid-animation are expected
     if (my !== TT.sess) return;   // player left this table while it was animating
     setB3(); checkRule();
     if (r.done) {

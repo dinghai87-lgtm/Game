@@ -334,3 +334,5 @@ Platform release: everything on the "do all of these" list except the public dep
 - App Store / Google Play: real in-app purchases — server verifies Apple / Google receipts (lib/iap.js, /api/iap/verify, configured by env), app buys coins with cordova-plugin-purchase and shows store prices; no other payment shown in the app. Release scripts mobile/build-android-release.bat (signed .aab) and mobile/build-ios.sh; HTTPS-only release config; appId com.wantai.luckyvault; deploy/.env.example has PAY_SANDBOX=0 and the store keys; store/上架步骤_STORE_RELEASE.md step-by-step guide.
 - Phone top bar fits on 390px screens in English (settings button was cut off); Rewards tabs fit on small phones.
 - New test tools: tools/slot_smoke.py (every slot, phone + desktop: 200 runs, 0 problems) and tools/panel_smoke.py (all panels on 5 screen sizes × 2 languages).
+- Phones: short vibration on wins and a pattern on BIG WIN (Android / app; Settings → 震动 Vibration to turn off).
+- Leaving a table in the middle of a deal animation no longer logs errors. Memory test: 120 game opens/closes, no growth in timers or listeners.

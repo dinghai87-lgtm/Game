@@ -52,3 +52,13 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch); else watch();
 })();
+
+// Haptics (Android phones / the app): short buzz on wins, a pattern on BIG WIN. Off in Settings, or with reduced motion.
+(function () {
+  const ok = () => { try { return 'vibrate' in navigator && matchMedia('(pointer:coarse)').matches && localStorage.getItem('lv_vib') !== '0' && !matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
+  const buzz = p => { if (ok()) try { navigator.vibrate(p); } catch (e) {} };
+  window.LVHaptic = { win: () => buzz(25), big: () => buzz([40, 60, 40, 60, 90]), on: () => { try { return localStorage.getItem('lv_vib') !== '0'; } catch (e) { return true; } }, toggle() { try { localStorage.setItem('lv_vib', this.on() ? '0' : '1'); } catch (e) {} return this.on(); } };
+  const t = setInterval(() => { if (typeof window.countWin !== 'function' || window.countWin._hap || !window.countWin._fx2) return; const c0 = window.countWin;
+    window.countWin = function (amt) { try { if (amt > 0) LVHaptic.win(); } catch (e) {} return c0.apply(this, arguments); }; window.countWin._hap = true; clearInterval(t); }, 500);
+  const bw = document.getElementById('bw'); if (bw) new MutationObserver(() => { if (bw.classList.contains('show')) LVHaptic.big(); }).observe(bw, { attributes: true, attributeFilter: ['class'] });
+})();

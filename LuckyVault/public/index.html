@@ -884,6 +884,7 @@ $('#setBtn').onclick=()=>{const el=Math.round((Date.now()-SES.t0)/60000);const o
  msg('Settings & play limits','Session: '+el+' min · '+SES.rounds+' rounds · played '+fmt(SES.staked)+' · won '+fmt(SES.won)+'. Reality check reminder: '+(rcMin()?'every '+rcMin()+' min':'off')+'. Sound: '+(S.snd?'on':'off')+'.',
   [['Reminder: '+(rcMin()?rcMin()+' min':'off')+' → change',()=>{const i=opts.indexOf(rcMin());S.rc=opts[(i+1)%opts.length];SES.nextRc=S.rc?Math.ceil((Date.now()-SES.t0)/60000/S.rc)*S.rc||S.rc:0;save();toast('Reality check: '+(S.rc?'every '+S.rc+' min':'off'));$('#setBtn').click()}],
    ['Spending limit',openLimits],
+   ...(API.mode!=='server'?[['重置试玩金币 Reset demo coins',()=>{if(T.busy||(typeof TT!=='undefined'&&TT.busy)){toast('Finish the current round first');return}S.bal=START;S.fs=null;save();setBal();if(T.g)updUI();toast('试玩金币已重置为 '+fmt(START)+' · Demo coins reset')}]]:[]),
    ['语言 Language: '+(window.LVLang?LVLang.name():'English'),()=>window.LVLang&&LVLang.next()],
    ['负责任娱乐 Play time & breaks',()=>window.LVRG&&LVRG.open()],
    ['客服 Support',()=>window.LVSupport&&LVSupport.open()],

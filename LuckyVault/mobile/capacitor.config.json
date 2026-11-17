@@ -1,0 +1,17 @@
+{
+  "appId": "com.luckyvault.casino",
+  "appName": "Lucky Vault",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true,
+    "backgroundColor": "#0e1621"
+  },
+  "ios": {
+    "backgroundColor": "#0e1621",
+    "contentInset": "never"
+  }
+}

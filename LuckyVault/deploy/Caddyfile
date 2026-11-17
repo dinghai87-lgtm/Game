@@ -1,0 +1,7 @@
+{$DOMAIN} {
+	encode gzip
+	# Server-Sent Events (shared tables) must not be buffered
+	reverse_proxy app:8080 {
+		flush_interval -1
+	}
+}

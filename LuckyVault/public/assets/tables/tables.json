@@ -1,0 +1,66 @@
+{
+ "cards": true,
+ "chips": [
+  1,
+  5,
+  10,
+  25,
+  50,
+  100,
+  500,
+  1000,
+  5000
+ ],
+ "look": {
+  "blackjack": [
+   "bg_purple.webp",
+   "felt_bj.webp",
+   "dealer_bj.webp"
+  ],
+  "roulette": [
+   "bg_rl.webp",
+   "felt_rl.webp",
+   null
+  ],
+  "baccarat": [
+   "bg_pk_red.webp",
+   "felt_pk_red.webp",
+   "dealer_pk.webp"
+  ],
+  "dragontiger": [
+   "bg_pk_red.webp",
+   "felt_pk_red.webp",
+   "dealer_pk.webp"
+  ],
+  "videopoker": [
+   "bg_navy.webp",
+   null,
+   null
+  ],
+  "poker": [
+   "bg_pk_violet.webp",
+   "felt_pk_green.webp",
+   "dealer_pk.webp"
+  ],
+  "dice": [
+   "bg_dice.webp",
+   "felt_pk_blue.webp",
+   null
+  ],
+  "wheel": [
+   "bg_rays.webp",
+   null,
+   null
+  ],
+  "keno": [
+   "bg_navy.webp",
+   null,
+   null
+  ],
+  "scratch": [
+   "bg_rays.webp",
+   null,
+   null
+  ]
+ }
+}

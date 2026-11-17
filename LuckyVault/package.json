@@ -1,0 +1,16 @@
+{
+  "name": "lucky-vault",
+  "version": "5.12.0",
+  "private": true,
+  "description": "Lucky Vault social casino server (virtual coins only)",
+  "main": "server.js",
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node tests/run.js",
+    "test:quick": "node -e \"process.env.QUICK=1;require('./tests/run.js')\""
+  },
+  "optionalDependencies": {
+    "pg": "^8.13.0"
+  }
+}

@@ -1,0 +1,26 @@
+# © 2026 万泰游戏开发 Wantai Game Development
+# 云服务器一键部署 One-command cloud deploy (any Linux server with Docker):
+#   1. 把整个 LuckyVault 文件夹上传到服务器，进入 deploy/ 目录
+#   2. 编辑 .env（从 .env.example 复制），填域名和管理员密码
+#   3. docker compose up -d --build
+# Caddy 会自动申请 HTTPS 证书（域名需要先解析到这台服务器的 IP）。
+services:
+  app:
+    build: ..
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - lvdata:/app/data
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+    depends_on: [app]
+volumes:
+  lvdata:
+  caddydata:

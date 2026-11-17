@@ -2002,6 +2002,10 @@ function drawFbBtn(){const x=140,y=SAVE.installHide||isStandalone()?84:124,w=120
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
+// 后台地址：默认直连 Supabase；放在公司域名上时，直连失败（例如国内网络）会自动改走同域名的 /sb/ 中转
+const SB_ALT=/(^|\.)eleronzentechnology\.com$/.test(location.hostname)?location.origin+'/sb':null;
+async function sbFetch(path,opts){const go=u=>{const c=new AbortController();const t=setTimeout(()=>c.abort(),9000);return fetch(u+path,Object.assign({},opts,{signal:c.signal})).finally(()=>clearTimeout(t))};
+  try{return await go(SB.u)}catch(e){if(SB_ALT&&SB.u!==SB_ALT){SB.u=SB_ALT;return go(SB.u)}throw e}}
 const SB={u:'https://enhqydgmizschfznnuuo.supabase.co',k:'sb_publishable_TND7I3tIV4IczJDZ6C1J7g_QglztpDQ',tok:null,uid:null,exp:0,timer:null,busy:null};
 function sbName(){return SAVE.nick||('玩家'+(SB.uid||'0000').replace(/-/g,'').slice(0,4).toUpperCase())}
 async function sbAuth(){
@@ -2009,14 +2013,14 @@ async function sbAuth(){
   if(SB.busy)return SB.busy;
   SB.busy=(async()=>{try{
     const rt=localStorage.getItem('hero_sb_rt');let r;
-    if(rt)r=await fetch(SB.u+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:SB.k,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:rt})});
-    if(!r||!r.ok)r=await fetch(SB.u+'/auth/v1/signup',{method:'POST',headers:{apikey:SB.k,'Content-Type':'application/json'},body:'{}'});
+    if(rt)r=await sbFetch('/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:SB.k,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:rt})});
+    if(!r||!r.ok)r=await sbFetch('/auth/v1/signup',{method:'POST',headers:{apikey:SB.k,'Content-Type':'application/json'},body:'{}'});
     const j=await r.json();if(!j.access_token)return null;
     SB.tok=j.access_token;SB.uid=j.user&&j.user.id;SB.exp=Date.now()+(j.expires_in||3600)*1000;
     localStorage.setItem('hero_sb_rt',j.refresh_token);return SB.tok}catch(e){return null}finally{SB.busy=null}})();
   return SB.busy}
 async function sbReq(method,path,body,prefer){const t=await sbAuth();if(!t)throw new Error('offline');
-  const r=await fetch(SB.u+'/rest/v1/'+path,{method,headers:{apikey:SB.k,Authorization:'Bearer '+t,'Content-Type':'application/json',...(prefer?{Prefer:prefer}:{})},body:body?JSON.stringify(body):undefined});
+  const r=await sbFetch('/rest/v1/'+path,{method,headers:{apikey:SB.k,Authorization:'Bearer '+t,'Content-Type':'application/json',...(prefer?{Prefer:prefer}:{})},body:body?JSON.stringify(body):undefined});
   if(!r.ok)throw new Error(r.status+' '+(await r.text()).slice(0,120));const s=await r.text();return s?JSON.parse(s):null}
 // 存档：本地优先，2.5 秒后备份到云端
 save=function(){localSave();clearTimeout(SB.timer);SB.timer=setTimeout(()=>{sbReq('POST','saves',{data:SAVE,updated_at:new Date().toISOString()},'resolution=merge-duplicates,return=minimal').catch(()=>{})},2500)};
@@ -2037,7 +2041,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794919625';
+const BUILD_VER='1794920224';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);
@@ -2055,7 +2059,7 @@ async function openStats(){let p=localStorage.getItem('hero_admin')||prompt('开
   const box=document.createElement('div');box.id='statsBox';box.style.cssText='position:fixed;inset:0;z-index:99;background:#15100b;color:#f3e6cf;overflow:auto;-webkit-overflow-scrolling:touch;font:14px -apple-system,"PingFang SC",sans-serif;padding:max(16px,env(safe-area-inset-top)) 16px 40px';
   box.innerHTML='<div style="font-size:18px;font-weight:700;margin-bottom:12px">内测数据 · 加载中…</div>';document.body.appendChild(box);
   const close=()=>box.remove();
-  try{const r=await fetch(SB.u+'/rest/v1/rpc/admin_stats',{method:'POST',headers:{apikey:SB.k,'Content-Type':'application/json'},body:JSON.stringify({pass:p})});
+  try{const r=await sbFetch('/rest/v1/rpc/admin_stats',{method:'POST',headers:{apikey:SB.k,'Content-Type':'application/json'},body:JSON.stringify({pass:p})});
     if(!r.ok){localStorage.removeItem('hero_admin');box.innerHTML='<p>密码不对或网络不通。</p><button id="sx">关闭</button>';box.querySelector('#sx').onclick=close;return}
     localStorage.setItem('hero_admin',p);const d=await r.json();
     const bar=(v,max,c)=>'<div style="height:8px;border-radius:4px;background:#2c241c;flex:1"><div style="height:8px;border-radius:4px;width:'+(max?Math.round(v/max*100):0)+'%;background:'+(c||'#ffb320')+'"></div></div>';

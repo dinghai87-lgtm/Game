@@ -368,3 +368,6 @@ Platform release: everything on the "do all of these" list except the public dep
 ## Round 13 (17:58) — Announcer voice-overs
 - Benchmark: competitor apps call out BIG WIN / LEVEL UP with a voice.
 - Added 5 Kenney CC0 voice clips: big win, grand jackpot, level up, mission complete, baccarat/DT tie. sw lv-v69. Tests 90/90.
+
+## Round 14 (18:10) — Storm Chaser own symbol set
+- Was sharing Thor's Hammer viking icons; now uses CraftPix lightning-mage skill tiles (blue rim) + new cover. sw lv-v70. Tests 90/90.

@@ -616,3 +616,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 76 (05:58) — Full slot regression after tonight's changes
 - tools/slot_smoke.py: all 100 slots × phone and desktop, 2 spins each incl. any triggered features: 200 runs, 0 problems (no errors, no stuck spins, reels/board/spin button on screen).
+
+## Round 77 (06:04)
+- 双语模式：结果行可换行不再被截断；返回按钮去掉重复箭头（‹ 大厅 LOBBY）

@@ -427,7 +427,7 @@
     if (CJK.test(raw)) { const t = raw.trim(), z = mono(t); if (z && z !== t) { ORIG.set(node, raw); node.nodeValue = raw.replace(t, z); } return; }
     if (mode === 'en') return;
     const t = raw.trim(); const z = tr(t); if (z == null) return;
-    const out = mode === 'bi' && t.length <= 14 && z !== t ? z + ' ' + t : z;
+    const out = mode === 'bi' && t.length <= 14 && z !== t ? z + ' ' + t.replace(/^[‹›←→\s]+/, '') : z;
     const nv = raw.replace(t, out); if (nv === raw) return;   // never re-set an unchanged value (would loop through the observer)
     ORIG.set(node, raw); node.nodeValue = nv;
   }
@@ -442,7 +442,7 @@
   }
   let mo = null;
   function start() {
-    if (mode !== 'en') document.documentElement.lang = 'zh';
+    if (mode !== 'en') document.documentElement.lang = 'zh'; document.documentElement.classList.add('lang-' + mode);
     walk(document.body);
     mo = new MutationObserver(ms => { for (const m of ms) { if (m.type === 'characterData') apply(m.target); else m.addedNodes.forEach(walk); } });
     mo.observe(document.body, { childList: true, subtree: true, characterData: true });

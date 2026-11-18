@@ -210,6 +210,7 @@
 }
 `;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+  { const x = document.createElement('style'); x.textContent = 'html.lang-bi #felt .res{white-space:normal!important;height:auto!important;min-height:30px!important;line-height:1.15!important;font-size:min(17px,4.4vw)!important;padding:2px 10px!important}'; document.head.appendChild(x); }
   // phones held sideways (short screens): shrink card areas so the bet spots stay on screen without scrolling
   { const x = document.createElement('style'); x.textContent = '@media (max-height:500px) and (orientation:landscape){' +
       '#felt{gap:4px!important;padding-top:4px!important}.hands.bac{--sw:34px!important;gap:6px!important}.hands.bac .area{padding:3px 4px 4px!important}.hands.bac .lbl{font-size:11px!important;padding:1px 10px!important}' +

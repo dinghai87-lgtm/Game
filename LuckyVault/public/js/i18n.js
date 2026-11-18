@@ -386,12 +386,15 @@
   const BI_B = new RegExp('^([^A-Za-z\\u3400-\\u9fff]*)((?:' + HZ + '|[\\d ×+.,/%-])*' + HZ + '\\d*) ([A-Z](?:(?!' + HZ + ').)*)$');
   const BI_C = new RegExp('^((?:(?!' + HZ + ').)*[A-Za-z](?:(?!' + HZ + ').)*?) · (.*' + HZ + '.*)$');
   const LEAD = { '新手任务': 'Starter task' };
+  // English proper names that stay after Chinese text (brand, game titles): never strip them in 中文 mode
+  const keepEN = e => /^(Lucky ?Vault|VIP|RTP|Hold & Win|LV)\b/i.test(e) || (() => { try { const G = typeof GAMES !== 'undefined' ? GAMES : null; return !!(G && G.some(g => g && g.name && e.indexOf(g.name) === 0)); } catch (x) { return false; } })();
   function mono(t) {
     if (mode === 'bi') return null; let m = t.match(BI_A);
     if (m) return mode === 'en' ? m[2] : m[1];
     m = t.match(BI_C);
     if (m) { if (mode === 'en') return m[1]; const z = tr(m[1].trim()); return z ? z + ' · ' + m[2] : null; }
     m = t.match(BI_B);
+    if (m && mode !== 'en' && keepEN(m[3])) return null;
     if (m) { if (mode === 'en') return m[1] + m[3]; const dg = m[3].match(/\d+/g) || []; if (m[3].indexOf(':') < 0 && dg.every(d => m[2].indexOf(d) >= 0)) return m[1] + m[2]; return null; }
     if (mode === 'en') { m = t.match(/^(\W*?)(\S+) ([+\d][\d,.+ ]*)$/); if (m && LEAD[m[2]]) return m[1] + LEAD[m[2]] + ' ' + m[3]; }
     return null;

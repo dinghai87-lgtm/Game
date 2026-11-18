@@ -579,3 +579,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 64 (03:42) — Phones held sideways (844×390)
 - Checked slots + 6 tables in landscape. The new card panels were too tall there: Blackjack's bet spots and Baccarat's side bets fell below the screen. Added a short-screen layout (smaller cards, tighter panels, smaller dice and point strip, rules line hidden) so bets are visible without scrolling on Baccarat, Blackjack, Three Card Poker, Craps; Sic Bo needs a short scroll for the singles row (6-row board). Slots were already fine. sw lv-v144. Tests 90/90.
+
+## Round 65 (03:48) — First-run screens; fix brand name being cut
+- Fresh-visitor flow checked in both languages (age gate, log-in / sign-up, store). Found a regression from round 27's one-language filter: in 中文 the age-gate title showed only "欢迎来到" — the brand "Lucky Vault" after the Chinese was being stripped as if it were a translation. The filter now keeps the brand and every game title (e.g. 试玩 Thunder Temple). sw lv-v145. Tests 90/90.

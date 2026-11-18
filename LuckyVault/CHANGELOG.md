@@ -404,3 +404,8 @@ Platform release: everything on the "do all of these" list except the public dep
 
 ## Round 24 (19:20) — Wild Cherry Deluxe finally has cherries
 - Top symbol is now cherries (+ raspberry, strawberry, mango); no longer mirrors Monkey Business' fruit. New cover. sw lv-v80. Tests 90/90.
+
+## Round 25 (19:25) — Symbol vs name audit of all 96 skinned slots
+- Contact-sheet review of every slot's top symbols against its name. Fixed Frozen Peaks (viking helmet/axe -> ice shard, blue crystal) + cover.
+- Remaining mismatches parked for paid/painted assets: Egypt group (Nile Queen, Pharaoh Gold, Sun God Ra, Egypt Riches use generic jewellery), Buffalo Stampede/Thunder (viking loot, no buffalo), Zeus (generic treasure). Free Egypt pack found is cartoon-outline style -> skipped per style rule.
+- sw lv-v81. Tests 90/90.

@@ -298,3 +298,4 @@ json.dump(man, open(OUT + '/manifest.json', 'w'), indent=1, ensure_ascii=False)
 # round 22: triple-sevens: 777/BAR/diamond/star hue +190 (cyan), lows -> kit items 10 cards, 14 dice, 15 banana (was 7/11 identical to lucky-777)
 # round 23: buffalo-wild-reels <- CraftPix hunting-trophy loot icons (cpx eb4d967a): 3 skull,7 stag,8 boar,13 horns,17 bear paw,25 pelt,5 fang,47 feather,42 antler (W/S kept)
 # round 24: wild-cherry-deluxe highs <- fruits-512 30 cherries,31 raspberry,38 strawberry,11 mango (game had no cherry symbol)
+# round 25: name/theme audit -> frozen-peaks h3/h4 (viking helmet, axe) -> gems 40 ice shard, 17 blue crystal

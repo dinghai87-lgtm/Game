@@ -569,3 +569,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 ## Round 61 (03:03) — Rules hub, Responsible play, Support, roadmap labels: one language
 - Source scan for strings that hard-code Chinese + English together. Rewritten to follow the language setting: rules hub (中文 shows the Chinese list, English the English summary, 双语 both), Responsible-play panel incl. confirm dialog, Support tickets panel, roadmap section labels / LOG / NEW SHOE / cut-card notice, shared-table result banner. Rules text no longer points at the removed ? badge (长按下注格).
 - sw lv-v139. Tests 90/90.
+
+## Round 62 (03:10) — Shared (multiplayer) baccarat pass
+- Joined the shared table, bet during the countdown, followed the squeeze hand-off frame by frame. Fixed: '全桌 5.00' table-total label overlapped the chip (moved to the top corner, English 'All'); '更多边注 ▾ More side bets' and '咪牌 SQUEEZE ON/OFF' toggles now one language (single and shared baccarat). sw lv-v140. Tests 90/90.

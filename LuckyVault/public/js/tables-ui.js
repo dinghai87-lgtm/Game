@@ -488,6 +488,7 @@
     '#felt:has(.hands.bac) .sqzT{font-size:12px;padding:5px 12px;border-radius:999px}' +
     '@media(max-width:560px){.hands.bac{--sw:48px;gap:8px}.hands.bac .lbl{font-size:13px;padding:2px 12px}#bacS,#dtS{gap:6px}#bacS .spot,#dtS .spot{min-height:52px;font-size:12px}#bacS .spot.big,#dtS .spot.big,#bacS .spot[data-k=tie],#dtS .spot[data-k=tie]{min-height:64px;font-size:15px}}';
     document.head.appendChild(st); }
+  const PKX = (zh, en) => { const L = (window.LVLang && LVLang.get()) || 'bi'; return L === 'zh' ? zh : L === 'en' ? en : zh + ' ' + en; };
   REND.baccarat = {
     setup(f, g) {
       const nc = g.tv === 'nc'; this.speed = g.tv === 'speed';
@@ -506,8 +507,8 @@
         ['stiger', '小老虎 Small Tiger', '23:1', '庄家以 <b>两张牌 6 点</b> 赢，赔 23:1。<br>Banker wins with a 2-card 6 — pays 23:1.'],
         ['btiger', '大老虎 Big Tiger', '54:1', '庄家以 <b>三张牌 6 点</b>（补了牌）赢，赔 54:1。<br>Banker wins with a 3-card 6 — pays 54:1.']].forEach(a => s.appendChild(spotBtn(a[0], a[1], a[2], 'mini', a[3])));
       if (ez) { s.appendChild(spotBtn('dragon7', '龙7 Dragon 7', '40:1', '', '庄家以 <b>三张牌 7 点</b> 赢，赔 40:1。（这时押庄只退本金）<br>Banker wins with a 3-card 7 — pays 40:1.')); s.appendChild(spotBtn('panda8', '熊猫8 Panda 8', '25:1', '', '闲家以 <b>三张牌 8 点</b> 赢，赔 25:1。<br>Player wins with a 3-card 8 — pays 25:1.')); }
-      if (s.querySelector('.spot.mini')) { const mb = document.createElement('button'); mb.className = 'more-sb'; mb.textContent = '更多边注 ▾ More side bets'; mb.onclick = e => { e.stopPropagation(); const on = s.classList.toggle('more'); mb.textContent = on ? '收起边注 ▴ Fewer bets' : '更多边注 ▾ More side bets'; setTimeout(checkRule, 30); }; s.appendChild(mb); }
-      if (!this.speed) { const t = document.createElement('button'); t.className = 'sqzT' + (TT.sqz ? '' : ' off'); t.textContent = '咪牌 SQUEEZE ' + (TT.sqz ? 'ON' : 'OFF'); t.onclick = e => { e.stopPropagation(); TT.sqz = !TT.sqz; try { localStorage.setItem('lv_sqz', TT.sqz ? '1' : '0'); } catch (x) {} t.className = 'sqzT' + (TT.sqz ? '' : ' off'); t.textContent = '咪牌 SQUEEZE ' + (TT.sqz ? 'ON' : 'OFF'); }; f.style.position = 'relative'; f.appendChild(t); }
+      if (s.querySelector('.spot.mini')) { const mb = document.createElement('button'); mb.className = 'more-sb'; mb.textContent = PKX('更多边注 ▾', 'More side bets ▾'); mb.onclick = e => { e.stopPropagation(); const on = s.classList.toggle('more'); mb.textContent = on ? PKX('收起边注 ▴', 'Fewer bets ▴') : PKX('更多边注 ▾', 'More side bets ▾'); setTimeout(checkRule, 30); }; s.appendChild(mb); }
+      if (!this.speed) { const t = document.createElement('button'); t.className = 'sqzT' + (TT.sqz ? '' : ' off'); t.textContent = (TT.sqz ? PKX('咪牌 开', 'SQUEEZE ON') : PKX('咪牌 关', 'SQUEEZE OFF')); t.onclick = e => { e.stopPropagation(); TT.sqz = !TT.sqz; try { localStorage.setItem('lv_sqz', TT.sqz ? '1' : '0'); } catch (x) {} t.className = 'sqzT' + (TT.sqz ? '' : ' off'); t.textContent = (TT.sqz ? PKX('咪牌 开', 'SQUEEZE ON') : PKX('咪牌 关', 'SQUEEZE OFF')); }; f.style.position = 'relative'; f.appendChild(t); }
       this.labels = null; TT.shoe = null; this.paintHist(); loadShoe();
     },
     paintShoe() { this.paintHist(); },
@@ -640,7 +641,7 @@
         this.st = st; this.offset = st.now - Date.now();
         const on = document.getElementById('lvOn'); if (on) on.textContent = st.online; const pl = document.getElementById('lvPl'); if (pl) pl.textContent = st.players;
         const fd = document.getElementById('lvFeed'); if (fd) fd.innerHTML = st.feed.slice(-6).reverse().map(x => '<span><b>' + esc(x.n) + '</b> 押 ' + spName(x.k) + ' ' + fmt(x.a) + '</span>').join('');
-        document.querySelectorAll('#felt .spot[data-k]').forEach(sp => { let t = sp.querySelector('.lt'); if (!t) { t = document.createElement('em'); t.className = 'lt'; sp.appendChild(t); } const v = st.totals[sp.dataset.k]; t.textContent = v ? '全桌 ' + fmt(v) : ''; });
+        document.querySelectorAll('#felt .spot[data-k]').forEach(sp => { let t = sp.querySelector('.lt'); if (!t) { t = document.createElement('em'); t.className = 'lt'; sp.appendChild(t); } const v = st.totals[sp.dataset.k]; t.textContent = v ? (((window.LVLang && LVLang.get()) === 'en') ? 'All ' : '全桌 ') + fmt(v) : ''; });
         if (st.shoe) { setShoe(st.shoe); if (REND[base].paintShoe) REND[base].paintShoe(); }
         if (opt.recent && st.road) { const el = document.getElementById('lvRec'); if (el) el.innerHTML = '近期 ' + st.road.slice(-14).reverse().map(opt.recent).join(''); if (base === 'roulette') { TT.hist = st.road.slice(); REND.roulette.paintHist(); } }
         if (st.phase !== 'deal' && TT.g.tk === 'mbacc') { const sa = document.querySelector('#sqz.show #sqAll'); if (sa) sa.click(); document.querySelectorAll('#felt .tapme').forEach(e => e.click()); }   // the table's squeeze time is over: open everything
@@ -708,7 +709,7 @@
     '.lv-say{border:1px solid rgba(255,214,10,.5);background:#1f2430;color:#fff;border-radius:9px;padding:2px 8px;cursor:pointer;font-size:13px}.lv-sayp{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:4px;display:grid;grid-template-columns:repeat(4,auto);gap:4px;background:#141824;border:1px solid #ffd60a;border-radius:10px;padding:6px;z-index:20}.lv-sayp[hidden]{display:none}.lv-sayp button{border:0;background:#262c3a;color:#fff;border-radius:7px;padding:5px 8px;font:800 12px "Microsoft YaHei",sans-serif;cursor:pointer}.lv-sayp button:hover{background:#3a4256}' +
     '.lv-rec{display:flex;gap:3px;align-items:center;overflow:hidden;font-size:11px;color:#aab;min-width:0;flex:0 1 auto}.lv-rec i{font-style:normal;min-width:20px;text-align:center;border-radius:6px;padding:0 4px;color:#fff;background:#333}.lv-rec i.r{background:#c62828}.lv-rec i.k{background:#111;border:1px solid #555}.lv-rec i.b{background:#1d4ed8}.lv-rec i.g{background:#15803d}' +
     '.lv-bub{position:absolute;top:22%;z-index:30;pointer-events:none;background:#fff;color:#111;border-radius:14px;padding:5px 11px;font:800 13px "Microsoft YaHei",sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.45);animation:lvb 3.2s ease-out forwards}.lv-bub b{color:#b91c1c}@keyframes lvb{0%{transform:translateY(10px) scale(.8);opacity:0}12%{transform:none;opacity:1}80%{opacity:1}100%{transform:translateY(-40px);opacity:0}}' +
-    '.spot .lt{position:absolute;left:6px;bottom:3px;font-style:normal;font-size:9.5px;font-weight:800;color:#ffd60a;text-shadow:0 1px 2px #000;pointer-events:none}';
+    '.spot .lt{position:absolute;left:6px;top:3px;bottom:auto;font-style:normal;font-size:9.5px;font-weight:800;color:#ffd60a;text-shadow:0 1px 2px #000;pointer-events:none}';
     document.head.appendChild(st); }
   // DICE
   const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };

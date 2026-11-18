@@ -43,7 +43,7 @@ with sync_playwright() as p:
           if a: log.append(a)
           pg.wait_for_timeout(900)
       pg.wait_for_timeout(600)
-      st = pg.evaluate("({busy:TT.busy,phase:TT.phase,res:(document.getElementById('tRes')||{}).textContent||'',over:[...document.querySelectorAll('#felt *')].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&(r.right>innerWidth+2||r.left<-2)}).length})")
+      st = pg.evaluate("({busy:TT.busy,phase:TT.phase,res:(document.getElementById('tRes')||{}).textContent||'',over:[...document.querySelectorAll('#felt *')].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&(r.right>innerWidth+2||r.left<-2)&&!e.closest('.rm-stats,.rm-x')}).length})")
       pg.screenshot(path='%s/%s_%d.png' % (OUT, tag, gid))
       prob = []
       if errs: prob.append('page errors: ' + '; '.join(errs[:2]))

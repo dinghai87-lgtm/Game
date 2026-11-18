@@ -610,3 +610,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 74 (05:13) — Bonus games played through (wheel, pick, choose)
 - Spun Fortune Wheel Deluxe until its prize wheel triggered (111 spins) and Treasure Island Pick until its chest pick (12 spins), captured every frame. Fixed in 中文: wheel segment UPGRADE → 升级 (+ UPGRADE! banner), Treasure Pick title/instructions, "Choose your bonus" screen texts. Both bonuses pay and return to the reels correctly. sw lv-v158. Tests 90/90.
+
+## Round 75 (05:39) — Full table regression (all 53 tables, phone + desktop)
+- Ran tools/ui_smoke.py over every table game: every round finished, no page errors. The only flags were the roadmap's counter pills on baccarat, which now scroll sideways by design (round 28); the checker ignores those scroll rows now. Lobby on phone re-checked top to bottom.

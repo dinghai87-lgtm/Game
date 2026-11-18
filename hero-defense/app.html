@@ -1624,6 +1624,7 @@ function drawLevels(dt){if(chapter==null||chapter<0||!(chapter>=0))chapter=maxCh
     else{imgW(un?'lm_AvailableLevel':'lm_LockedLevel',x,y+bob,un?62:54);txt(i+1,x,y-34+bob,i>98?16:20,'#fff','center',4,'#4a1406')}
     if(cur){ctx.save();ctx.globalAlpha=.5+.4*Math.sin(t*5);ctx.strokeStyle='#ffe27a';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(x,y+4,34,12,0,0,7);ctx.stroke();ctx.restore()}
     {const nm=(st>0?(i+1)+' · ':'')+String(L.name).split(' · ')[0];ctx.font=`900 14px ${FONT}`;const lw=Math.max(100,ctx.measureText(nm).width+24);const lx=clamp(x,lw/2+8-OX,W-OX-lw/2-8);plate(lx-lw/2,y+(st>0?24:38),lw,24);txt(nm,lx,y+(st>0?36:50),14,un?'#ffe9b0':'#999','center',0)}
+    try{if(st>0&&typeof bdgOn==='function'&&bdgOn(i)){const B=(SAVE.bdg||{})[i]||{};['safe','clr','ex'].forEach((k,j)=>{ctx.beginPath();ctx.arc(x-14+j*14,y+57,4.5,0,7);ctx.fillStyle=B[k]?'#ffd84a':'rgba(30,15,5,.75)';ctx.fill();ctx.strokeStyle='#4a1406';ctx.lineWidth=1.5;ctx.stroke()})}}catch(_){}
     hit(x-40,y-70,80,110,()=>{if(un){lvPop=i;AUD.sfx('open')}else{showToast(TR('先通过上一关'));AUD.sfx('deny')}})}
   if(feat('endless')){const eu=(SAVE.stars[3]||0)>0;const [ex,ey]=ENDLESS_NODE;ctx.save();ctx.globalAlpha=eu?1:.5;imgC('ui_ButtonSquareSmall_Background',ex,ey-30,64);imgC('ui_Icon_Cup',ex,ey-30,28,eu?null:'grayscale(1)');ctx.restore();plate(ex-60,ey,120,24);txt(TR('无尽模式'),ex,ey+12,14,eu?'#ffe27a':'#999','center',0);
   hit(ex-40,ey-62,80,90,()=>{if(eu){scene='endless';AUD.sfx('open')}else{showToast(TR('通过第 4 关解锁'));AUD.sfx('deny')}});}
@@ -3382,7 +3383,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794982325';
+const BUILD_VER='1794982458';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

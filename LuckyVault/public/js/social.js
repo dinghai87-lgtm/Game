@@ -326,7 +326,10 @@
     function stop() { if (timer) { clearInterval(timer); timer = null; } if (bus) bus.gain.setTargetAtTime(0, ac.currentTime, .1); if (el) el.pause(); if (amb2) amb2.pause(); }
     function sync() {
       const ok = musicOn() && S.snd !== false && document.visibilityState === 'visible' && (S.age18 || srv());
-      if (!ok) return stop(); start(curGame() != null ? .55 : .3); // quieter in the lobby
+      if (!ok) return stop();
+      const UA = navigator.userActivation; // don't download music before the first tap (it can't play yet anyway)
+      if (UA && !UA.hasBeenActive) { if (!sync.w) { sync.w = 1; ['pointerdown', 'keydown', 'touchstart'].forEach(e => addEventListener(e, () => setTimeout(sync, 0), { once: true, passive: true })); } return; }
+      start(curGame() != null ? .55 : .3); // quieter in the lobby
     }
     X.musicSync = sync;
     document.addEventListener('visibilitychange', sync); document.addEventListener('pointerdown', () => setTimeout(sync, 30), true); document.addEventListener('keydown', () => setTimeout(sync, 30), true);

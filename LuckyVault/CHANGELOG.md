@@ -493,3 +493,7 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 ## Round 40 (00:10) — Keno refined (Classic / Power / Four Card)
 - Number grid no longer jumps when you pick (paytable and header have fixed height); live counter while balls drop (开出 11/20 · 命中 1); paytable chips, buttons, rules and results in one language (命中 2 个 · 未中奖 / 2 HITS · NO WIN).
 - sw lv-v109. Tests 90/90.
+
+## Round 41 (00:30) — Scratch cards refined (Lucky Cash / Gold Rush / Diamond Dazzle)
+- Bigger symbols; prize key as a chip grid with fixed height so the ticket keeps its size before/after buying; winning three pulse; foil text, buttons and results in one language (刮开这里 / 全部刮开 / 买票 / 中奖 · 1.00).
+- sw lv-v110. Tests 90/90.

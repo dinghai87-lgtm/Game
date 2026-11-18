@@ -1195,26 +1195,30 @@
     keepBets: true
   };
   // SCRATCH
+  // 2026-11-19 scratch refine: bigger symbols, prize key as a fixed-height chip grid (ticket no longer jumps), translated, winning line pulses
+  { const st = document.createElement('style'); st.textContent = '#scK{min-height:44px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center;align-content:flex-start;margin:8px 0 0!important}#scK span{background:rgba(58,36,0,.1);border:1px solid rgba(58,36,0,.25);border-radius:8px;padding:1px 6px;font:800 11px Arial,sans-serif;color:#3a2400;white-space:nowrap}#scK span i{font-style:normal;font-size:14px;margin-right:2px}#scA div{font-size:min(40px,10vw)!important}#scA div.m{animation:scp .5s ease-in-out infinite alternate}@keyframes scp{to{transform:scale(1.06);box-shadow:0 0 0 3px #e85d04,0 0 18px #ffd60a}}#felt:has(.sc-ticket) .res{min-height:32px}'; document.head.appendChild(st); }
+  const SCT = (zh, en) => { const L = (window.LVLang && LVLang.get()) || 'bi'; return L === 'zh' ? zh : L === 'en' ? en : zh + ' ' + en; };
   REND.scratch = {
     setup(f, g) { this.price = this.price || 1; const cfg = { cash: ['LUCKY CASH', 'Match 3 amounts to win that amount'], gold: ['GOLD RUSH', 'Match 3 symbols to win the prize shown in the key'], diamond: ['DIAMOND DAZZLE', 'Match 3 gems to win the prize shown in the key'] }[g.tv];
       this.sym = g.tv !== 'cash';
       f.innerHTML = '<div class="sc-ticket"><h3>' + cfg[0] + '</h3><p>' + cfg[1] + ' · Top prize 500× ticket</p><div class="sc-area" id="scA"></div><p id="scK" style="margin-top:8px"></p></div>' + resLine();
       this.blank(); },
-    blank() { const a = document.getElementById('scA'); a.innerHTML = ''; for (let i = 0; i < 9; i++) a.appendChild(el('<div>?</div>')); document.getElementById('scK').innerHTML = ''; },
+    blank() { const a = document.getElementById('scA'); a.innerHTML = ''; for (let i = 0; i < 9; i++) a.appendChild(el('<div>?</div>')); document.getElementById('scK').innerHTML = '<span>' + SCT('买票后显示奖金表', 'Buy a ticket to see the prize key') + '</span>'; },
     controls(c) { const me = REND.scratch; const ps = [1, 2, 5, 10, 20, 50];
-      c.innerHTML = '<div class="tsmall"><button class="tbtn" id="scP"' + (TT.phase !== 'bet' ? ' disabled' : '') + '>Ticket ' + fmt(me.price) + '</button>' + (me.live ? '<button class="tbtn warn" id="scR">Reveal all</button>' : '') + '</div><button class="tbtn go" id="scBuy"' + (TT.busy || me.live ? ' disabled' : '') + '>Buy ticket</button>';
+      c.innerHTML = '<div class="tsmall"><button class="tbtn" id="scP"' + (TT.phase !== 'bet' ? ' disabled' : '') + '>' + SCT('票价 ', 'Ticket ') + fmt(me.price) + '</button>' + (me.live ? '<button class="tbtn warn" id="scR">' + SCT('全部刮开', 'Reveal all') + '</button>' : '') + '</div><button class="tbtn go" id="scBuy"' + (TT.busy || me.live ? ' disabled' : '') + '>' + SCT('买票', 'BUY TICKET') + '</button>';
       document.getElementById('scP').onclick = () => { me.price = ps[(ps.indexOf(me.price) + 1) % ps.length]; updCtrl(); };
       if (me.live) document.getElementById('scR').onclick = () => me.revealAll();
       document.getElementById('scBuy').onclick = () => { TT.bets = { main: me.price }; deal(); }; },
     render(v, r) { return new Promise(res => {
       const a = document.getElementById('scA'); a.innerHTML = ''; const lab = c => this.sym ? c.l : fmt(c.v * this.price).replace('.00', '');
       v.cells.forEach(c => a.appendChild(el('<div' + (v.x && c.v === v.x ? ' data-m="1"' : '') + '>' + lab(c) + '</div>')));
-      if (this.sym) document.getElementById('scK').innerHTML = v.sym.map((s, i) => s + ' ' + fmt(v.prizes[i] * this.price).replace('.00', '')).join(' · ');
+      if (!this.sym) document.getElementById('scK').innerHTML = '<span>' + SCT('刮出 3 个相同金额即赢该金额', 'Match 3 amounts to win that amount') + '</span>';
+      if (this.sym) document.getElementById('scK').innerHTML = v.sym.map((s, i) => '<span><i>' + s + '</i>' + fmt(v.prizes[i] * this.price).replace('.00', '') + '</span>').join('');
       const cv = document.createElement('canvas'); a.appendChild(cv); const ctx = cv.getContext('2d'); const W = cv.width = a.clientWidth * 2, H = cv.height = a.clientHeight * 2;
       const gr = ctx.createLinearGradient(0, 0, W, H); gr.addColorStop(0, '#c0c0c0'); gr.addColorStop(.5, '#e8e8e8'); gr.addColorStop(1, '#a0a0a0'); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
-      ctx.fillStyle = '#888'; ctx.font = 'bold ' + (W / 12) + 'px Arial'; ctx.textAlign = 'center'; ctx.fillText('SCRATCH HERE', W / 2, H / 2);
+      ctx.fillStyle = '#888'; ctx.font = 'bold ' + (W / 12) + 'px Arial'; ctx.textAlign = 'center'; ctx.fillText(SCT('刮开这里', 'SCRATCH HERE'), W / 2, H / 2);
       ctx.globalCompositeOperation = 'destination-out'; let down = false, done = false, cnt = 0;
-      const finish = () => { if (done) return; done = true; this.live = false; cv.remove(); a.querySelectorAll('[data-m]').forEach(d => d.classList.add('m')); showRes(r.win > 0 ? 'WINNER · ' + fmt(r.win) : 'NO WIN · TRY AGAIN', r.win); updCtrl(); res(); };
+      const finish = () => { if (done) return; done = true; this.live = false; cv.remove(); a.querySelectorAll('[data-m]').forEach(d => d.classList.add('m')); showRes(r.win > 0 ? SCT('中奖 · ', 'WINNER · ') + fmt(r.win) : SCT('未中奖 · 再来一张', 'NO WIN · TRY AGAIN'), r.win); updCtrl(); res(); };
       this.revealAll = finish; this.live = true; updCtrl();
       const pos = e => { const b = cv.getBoundingClientRect(); const p = e.touches ? e.touches[0] : e; return [(p.clientX - b.left) / b.width * W, (p.clientY - b.top) / b.height * H]; };
       const scr = e => { if (!down) return; e.preventDefault(); const [x, y] = pos(e); ctx.beginPath(); ctx.arc(x, y, W / 14, 0, 7); ctx.fill(); if (++cnt % 15 === 0) { const d = ctx.getImageData(0, 0, W, H).data; let clear = 0; for (let i = 3; i < d.length; i += 64) if (d[i] === 0) clear++; if (clear / (d.length / 64) > .6) finish(); } };

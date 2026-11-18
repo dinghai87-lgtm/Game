@@ -2925,8 +2925,8 @@ function twLine(t,lvl){const T=TOWERS[t];try{if(T.support)return TR('辅助塔')
 const _dsm10=drawSelMenu;drawSelMenu=function(){const i=G.sel;if(G.preI!==i)G.preTw=null;_dsm10();const tw=G.towers[i];if(!tw)return;
   if(!tw.type){if(G.preI!==i||!G.preTw)return;const t=G.preTw,T=TOWERS[t];const cx=tw.x,cy=tw.y-20,R=128;const ccx=clamp(cx,R+40,W-R-40),ccy=clamp(cy,R+70,H-R-145);
     const LIST=(G.menuPage?TOWER_ORDER.slice(8):TOWER_ORDER.slice(0,8)).filter(twOpen);const j=LIST.indexOf(t);if(j<0){G.preTw=null;return}const n=LIST.length;const a=-Math.PI/2+(j+(n===4?.5:0))*2*Math.PI/n;const x=ccx+Math.cos(a)*R,y=ccy+Math.sin(a)*R*.92;
-    try{if(T.dmg||T.support){const st=towerStats({type:t,lvl:1,br:null});const r=st.range;ctx.save();ctx.fillStyle='rgba(123,224,123,.10)';ctx.beginPath();ctx.ellipse(tw.x,tw.y,r,r/1.15,0,0,7);ctx.fill();ctx.strokeStyle='rgba(123,224,123,.8)';ctx.lineWidth=2;ctx.setLineDash([10,8]);ctx.stroke();ctx.restore()}}catch(_){}
-    ctx.save();ctx.strokeStyle='#7be07b';ctx.lineWidth=4;ctx.beginPath();ctx.arc(x,y,36,0,7);ctx.stroke();ctx.restore();imgC('ui_Icon_Accept',x+24,y-24,26);
+    try{if(T.dmg||T.support){const st=towerStats({type:t,lvl:1,br:null});const r=st.range;ctx.save();ctx.beginPath();ctx.ellipse(tw.x,tw.y,r,r/1.15,0,0,7);ctx.strokeStyle='rgba(160,235,170,.75)';ctx.lineWidth=2;ctx.setLineDash([6,8]);ctx.stroke();ctx.restore()}}catch(_){}
+    ctx.save();ctx.strokeStyle='#7be07b';ctx.lineWidth=4;ctx.beginPath();ctx.arc(x,y,36,0,7);ctx.stroke();ctx.restore();imgC('ui_Icon_Accept',x+36,y+2,24);ctx.font=`900 11px ${FONT}`;{const nw=Math.max(54,ctx.measureText(T.name).width+14);plate(x-nw/2,y-44,nw,18);txt(T.name,x,y-35,11,'#7be07b')}
     const pw=320,ph=74,px=clamp(ccx-pw/2,10,W-pw-10),py=Math.min(H-ph-8,ccy+R+50);ctx.save();ctx.fillStyle='rgba(12,6,2,.9)';rr(px,py,pw,ph,12);ctx.fill();ctx.strokeStyle='#7be07b';ctx.lineWidth=2;ctx.stroke();ctx.restore();
     fitTxt(T.name+'  ·  '+twLine(t,1),px+pw/2,py+18,15,pw-20,'#ffe27a','center',2);fitTxt(T.desc+(typeof mastLv==='function'&&mastLv(t)?'  '+'★'.repeat(mastLv(t)):''),px+pw/2,py+40,13,pw-20,'#fff','center',2);fitTxt(TR('再点一次建造（同种塔建过 3 次后点一下直接建）'),px+pw/2,py+60,12,pw-20,'#7be07b','center',2);return}
   // 已建：升级预览
@@ -3683,7 +3683,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794995642';
+const BUILD_VER='1794995813';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

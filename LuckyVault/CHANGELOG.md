@@ -354,3 +354,4 @@ Platform release: everything on the "do all of these" list except the public dep
 - Table game covers rebuilt with dealers (CraftPix roulette/slot-machine kit dealers added); Big Catch Bonanza and Pirate Gold Link get their own symbol sets (CraftPix RPG sea-theme icons); shop coin packages get money-pack icons (CraftPix gold coins & money UI pack).
 - Own symbol sets for Blazing Fruits (painted fruit), Aztec Expanding (stone-age/tribal) and Lucky Clover (fairy garden) from CraftPix 512px packs.
 - Panda Fortune gets its own Asian symbol set (CraftPix monk skill icons, rounded gold-rim tiles).
+- New: Piggy Bank (dock) — 3% of every bet is saved, break it once a day at 200+ coins (cap 10,000); server-side, ledger type 'piggy'.

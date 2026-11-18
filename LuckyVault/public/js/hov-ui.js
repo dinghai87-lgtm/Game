@@ -16,7 +16,7 @@
 body.ingame #hovDock{display:none}
 #lobby{padding-bottom:96px}
 @media (max-height:480px) and (orientation:landscape){#hovDock{padding:3px 6px 2px;bottom:4px;gap:2px}#hovDock button{width:60px;font-size:9px}#hovDock button .ic{width:34px;height:34px}#hovDock button .ic img{width:26px;height:26px}#hovDock button .tm{font-size:8px;min-height:9px}#lobby{padding-bottom:72px}}
-@media(max-width:520px){#hovDock{gap:2px;padding:6px 6px 4px;bottom:6px}#hovDock button{width:62px;font-size:9px}#hovDock button .ic{width:42px;height:42px}#hovDock button .ic img{width:32px;height:32px}}
+@media(max-width:520px){#hovDock{gap:0;padding:6px 4px 4px;bottom:6px;max-width:calc(100vw - 8px)}#hovDock button{width:57px;font-size:8.5px}#hovDock button .ic{width:42px;height:42px}#hovDock button .ic img{width:32px;height:32px}}
 .jpbar{display:flex;gap:8px;justify-content:center;align-items:stretch;margin:10px 14px 4px;flex-wrap:wrap}
 .jpbar .jp{flex:1;min-width:130px;max-width:300px;border-radius:14px;padding:6px 10px 7px;text-align:center;background:linear-gradient(#2a0f4f,#12062a);box-shadow:0 0 0 2px var(--jc),0 0 18px color-mix(in srgb,var(--jc) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.2)}
 .jpbar .jp small{display:block;font:900 11px "Arial Black",sans-serif;letter-spacing:2px;color:var(--jc)}
@@ -88,10 +88,10 @@ body.ingame #hovDock{display:none}
 
   // ---------------- dock ----------------
   const dock = document.createElement('div'); dock.id = 'hovDock';
-  dock.innerHTML = [['bonus', A + 'tables/coins.webp', 'COLLECT'], ['wheel', A + 'tables/fw_ring.webp', 'DAILY WHEEL'], ['rush', A + 'games/gold-rush/h1.webp', 'DAILY RUSH'], ['album', A + 'album/gems/9.webp', 'ALBUM'], ['vip', A + 'album/jewels/9.webp', 'VIP CLUB']]
+  dock.innerHTML = [['bonus', A + 'tables/coins.webp', 'COLLECT'], ['wheel', A + 'tables/fw_ring.webp', 'DAILY WHEEL'], ['rush', A + 'games/gold-rush/h1.webp', 'DAILY RUSH'], ['pig', A + 'shop/pk2.webp', 'PIGGY BANK'], ['album', A + 'album/gems/9.webp', 'ALBUM'], ['vip', A + 'album/jewels/9.webp', 'VIP CLUB']]
     .map(([k, im, t]) => '<button data-k="' + k + '"><span class="ic"><img src="' + im + '" alt=""></span>' + t + '<span class="tm" id="dk_' + k + '"></span></button>').join('');
   document.body.appendChild(dock);
-  dock.onclick = e => { const b = e.target.closest('button'); if (!b) return; if (window.needLogin && needLogin()) return; (sfx.click || (() => {}))(); ({ bonus: collectBonus, wheel: () => checkDaily(true), rush: () => LVX.quests && LVX.quests('missions'), album: openAlbum, vip: openVip })[b.dataset.k](); };
+  dock.onclick = e => { const b = e.target.closest('button'); if (!b) return; if (window.needLogin && needLogin()) return; (sfx.click || (() => {}))(); ({ bonus: collectBonus, wheel: () => checkDaily(true), rush: () => LVX.quests && LVX.quests('missions'), album: openAlbum, vip: openVip, pig: openPig })[b.dataset.k](); };
   const watchGame = new MutationObserver(() => document.body.classList.toggle('ingame', $('#game').classList.contains('show') || ($('#table') && $('#table').classList.contains('show'))));
   setTimeout(() => { ['#game', '#table'].forEach(s => { const el = $(s); if (el) watchGame.observe(el, { attributes: true, attributeFilter: ['class'] }); }); }, 500);
 
@@ -101,9 +101,25 @@ body.ingame #hovDock{display:none}
     bt.classList.toggle('ready', left <= 0); t.textContent = left <= 0 ? 'READY!' : new Date(left).toISOString().substr(11, 8);
     if (HV) { const got = HV.album.sets.reduce((a, s) => a + s.cards.filter(Boolean).length, 0); $('#dk_album').textContent = got + '/80'; $('#dk_vip').textContent = HV.vip.name.toUpperCase(); }
     const w = dock.querySelector('[data-k=wheel]'); w.classList.toggle('ready', !!(HV && HV.dailyReady)); $('#dk_wheel').textContent = HV && HV.dailyReady ? 'SPIN!' : '';
+    { const p = dock.querySelector('[data-k=pig]'), u = API.user, v = u ? u.pig || 0 : 0, mn = (u && u.pigMin) || 200, wait = u ? (u.pigAt || 0) - Date.now() : 0;
+      p.classList.toggle('ready', !!u && v >= mn && wait <= 0); $('#dk_pig').textContent = !u ? '' : wait > 0 ? new Date(wait).toISOString().substr(11, 8) : v >= mn ? 'BREAK!' : fmtN(Math.floor(v)); }
   }
   setInterval(paintDock, 1000);
   async function load() { if (!srv()) { paintDock(); return; } const r = await API.call('/api/hov'); if (!r.err) { HV = r; setJP(r.jackpots); } const d = await API.call('/api/daily'); if (HV && d && !d.err) HV.dailyReady = !!d.available; paintDock(); }
+  // piggy bank: every bet drops a few coins in; break it once a day for everything inside
+  { const c0 = API.call; API.call = async function () { const r = await c0.apply(API, arguments); if (r && typeof r.pig === 'number' && API.user) API.user.pig = r.pig; return r; }; }
+  async function openPig() {
+    if (!srv()) { toast('Log in to use the piggy bank'); return; }
+    const u = API.user || {}, v = u.pig || 0, mn = u.pigMin || 200, cap = u.pigCap || 10000, wait = (u.pigAt || 0) - Date.now();
+    if (v >= mn && wait <= 0) {
+      const r = await API.call('/api/piggy', {}); if (r.err) { toast(r.msg || 'Not ready yet'); return; }
+      setUser(r); flyTo(dock.querySelector('[data-k=pig]'), 20); (sfx.collect || sfx.coins)(); try { sfx.cheer && sfx.cheer() } catch (e) {} toast('+' + fmtN(r.amount) + ' coins from the piggy bank'); paintDock(); return;
+    }
+    const pct = Math.min(100, v / cap * 100);
+    overlay('pigOv', '<h2>PIGGY BANK</h2><img src="' + A + 'shop/pk2.webp" alt="" style="height:110px;display:block;margin:6px auto"><p><span>Every bet drops 3% into your piggy bank. Break it once a day when it holds at least</span> <b>' + fmtN(mn) + '</b> <span>coins.</span></p>' +
+      '<div style="height:16px;border-radius:9px;background:#0006;overflow:hidden;margin:12px 0 6px"><div style="height:100%;width:' + pct.toFixed(1) + '%;background:linear-gradient(90deg,#ffd60a,#ff9f1c)"></div></div>' +
+      '<p style="text-align:center;font-weight:900;color:#ffd60a;font-size:20px">' + fmtN(Math.floor(v)) + ' / ' + fmtN(cap) + '</p>' + (wait > 0 ? '<p style="text-align:center"><span>Next break in</span> <b>' + new Date(wait).toISOString().substr(11, 8) + '</b></p>' : v < mn ? '<p style="text-align:center"><span>more to go</span> <b>' + fmtN(Math.ceil(mn - v)) + '</b></p>' : ''));
+  }
   async function collectBonus() {
     if (!srv()) { toast('Log in to collect free coins'); return; }
     const r = await API.call('/api/bonus', {}); if (r.err) { toast(r.msg || 'Not ready yet'); return; }

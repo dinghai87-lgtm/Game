@@ -70,9 +70,11 @@ const DEFAULT_SETTINGS = {
 
 let drv, repo, SET = Object.assign({}, DEFAULT_SETTINGS), GSTATE = {};
 const now = () => Date.now();
+// 存钱猪 piggy bank: 3% of every bet is saved (virtual coins only); break it once a day when it holds at least `min`
+const PIG = { rate: 0.03, min: 200, cap: 10000, coolH: 24 };
 function pubUser(u) {
   return { id: u.id, name: u.name, xp: u.xp || 0, level: E.levelOf(u.xp || 0), bal: u.bal, fs: u.fs || null, tg: u.tg ? { gid: u.tg.gid } : null, bonusAt: u.bonusAt || 0,
-    email: u.email || null, emailVerified: !!u.emailVerified, phone: u.phone || null, google: !!u.googleSub, apple: !!u.appleSub, hasPassword: !!u.hash, tour: !!u.tour };
+    email: u.email || null, emailVerified: !!u.emailVerified, phone: u.phone || null, google: !!u.googleSub, apple: !!u.appleSub, hasPassword: !!u.hash, tour: !!u.tour, pig: r2(u.pig || 0), pigAt: u.pigAt || 0, pigMin: PIG.min, pigCap: PIG.cap };
 }
 // weekly event rotation (used whenever no manual event is running; switch off with Admin → settings autoEvents=false)
 const AUTO_EVENTS = [
@@ -264,7 +266,8 @@ async function afterRound(u, g, r, info, t) {
   if (info.newRound) { await repo.daily('rounds', 1, t); await repo.dailyPlayer(u.id, t); await repo.gameDaily(g.id, u.id, 1, 0, t); }
   u.st.bet = r2(u.st.bet + r.cost); u.st.win = r2(u.st.win + gs.win); if (info.newRound) u.st.spins++;
   if (r.cost) { const ev = eventActive(); const lv = E.addXp(u, r2(r.cost * (ev ? ev.xp : 1))); u.level = E.levelOf(u.xp); if (lv) { r.lvl = lv; await addTx(u, 'level_bonus', lv.reward, 'Level ' + lv.level, t); } }
-  r.xp = u.xp;
+  if (r.cost > 0) u.pig = Math.min(PIG.cap, r2((u.pig || 0) + r.cost * PIG.rate));   // piggy bank: a small share of every bet
+  r.xp = u.xp; r.pig = r2(u.pig || 0);
   if (info.done !== false) {
     const e = EN.onRound(u, info); if (e.ach.length) { r.ach = e.ach; for (const a of e.ach) await addTx(u, 'achievement', a.reward, a.title, t); }
     if (e.missions.length) r.missionsDone = e.missions;
@@ -442,6 +445,16 @@ R['POST /api/iap/verify'] = userRoute(async ({ uid, b }) => {
 R['GET /api/onboarding'] = userRoute(async ({ uid }) => { const u = await repo.userById(uid); return [200, EN.onbView(u)]; });
 R['POST /api/onboarding/hide'] = userRoute(async ({ uid }) => { await repo.withUser(uid, async u => { u.onb = Object.assign(u.onb || {}, { hide: true }); }); return [200, { ok: true }]; });
 R['GET /api/missions'] = userRoute(async ({ uid }) => { let v; await repo.withUser(uid, async u => { v = EN.missionView(u); }); return [200, { missions: v, achievements: EN.achView(await repo.userById(uid)) }]; });
+R['POST /api/piggy'] = userRoute(async ({ uid }) => {
+  let out; await repo.withUser(uid, async (u, t) => {
+    const v = r2(u.pig || 0);
+    if (now() < (u.pigAt || 0)) { out = [400, { err: 'early', msg: 'The piggy bank can be broken once a day' }]; return { skip: true }; }
+    if (v < PIG.min) { out = [400, { err: 'low', msg: 'Save at least ' + PIG.min + ' coins first' }]; return { skip: true }; }
+    u.bal = r2(u.bal + v); u.pig = 0; u.pigAt = now() + PIG.coolH * 3600e3; await addTx(u, 'piggy', v, '', t);
+    out = [200, { amount: v, user: pubUser(u) }];
+  });
+  return out;
+});
 R['POST /api/missions/claim'] = userRoute(async ({ uid, b }) => {
   let out; await repo.withUser(uid, async (u, t) => { const r = EN.claimMission(u, String(b.id || '')); if (r.err) { out = [400, r]; return { skip: true }; } await addTx(u, 'mission', r.reward, r.title, t); out = [200, { reward: r.reward, user: pubUser(u), missions: EN.missionView(u) }]; });
   return out;

@@ -200,6 +200,10 @@ Object.assign(I18N.en,{"场上有 3 座同类 5 级以上的塔时，选中其�
 Object.assign(I18N.ja,{"场上有 3 座同类 5 级以上的塔时，选中其中一座可以合体成巅峰塔，另外两座让出位置": "同じ種類のLv5以上の塔が3基あれば、1基を選んで極致タワーに合体。残り2基は場所を空ける", "完成巅峰合体 {n} 次": "極致合体を{n}回", "巅峰合体": "極致合体", "巅峰合体：需要 3 座 {lv} 级以上的同类塔（现在 {n} 座）": "極致合体：同じ種類のLv{lv}以上の塔が3基必要（現在{n}基）", "巅峰塔": "極致タワー"});
 Object.assign(I18N.ko,{"场上有 3 座同类 5 级以上的塔时，选中其中一座可以合体成巅峰塔，另外两座让出位置": "같은 종류의 Lv5 이상 탑이 3개면 하나를 선택해 정점 탑으로 합체, 나머지 둘은 자리를 비움", "完成巅峰合体 {n} 次": "정점 합체 {n}회", "巅峰合体": "정점 합체", "巅峰合体：需要 3 座 {lv} 级以上的同类塔（现在 {n} 座）": "정점 합체: 같은 종류 Lv{lv} 이상 탑 3개 필요 (현재 {n}개)", "巅峰塔": "정점 탑"});
 Object.assign(I18N.es,{"场上有 3 座同类 5 级以上的塔时，选中其中一座可以合体成巅峰塔，另外两座让出位置": "Con 3 torres iguales de Nv5+, elige una para fusionarlas en un Paragón; las otras dos liberan su sitio", "完成巅峰合体 {n} 次": "Fusiona {n} Paragones", "巅峰合体": "Paragón", "巅峰合体：需要 3 座 {lv} 级以上的同类塔（现在 {n} 座）": "Paragón: necesitas 3 torres iguales de Nv{lv}+ (tienes {n})", "巅峰塔": "Paragón"});
+Object.assign(I18N.en,{"欢迎回来！":"Welcome back!","你离开了 {d} 天，送你一份回归礼包：":"You were away for {d} days — here's a welcome-back gift:","出战英雄碎片 +20":"+20 shards for team heroes","点地图左边的「今日待办」，看看有什么新玩法":"Check “To-Do Today” on the left of the map for what's new","收下":"Claim"});
+Object.assign(I18N.ja,{"欢迎回来！":"おかえりなさい！","你离开了 {d} 天，送你一份回归礼包：":"{d}日ぶりですね。復帰ギフトをどうぞ：","出战英雄碎片 +20":"出撃英雄の欠片 +20","点地图左边的「今日待办」，看看有什么新玩法":"マップ左の「今日のやること」で新要素をチェック","收下":"受け取る"});
+Object.assign(I18N.ko,{"欢迎回来！":"돌아오신 걸 환영해요!","你离开了 {d} 天，送你一份回归礼包：":"{d}일 만이네요. 복귀 선물을 드려요:","出战英雄碎片 +20":"출전 영웅 조각 +20","点地图左边的「今日待办」，看看有什么新玩法":"지도 왼쪽 「오늘의 할 일」에서 새 콘텐츠 확인","收下":"받기"});
+Object.assign(I18N.es,{"欢迎回来！":"¡Bienvenido de nuevo!","你离开了 {d} 天，送你一份回归礼包：":"Estuviste fuera {d} días. Aquí tienes un regalo de regreso:","出战英雄碎片 +20":"+20 fragmentos para el equipo","点地图左边的「今日待办」，看看有什么新玩法":"Mira «Pendiente hoy» a la izquierda del mapa para ver novedades","收下":"Recoger"});
 
 'use strict';
 // ====================== 基础 ======================
@@ -3185,6 +3189,16 @@ function paraMerge(i){if(!paraCan(i))return;if(G.gold<PARA_COST){showToast(TR('�
 })();
 ACH.push({id:'para_1',k:'para',n:1,d:'完成巅峰合体 {n} 次',yb:50},{id:'para_10',k:'para',n:10,d:'完成巅峰合体 {n} 次',yb:150});
 
+// ====================== 回归礼包（手游常见的「老玩家回归」）：离开 3 天以上回来，送一份礼包并提示新内容 ======================
+const _awayMs=(()=>{try{return SAVE.lastSeen?Date.now()-SAVE.lastSeen:0}catch(e){return 0}})();
+let backPending=_awayMs>=3*864e5;
+(function(){const ml=metaLevels;metaLevels=function(){ml.apply(this,arguments);try{if(!backPending||POP||lvPop||prog()<2)return;backPending=false;const d=Math.floor(_awayMs/864e5);const g=Math.min(300,100+d*10);
+  SAVE.yb+=g;const team=SAVE.team.filter(owns);for(const h of team)SAVE.shards[h]=(SAVE.shards[h]||0)+20;save();track('comeback',{d});
+  popup('🎉 '+TR('欢迎回来！'),[TR('你离开了 {d} 天，送你一份回归礼包：').replace('{d}',d),'💎 +'+g+'   ·   '+TR('出战英雄碎片 +20'),TR('点地图左边的「今日待办」，看看有什么新玩法')],[{label:TR('收下'),style:'green'}])}catch(e){}}})();
+// 新手指引箭头：第一次合击充满时，在按钮上方跳动提示，直到用过一次
+(function(){const be=battleExtra;battleExtra=function(t){be(t);try{if(scene!=='battle'||!G||G.over||(SAVE.cmbN||0)>0||(G.cmbE||0)<1||!cmbPairs().length)return;const T=performance.now()/1000,y=H-112-Math.abs(Math.sin(T*4))*14;
+  ctx.save();ctx.fillStyle='#ffd84a';ctx.strokeStyle='#4a1406';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(W/2-18,y-22);ctx.lineTo(W/2+18,y-22);ctx.lineTo(W/2,y);ctx.closePath();ctx.stroke();ctx.fill();ctx.restore()}catch(_){}}})();
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -3227,7 +3241,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794980671';
+const BUILD_VER='1794980842';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

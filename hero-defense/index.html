@@ -249,6 +249,10 @@ Object.assign(I18N.ko,{"熟练度":"숙련도","伤害":"피해","任意塔熟�
 Object.assign(I18N.es,{"熟练度":"Maestría","伤害":"Daño","任意塔熟练度升级 {n} 次":"Sube la maestría de torres {n} veces"});
 Object.assign(I18N.en,{"每日免费召唤":"Free daily summon","今天还没领":"Not claimed today"});Object.assign(I18N.ja,{"每日免费召唤":"毎日無料召喚","今天还没领":"本日未受取"});Object.assign(I18N.ko,{"每日免费召唤":"매일 무료 소환","今天还没领":"오늘 미수령"});Object.assign(I18N.es,{"每日免费召唤":"Invocación diaria gratis","今天还没领":"Aún no reclamada hoy"});
 Object.assign(I18N.en,{"漏怪不超过 2 个 = 三星":"Let 2 or fewer through = 3 stars"});Object.assign(I18N.ja,{"漏怪不超过 2 个 = 三星":"取り逃がし2体以内で★3"});Object.assign(I18N.ko,{"漏怪不超过 2 个 = 三星":"2마리 이하 놓치면 별 3개"});Object.assign(I18N.es,{"漏怪不超过 2 个 = 三星":"Deja pasar 2 o menos = 3 estrellas"});
+Object.assign(I18N.en,{"试用英雄":"Trial hero","试用":"Trial","免费试用":"Free trial","这一局会带上":"This battle includes","每天 1 次":"once a day"});
+Object.assign(I18N.ja,{"试用英雄":"お試し英雄","试用":"お試し","免费试用":"無料お試し","这一局会带上":"この戦闘に参加：","每天 1 次":"1日1回"});
+Object.assign(I18N.ko,{"试用英雄":"체험 영웅","试用":"체험","免费试用":"무료 체험","这一局会带上":"이번 전투 참가:","每天 1 次":"하루 1회"});
+Object.assign(I18N.es,{"试用英雄":"Héroe de prueba","试用":"Prueba","免费试用":"Prueba gratis","这一局会带上":"En esta batalla llevas a","每天 1 次":"una vez al día"});
 
 'use strict';
 // ====================== 基础 ======================
@@ -3404,6 +3408,20 @@ ACH.push({id:'mast_1',k:'mast',n:1,d:'任意塔熟练度升级 {n} 次',yb:20},{
   const lp=drawLevelPop;drawLevelPop=function(){lp();try{const i=lvPop;if(i==null)return;const x=W/2-310,y=H/2-200;fitTxt(TR('漏怪不超过 2 个 = 三星'),x+200,y+292,12,280,'#b9a27a','center',2)}catch(_){}};
 })();
 
+// ====================== 英雄试用（手游常见的「试玩英雄」）：每天可以免费带一位还没拥有的英雄打一局 ======================
+let tryHero=null;
+const tryLeft=()=>{const d=dayNum();return !(SAVE.tryD===d)};
+(function(){
+  const sl=startLevel;startLevel=function(li,e){sl(li,e);try{if(!G||!tryHero)return;const h=tryHero;tryHero=null;if(owns(h)||G.L.noHero||G.L.chal==='puzzle'||G.L.chal==='solo')return;
+    const P=G.paths[0];const p=pathAt(P,Math.max(120,P.len-210));const a=makeHero(h,p.x-p.dy*30,p.y+p.dx*30);applyHeroMeta(a,SAVE.team.concat([h]));a.trial=1;G.allies.push(a);SAVE.tryD=dayNum();save();track('try_hero',{h});
+    G.banner={s:TR('试用英雄')+' · '+HEROES[h].name,t:0}}catch(e){console.error(e)}};
+  const dp=drawPick;drawPick=function(dt){dp(dt);try{if(!tryLeft())return;const li=pickArgs?pickArgs[0]:0,L=li>=0?getLevel(li):null;if(L&&L.chal==='solo')return;
+    const cw=220,ch=230,S=HERO_ORDER.length>10?.78:1,cols=HERO_ORDER.length>10?Math.ceil(HERO_ORDER.length/2):5,x0=W/2-cols*cw*S/2,y0=118;
+    HERO_ORDER.forEach((h,i)=>{if(owns(h))return;const gx=x0+(i%cols)*cw*S+6*S,gy=y0+Math.floor(i/cols)*(ch+8)*S;const on=tryHero===h;
+      button(on?'✓ '+TR('试用'):TR('免费试用'),gx+(cw*S-12*S)/2-62,gy+174*S,124,34,()=>{tryHero=on?null:h;AUD.sfx('click');if(!on)showToast(TR('这一局会带上')+' '+HEROES[h].name+' · '+TR('每天 1 次'))},{style:on?'green':'gold',size:13})})}catch(e){console.error(e)}};
+  if(window.__api)Object.assign(window.__api,{startLevel});
+})();
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -3446,7 +3464,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794983417';
+const BUILD_VER='1794983617';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

@@ -3077,6 +3077,10 @@ function kfx(k,x,y,o){if(!G||LOWQ)return;G.kfx=G.kfx||[];if(G.kfx.length>140)G.k
   const be=battleExtra;battleExtra=function(t){be(t);try{if(!G||!G.kfx||!G.kfx.length)return;for(const f of G.kfx){const im=kpTint(f.k,f.c);if(!im)continue;const p=f.t/f.life,s=(f.s0+(f.s1-f.s0)*(1-Math.pow(1-p,2)))*128;ctx.save();ctx.globalAlpha=f.a0*(1-p)*(p<.1?p*10:1);if(f.add)ctx.globalCompositeOperation='lighter';ctx.translate(f.x,f.y);ctx.rotate(f.rot);ctx.drawImage(im,-s/2,-s/2,s,s);ctx.restore()}}catch(_){}};
   if(window.__api)Object.assign(window.__api,{update,killEnemy});
 })();
+// 建塔/升级的小爆闪，更有手感
+(function(){const bd=build;build=function(i,t){const had=G&&G.towers[i]&&G.towers[i].type;const r=bd.apply(this,arguments);try{const tw=G.towers[i];if(!had&&tw&&tw.type){kfx('kp_star',tw.x,tw.y-30,{c:'#fff3b0',s0:.3,s1:1.1,life:.4,vr:3});kfx('kp_smoke',tw.x,tw.y+6,{c:'#b9a27a',s0:.3,s1:.9,life:.6,a0:.5,add:false})}}catch(_){}return r};
+  const up=upgrade;upgrade=function(i){const tw=G&&G.towers[i];const l0=tw&&tw.lvl;const r=up.apply(this,arguments);try{if(tw&&tw.lvl>l0){kfx('kp_flare',tw.x,tw.y-40,{c:'#ffe27a',s0:.4,s1:1.4,life:.35});for(let k=0;k<3;k++)kfx('kp_star',tw.x+(k-1)*26,tw.y-50-k%2*14,{c:'#ffd84a',s0:.1,s1:.35,life:.5,vy:-40})}}catch(_){}return r};
+  if(window.__api)Object.assign(window.__api,{build,upgrade})})();
 
 // ====================== 羁绊合击（明日方舟/王国保卫战式的组合技：羁绊英雄同场时充能，点一下放出双人合击） ======================
 const CMB_T=40;
@@ -3555,7 +3559,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794985803';
+const BUILD_VER='1794985964';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

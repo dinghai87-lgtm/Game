@@ -421,6 +421,7 @@
     if (mode === 'en') { m = t.match(/^(\W*?)(\S+) ([+\d][\d,.+ ]*)$/); if (m && LEAD[m[2]]) return m[1] + LEAD[m[2]] + ' ' + m[3]; }
     return null;
   }
+  function biTail(t, z) { const pre = (t.match(/^[^A-Za-z0-9\u4e00-\u9fff$]+/) || [''])[0]; return pre && z.indexOf(pre.trim()) === 0 ? t.slice(pre.length) : t.replace(/^[‹›←→\s]+/, ''); }
   const ORIG = new WeakMap();
   function apply(node) {
     const raw = node.nodeValue; if (!raw || !raw.trim()) return;
@@ -428,7 +429,7 @@
     if (mode === 'en') return;
     const t = raw.trim(); const z = tr(t); if (z == null) return;
     const zo = node.parentNode && node.parentNode.hasAttribute && node.parentNode.hasAttribute('data-zh1');
-    const out = mode === 'bi' && !zo && t.length <= 14 && z !== t ? z + ' ' + t.replace(/^[‹›←→\s]+/, '') : z;
+    const out = mode === 'bi' && !zo && t.length <= 14 && z !== t ? z + ' ' + biTail(t, z) : z;
     const nv = raw.replace(t, out); if (nv === raw) return;   // never re-set an unchanged value (would loop through the observer)
     ORIG.set(node, raw); node.nodeValue = nv;
   }

@@ -146,6 +146,10 @@ Object.assign(I18N.en,{"不漏一个敌人":"Let nothing through","不用法术�
 Object.assign(I18N.ja,{"不漏一个敌人":"1体も通さない","不用法术和钻石技能":"呪文とジェムスキル禁止","关卡勋章":"ステージ勲章","打掉所有障碍物":"障害物を全部壊す","提前召唤 {n} 波敌人":"{n}回ウェーブを早呼び","无伤":"ノーダメ","最多同时有 {n} 座塔":"塔は同時に{n}基まで","极限":"極限","每关有 3 枚勋章：无伤、清障、极限挑战。拿到都送钻石，点关卡能看到要求":"各ステージに勲章3つ：ノーダメ・撤去・極限。獲得でジェム、条件はステージをタップ","清障":"撤去"});
 Object.assign(I18N.ko,{"不漏一个敌人":"하나도 놓치지 않기","不用法术和钻石技能":"주문·젬 스킬 미사용","关卡勋章":"스테이지 훈장","打掉所有障碍物":"장애물 모두 파괴","提前召唤 {n} 波敌人":"웨이브 {n}회 조기 호출","无伤":"무피해","最多同时有 {n} 座塔":"탑 동시 최대 {n}개","极限":"극한","每关有 3 枚勋章：无伤、清障、极限挑战。拿到都送钻石，点关卡能看到要求":"스테이지마다 훈장 3개: 무피해·청소·극한. 획득 시 젬 지급, 조건은 스테이지를 탭","清障":"청소"});
 Object.assign(I18N.es,{"不漏一个敌人":"Que no pase nadie","不用法术和钻石技能":"Sin hechizos ni gemas","关卡勋章":"Medallas","打掉所有障碍物":"Rompe todos los obstáculos","提前召唤 {n} 波敌人":"Llama {n} oleadas antes","无伤":"Impecable","最多同时有 {n} 座塔":"Máx. {n} torres a la vez","极限":"Experto","每关有 3 枚勋章：无伤、清障、极限挑战。拿到都送钻石，点关卡能看到要求":"Cada fase tiene 3 medallas: Impecable, Limpieza y Experto. Dan gemas; toca una fase para ver los retos","清障":"Limpieza"});
+Object.assign(I18N.en,{"自动":"Auto","自动下一波：开（场上清空就自动召唤，拿提前奖励）":"Auto next wave: ON (calls the next wave when the field is clear, with early bonus)","自动下一波：关":"Auto next wave: OFF"});
+Object.assign(I18N.ja,{"自动":"自動","自动下一波：开（场上清空就自动召唤，拿提前奖励）":"自動次ウェーブ：ON（敵がいなくなると早呼び、ボーナス獲得）","自动下一波：关":"自動次ウェーブ：OFF"});
+Object.assign(I18N.ko,{"自动":"자동","自动下一波：开（场上清空就自动召唤，拿提前奖励）":"자동 다음 웨이브: ON (적이 없으면 조기 호출, 보너스 획득)","自动下一波：关":"자동 다음 웨이브: OFF"});
+Object.assign(I18N.es,{"自动":"Auto","自动下一波：开（场上清空就自动召唤，拿提前奖励）":"Oleada auto: SÍ (llama la siguiente al despejar, con bonus)","自动下一波：关":"Oleada auto: NO"});
 
 'use strict';
 // ====================== 基础 ======================
@@ -2889,6 +2893,17 @@ const _dlp14=drawLevelPop;drawLevelPop=function(){_dlp14();try{const i=lvPop;if(
   items.forEach((it,k)=>{const cx=x+50+k*100;ctx.save();if(!it[3])ctx.globalAlpha=.55;txt(it[0],cx+18,y+208,20,'#fff','center',0);fitTxt(it[1],cx+62,y+200,13,70,it[3]?'#ffe27a':'#ddd','center',2);ctx.restore();fitTxt(it[3]?'✓':it[2],cx+62,y+218,10,72,it[3]?'#7be07b':'#bbb','center',2);
     hit(cx,y+186,100,44,()=>showToast(it[0]+' '+it[1]+'：'+it[2]+(it[3]?'  ✓':'  · +'+BADGE_RW+' '+SHOP_CFG.cur)))})}catch(e){}};
 
+// ====================== 自动下一波（BTD6「自动开始回合」：场上清空就自动叫下一波，拿提前奖励） ======================
+ONB_F.autow=3;
+const autoWOn=()=>G&&feat('autow')&&!G.firstWave&&G.L.chal!=='puzzle';
+const _up15=update;update=function(dt){_up15(dt);try{if(!SAVE.autoWave||!autoWOn()||G.over||G.pick||G.shop)return;if(G.wave>=G.L.waves||!(G.waveTimer>0))return;
+  const alive=G.enemies.some(e=>!e.dead);const pending=(G.spawnQ&&G.spawnQ.length)||(G.queue&&G.queue.length);if(alive||pending)return;G.awT=(G.awT||0)+dt;if(G.awT<1.2)return;G.awT=0;callWave(true)}catch(e){}};
+const _hud15=drawHud;drawHud=function(dt){_hud15(dt);try{if(scene!=='battle'||!G||!autoWOn()||G.over||G.wave>=G.L.waves)return;const on=!!SAVE.autoWave;const x=W/2+128,y=72;
+  ctx.save();ctx.fillStyle=on?'rgba(30,90,30,.92)':'rgba(18,10,4,.82)';rr(x,y+4,86,40,12);ctx.fill();ctx.strokeStyle=on?'#7be07b':'#8a6a3a';ctx.lineWidth=2;ctx.stroke();ctx.restore();
+  fitTxt('⏩ '+TR('自动'),x+43,y+18,13,78,on?'#c9ffc9':'#e9d3a8','center',2);fitTxt(on?'ON':'OFF',x+43,y+34,11,78,on?'#7be07b':'#999','center',2);
+  hit(x,y+4,86,40,()=>{SAVE.autoWave=!SAVE.autoWave;save();AUD.sfx('click');showToast(SAVE.autoWave?TR('自动下一波：开（场上清空就自动召唤，拿提前奖励）'):TR('自动下一波：关'))})}catch(e){}};
+if(window.__api)Object.assign(window.__api,{update});
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -2931,7 +2946,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794976616';
+const BUILD_VER='1794976801';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

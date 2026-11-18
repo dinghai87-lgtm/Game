@@ -542,3 +542,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 53 (01:58) — Blackjack variants check
 - Played Blackjack Switch and Free Bet Blackjack frame by frame (zh): layout from round 29 holds; Switch's 'SWITCH CARDS / KEEP CARDS' were still English → 交换第二张 / 不交换. Added the remaining action names to the dictionary (加倍 / 分牌 / 投降 / 兑现 / 过牌 …) as a safety net for every table. sw lv-v129. Tests 90/90.
+
+## Round 54 (02:06) — Slot engines spot-check (cluster / classic 3-reel / ways)
+- Gem Mine, Hot Chilli 7s, Buffalo Stampede played on a phone in 中文: layouts hold. Fixed: the album card pop ("NEW CARD!") covered the reels on phones — now smaller and above the controls, and translated (新卡片！/ 重复卡片 / 集齐一套！). sw lv-v130. Tests 90/90.

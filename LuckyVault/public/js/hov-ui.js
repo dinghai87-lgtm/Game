@@ -60,7 +60,7 @@ body.ingame #hovDock{display:none}
 .vipt div b{display:block;font:900 15px "Arial Black",sans-serif}.vipt div i{display:block;font-style:normal;font-size:26px}.vipt div small{font:700 11px system-ui;color:#d8ccf0}
 #cardPop{position:fixed;right:16px;bottom:110px;z-index:70;display:flex;gap:8px;pointer-events:none}
 #cardPop .cp{width:110px;text-align:center;animation:cpIn .5s cubic-bezier(.3,1.6,.5,1),cpOut .5s ease-in 3s forwards}
-#cardPop .cp img{width:100%;filter:drop-shadow(0 0 14px #ffd60a)}#cardPop .cp b{display:block;font:900 12px "Arial Black",sans-serif;color:#ffd60a;text-shadow:0 2px 2px #000}
+#cardPop .cp img{width:100%;filter:drop-shadow(0 0 14px #ffd60a)}#cardPop .cp b{display:block;font:900 12px "Arial Black",sans-serif;color:#ffd60a;text-shadow:0 2px 2px #000}@media(max-width:600px){#cardPop{right:8px;bottom:calc(150px + env(safe-area-inset-bottom,0px))}#cardPop .cp{width:64px}#cardPop .cp b{font-size:10px}}
 @keyframes cpIn{from{transform:translateY(60px) rotate(-12deg) scale(.4);opacity:0}}@keyframes cpOut{to{transform:translateY(-40px) scale(.7);opacity:0}}
 #jpWin .hovbox{background:radial-gradient(circle at 50% 30%,#7a3fd0,#1b0838 70%)}
 #jpWin .big{font:900 clamp(40px,10vw,90px) Anton,Impact,"Arial Black",sans-serif;color:#ffd60a;text-shadow:0 6px 0 #6b4300,0 0 40px #ff9d00;animation:jpPulse .6s ease-in-out infinite alternate}

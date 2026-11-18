@@ -1418,12 +1418,14 @@ function drawBattle(dt){hits=[];const t=G.time;
   ctx.drawImage(getVignette(),0,0);
   if(G.lifeFlash>0){ctx.fillStyle=`rgba(200,0,0,${G.lifeFlash*.35})`;ctx.fillRect(0,0,W,H)}
   ctx.save();ctx.translate(OX,OY);HOX=OX;HOY=OY;
-  if(G.sel!=null)drawSelMenu();
   if(G.heroSel&&!G.heroSel.dead){const a=G.heroSel;ctx.save();ctx.strokeStyle='rgba(255,226,122,.95)';ctx.lineWidth=3;ctx.setLineDash([8,6]);ctx.lineDashOffset=-t*30;ctx.beginPath();ctx.ellipse(a.x,a.y,32,13,0,0,7);ctx.stroke();ctx.restore();
     if(!a.melee){ctx.fillStyle='rgba(255,255,255,.07)';ctx.beginPath();ctx.ellipse(a.x,a.y,a.range,a.range/1.15,0,0,7);ctx.fill()}}
   ctx.restore();HOX=0;HOY=0;
   drawCoins();
   drawHud(dt);
+  // 塔菜单画在 HUD 之上，避免被「开始战斗/下一波」按钮压住（点击也优先命中菜单）
+  if(G.sel!=null){ctx.save();ctx.translate(OX,OY);HOX=OX;HOY=OY;try{drawSelMenu()}finally{ctx.restore();HOX=0;HOY=0}}
+  try{drawTutorial()}catch(e){console.error(e)}
   drawBanner();
   if(G.over)drawOver(dt);else if(paused&&!G.card)drawPause();
 }
@@ -1547,7 +1549,8 @@ function drawHud(dt){const t=G.time;
   // wave progress
   if(!G.L.endless){const px=W/2-170,py=16;img('ui_ProgressBar_Background',px,py,340,30);ctx.save();ctx.beginPath();ctx.rect(px+8,py,(340-16)*G.wave/G.L.waves,30);ctx.clip();img('ui_ProgressBar_Fill_Redish',px+8,py+8,324,14);ctx.restore();
     if(G.L.boss)imgC('ui_Skull',px+330,py+15,22);fitTxt(G.L.name,W/2,py+16,14,250,'#ffe9b0','center',3)}
-  if(G.wave<G.L.waves&&!G.firstWave&&G.waveTimer>0)button(TR('召唤下一波  +')+Math.round(G.waveTimer*1.5),W/2-120,72,240,48,()=>callWave(true),{size:17,style:'red',icon:'ui_Icon_Swords'});
+  const selTop=(()=>{try{if(G.sel==null)return false;const tw=G.towers[G.sel];if(!tw)return false;const cx=tw.x,cy=tw.y-20;if(!tw.type){const R=128;const ccx=clamp(cx,R+40,W-R-40),ccy=clamp(cy,R+70,H-R-145);return ccy-R-60+OY<132&&Math.abs(ccx+OX-W/2)<R+170}return cy-84<132&&Math.abs(cx+OX-W/2)<300}catch(e){return false}})();
+  if(selTop){}else if(G.wave<G.L.waves&&!G.firstWave&&G.waveTimer>0)button(TR('召唤下一波  +')+Math.round(G.waveTimer*1.5),W/2-120,72,240,48,()=>callWave(true),{size:17,style:'red',icon:'ui_Icon_Swords'});
   else if(G.firstWave)button(TR('开始战斗'),W/2-110,72,220,54,()=>callWave(true),{size:22,style:'red',icon:'ui_Icon_Swords'});
   if(feat('auto'))ibtn('ui_Icon_Reload',W-186,36,60,()=>{SAVE.autoSkill=!SAVE.autoSkill;save();showToast(SAVE.autoSkill?TR('自动释放技能：开'):TR('自动释放技能：关'));AUD.sfx('click')},{label:SAVE.autoSkill?'AUTO':'OFF',filter:SAVE.autoSkill?'hue-rotate(80deg) saturate(1.6)':null});
   if(feat('speed'))ibtn(speed===1?'ui_Icon_Play':'ui_Icon_Lightning',W-118,36,60,()=>{speed=speed>=4?1:speed+1;AUD.sfx('click')},{label:'x'+speed});
@@ -1575,7 +1578,7 @@ function drawHud(dt){const t=G.time;
     slot(ic,x,y,92,S.cd/S.max,ready,()=>{if(ready){G.spellMode=G.spellMode===k?null:k;G.sel=null;G.heroSel=null;AUD.sfx('click')}else AUD.sfx('deny')},nm,!ready?Math.ceil(S.cd):null)});
   // hints
   const hint=G.spellMode==='mine'?TR('点击道路放置地雷'):G.spellMode?(G.spellMode==='meteor'?TR('点击地图降下天火'):TR('点击路上召唤援军')):G.heroSel?TR('点击地图，')+HEROES[G.heroSel.hero].name+TR(' 会移动过去'):null;
-  battleHudExtra();try{drawBufBar()}catch(_){}drawTutorial();drawCombo(1/60);
+  battleHudExtra();try{drawBufBar()}catch(_){}drawCombo(1/60);
   if(hint){ctx.font=`900 18px ${FONT}`;const hw=Math.max(420,ctx.measureText(hint).width+40);plate(W/2-hw/2,H-150,hw,40);txt(hint,W/2,H-130,18,'#ffe9b0','center',3)}
   if(G.firstWave&&G.assist<1){txt(TR('连败保护：敌人生命 -')+Math.round((1-G.assist)*100)+'%',W/2,200,18,'#9ef0ff','center',4)}
   if(G.firstWave&&G.bank&&G.time<6){txt(TR('上一关结余 +')+G.bank,W/2,150,20,'#ffe27a','center',4)}
@@ -3565,7 +3568,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794992372';
+const BUILD_VER='1794992754';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

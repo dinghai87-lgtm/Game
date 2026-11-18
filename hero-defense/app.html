@@ -262,6 +262,7 @@ Object.assign(I18N.ja,{"继续上一局？":"前回の戦闘を再開？","继�
 Object.assign(I18N.ko,{"继续上一局？":"지난 전투를 이어할까요?","继续第 {n} 波":"웨이브 {n}부터 계속","放弃":"포기"});
 Object.assign(I18N.es,{"继续上一局？":"¿Continuar la última batalla?","继续第 {n} 波":"Continuando oleada {n}","放弃":"Descartar"});
 Object.assign(I18N.en,{"玩法指南":"Game Guide","通关第 {n} 关后开放":"Unlocks after Stage {n}"});Object.assign(I18N.ja,{"玩法指南":"遊び方ガイド","通关第 {n} 关后开放":"ステージ{n}クリアで解放"});Object.assign(I18N.ko,{"玩法指南":"게임 가이드","通关第 {n} 关后开放":"{n}스테이지 클리어 후 해금"});Object.assign(I18N.es,{"玩法指南":"Guía del juego","通关第 {n} 关后开放":"Se abre tras la fase {n}"});
+Object.assign(I18N.en,{"完美防守":"Perfect wave"});Object.assign(I18N.ja,{"完美防守":"パーフェクト"});Object.assign(I18N.ko,{"完美防守":"완벽 방어"});Object.assign(I18N.es,{"完美防守":"Oleada perfecta"});
 
 'use strict';
 // ====================== 基础 ======================
@@ -3473,6 +3474,14 @@ function drawGuide(){const L=guideList(),per=8,pages=Math.ceil(L.length/per);gui
   const dt=drawTodo;drawTodo=function(L){dt(L);try{const w=640,rows=Math.max(1,L.length),h=Math.min(H-40,130+rows*62),x=W/2-w/2,y=H/2-h/2;button('📘 '+TR('玩法指南'),x+w-180,y+18,160,40,()=>{todoPop=false;guidePop=true;guidePage=0},{style:'blue',size:14})}catch(e){}};
 })();
 
+// ====================== 完美波次：一整波没漏怪，额外奖励金币并连击计数（PvZ/BTD 常见的即时正反馈） ======================
+(function(){
+  const cw=callWave;callWave=function(early){const w0=G&&G.wave;cw(early);try{if(G&&G.wave!==w0){G.pwLives=G.lives;G.pwWave=G.wave;G.pwDone=false}}catch(_){}};
+  const up=update;update=function(dt){up(dt);try{if(!G||G.over||G.pwDone||!G.pwWave||G.L.chal==='puzzle')return;if(G.enemies.some(e=>!e.dead)||(G.spawnQ&&G.spawnQ.length))return;G.pwDone=true;
+    if(G.lives>=G.pwLives){G.pwStreak=(G.pwStreak||0)+1;const g=Math.round((6+2*G.pwWave)*(1+.1*Math.min(10,G.pwStreak-1))*(G.L.goldX||1));if(g>0){G.gold+=g;floatText(TR('完美防守')+(G.pwStreak>1?' ×'+G.pwStreak:'')+'  +'+g,WW/2,170,'#7be07b',1.2)}}else G.pwStreak=0}catch(_){}};
+  if(window.__api)Object.assign(window.__api,{callWave,update});
+})();
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -3515,7 +3524,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794984118';
+const BUILD_VER='1794984251';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

@@ -619,3 +619,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 77 (06:04)
 - 双语模式：结果行可换行不再被截断；返回按钮去掉重复箭头（‹ 大厅 LOBBY）
+
+## Round 78 (06:14)
+- 双语模式老虎机：返回按钮只显示「‹ 大厅」不再截断；Link 奖金条只显示中文，不再溢出屏幕

@@ -253,6 +253,10 @@ Object.assign(I18N.en,{"试用英雄":"Trial hero","试用":"Trial","免费试�
 Object.assign(I18N.ja,{"试用英雄":"お試し英雄","试用":"お試し","免费试用":"無料お試し","这一局会带上":"この戦闘に参加：","每天 1 次":"1日1回"});
 Object.assign(I18N.ko,{"试用英雄":"체험 영웅","试用":"체험","免费试用":"무료 체험","这一局会带上":"이번 전투 참가:","每天 1 次":"하루 1회"});
 Object.assign(I18N.es,{"试用英雄":"Héroe de prueba","试用":"Prueba","免费试用":"Prueba gratis","这一局会带上":"En esta batalla llevas a","每天 1 次":"una vez al día"});
+Object.assign(I18N.en,{"我的战绩":"My Stats","通关进度":"Progress","累计胜利":"Wins","累计击杀":"Kills","击败 BOSS":"Bosses","拥有英雄":"Heroes","最常用英雄":"Most used","最熟练的塔":"Top tower","还没有熟练的塔":"No tower mastery yet","无尽最高":"Endless best"});
+Object.assign(I18N.ja,{"我的战绩":"戦績","通关进度":"進行度","累计胜利":"勝利数","累计击杀":"撃破数","击败 BOSS":"ボス撃破","拥有英雄":"所持英雄","最常用英雄":"よく使う英雄","最熟练的塔":"最も熟練した塔","还没有熟练的塔":"熟練した塔はまだない","无尽最高":"エンドレス最高"});
+Object.assign(I18N.ko,{"我的战绩":"내 전적","通关进度":"진행도","累计胜利":"승리","累计击杀":"처치","击败 BOSS":"보스 처치","拥有英雄":"보유 영웅","最常用英雄":"가장 많이 쓴 영웅","最熟练的塔":"최고 숙련 탑","还没有熟练的塔":"숙련된 탑 없음","无尽最高":"무한 최고"});
+Object.assign(I18N.es,{"我的战绩":"Mis estadísticas","通关进度":"Progreso","累计胜利":"Victorias","累计击杀":"Bajas","击败 BOSS":"Jefes","拥有英雄":"Héroes","最常用英雄":"Más usado","最熟练的塔":"Torre top","还没有熟练的塔":"Aún sin maestría","无尽最高":"Récord infinito"});
 
 'use strict';
 // ====================== 基础 ======================
@@ -3422,6 +3426,16 @@ const tryLeft=()=>{const d=dayNum();return !(SAVE.tryD===d)};
   if(window.__api)Object.assign(window.__api,{startLevel});
 })();
 
+// ====================== 我的战绩（BTD6「玩家资料」）：总星数、击杀、BOSS、最爱的塔和英雄，一页看完 ======================
+function statPop(){const S=SAVE.st||{};const own=HERO_ORDER.filter(owns).length;const fav=Object.entries(SAVE.mast||{}).sort((a,b)=>b[1]-a[1])[0];const favH=HERO_ORDER.filter(owns).sort((a,b)=>(SAVE.xp[b]||0)-(SAVE.xp[a]||0))[0];
+  const L=[TR('通关进度')+'：'+TR('第 {n} 关').replace('{n}',Math.max(0,maxCleared()+1))+'   ⭐ '+totalStars(),
+   TR('累计胜利')+' '+(S.wins||0)+'   ·   '+TR('累计击杀')+' '+fmt(S.kills||0)+'   ·   '+TR('击败 BOSS')+' '+(S.bosses||0),
+   TR('拥有英雄')+' '+own+' / '+HERO_ORDER.length+(favH?'   ·   '+TR('最常用英雄')+'：'+HEROES[favH].name:''),
+   fav?TR('最熟练的塔')+'：'+TOWERS[fav[0]].name+' '+'★'.repeat(mastLv(fav[0])):TR('还没有熟练的塔'),
+   TR('无尽最高')+' '+Math.max(0,...Object.values(SAVE.endless||{0:0}))+' '+TR('波')+'   ·   '+TR('残局')+' '+Object.keys(SAVE.puz||{}).length+' / 9'];
+  popup('📊 '+TR('我的战绩'),L,[{label:TR('确定'),style:'green'}])}
+(function(){const dt=drawTasks;drawTasks=function(d){dt(d);try{if(tasksTab!==3)return;const x=W/2-460,y=150,w=920;button('📊 '+TR('我的战绩'),96,22,170,50,statPop,{style:'blue',size:16})}catch(e){}}})();
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -3464,7 +3478,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794983617';
+const BUILD_VER='1794983786';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

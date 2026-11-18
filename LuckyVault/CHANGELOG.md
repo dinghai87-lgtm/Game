@@ -478,5 +478,9 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 37 (23:25) — Casino War refined
 - Dealer (red) / You (blue) panels with card slots; war cards slide in next to the first card instead of redrawing; tie prompt + cost note (开战要再押 5.00；投降退回 2.50); buttons show amounts; all results translated (开战胜利 / 开战失败 / 已投降 …); winner glows; losing chips cleared.
-- Caught a build break (left-over render line) before it shipped: build_tables_ui.sh failed silently, so this round adds a syntax check on every table module.
+- Caught a build break (left-over render line) before it shipped: build_tables_ui.sh's syntax check refused it, but my pipeline hid the error; builds are now chained so a failed check stops the deploy.
 - sw lv-v105. Tests 90/90.
+
+## Round 38 (23:15) — Red Dog refined
+- Three slots (low · ? · high) with the two cards sorted, the third card drops into the middle slot; spread meter (1 → 5:1, 2 → 4:1, 3 → 2:1, 4+ → 1:1) lights the live payout; raise button shows the amount; results translated (落在中间！5:1 / 没落在中间，庄家赢 / 两张相连，退回 / 三条！11:1).
+- sw lv-v106. Tests 90/90.

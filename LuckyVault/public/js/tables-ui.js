@@ -969,10 +969,35 @@
     actLabel: (a) => a === 'war' ? PKT('开战', 'GO TO WAR') + ' ' + fmt(TT.bets.main || 0) : a === 'surrender' ? PKT('投降', 'SURRENDER') : null,
     keepBets: false
   };
-  REND.reddog = { setup(f) { f.innerHTML = '<div class="cards" id="rdC"></div><div class="lbl" id="rdL">Will the third card fall in between?</div>' + resLine() + '<div class="spots" id="rdS"></div><div class="pt2">Spread 1 pays 5:1 · 2 pays 4:1 · 3 pays 2:1 · 4+ pays 1:1 · Pair + match 11:1</div>'; document.getElementById('rdS').appendChild(spotBtn('main', 'Bet', 'Raise to double', 'big')); },
-    async render(v, r) { const c = document.getElementById('rdC'); const had = c.children.length; if (!v.done || v.cards.length <= 2 || !had) { c.innerHTML = ''; v.cards.forEach((x, i) => c.appendChild(cardEl(x, i))); } else c.appendChild(cardEl(v.cards[2])); (sfx.card || sfx.click)(); await wait(400);
-      document.getElementById('rdL').innerHTML = v.spread > 0 ? 'Spread <b>' + v.spread + '</b> pays <b>' + v.pays + ':1</b>' : ''; showRes(v.done ? (v.out || '') + (r.win > 0 ? ' · WIN ' + fmt(r.win) : '') : 'Raise or call?', r.win); },
-    after() { setTimeout(() => { const c = document.getElementById('rdC'); if (c && TT.phase === 'bet') { } }, 0); } };
+  // Red Dog refine: three card slots (low · ? · high), spread meter with the payout lit, raise shows the amount, results in one language
+  REND.reddog = {
+    setup(f) {
+      f.innerHTML = '<div class="tcpz rdz"><div class="lbl">' + PKT('第三张会落在中间吗？', 'Will the third card fall in between?') + '</div><div class="cards" id="rdC"><div class="slots"><i></i><i class="mid"></i><i></i></div></div></div>' + resLine() + '<div class="rdm" id="rdM">' +
+        [[1, '5:1'], [2, '4:1'], [3, '2:1'], [4, '1:1']].map(([n, p]) => '<span data-s="' + n + '"><em>' + PKT('间隔 ', 'Spread ') + (n === 4 ? '4+' : n) + '</em><b>' + p + '</b></span>').join('') + '</div><div class="tcph" id="rdH"></div><div class="spots" id="rdS"></div><div class="pt2">' + PKT('先发两张牌；第三张落在两张之间就赢，间隔越小赔越高 · 两张相连退回 · 两张成对时第三张再成三条赔 11:1 · 看到间隔后可加注一倍', 'Two cards are dealt; win if the third falls between them — the smaller the spread, the bigger the pay · consecutive cards push · a pair pays 11:1 if the third makes trips · you may double after seeing the spread') + '</div>';
+      document.getElementById('rdS').appendChild(spotBtn('main', PKT('投注', 'BET'), PKT('看间隔后可加注一倍', 'Raise ×2 after the spread'), 'big', '先押注，发两张牌后显示间隔（两张牌之间隔了几个点数）。可以加注一倍或直接要第三张。第三张落在中间就赢：间隔 1 赔 5:1、2 赔 4:1、3 赔 2:1、4 以上 1:1。<br>Bet, see two cards and their spread, then raise (double) or call. Win if the third card falls between: spread 1 pays 5:1, 2 pays 4:1, 3 pays 2:1, 4+ pays 1:1.'));
+      if (!document.getElementById('rdCss')) { const st = document.createElement('style'); st.id = 'rdCss'; st.textContent = '#felt .rdz .slots i.mid{border-color:rgba(255,214,10,.6)}#felt .rdz .cards{gap:8px}' +
+        '#felt .rdm{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%;max-width:420px}#felt .rdm span{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 2px;border-radius:10px;background:rgba(10,20,40,.7);border:1.5px solid rgba(255,255,255,.2);color:#cbd5e1;font:700 11px "Microsoft YaHei",Arial,sans-serif}#felt .rdm span b{font:900 17px Anton,Impact,sans-serif;color:#fff}#felt .rdm span.on{border-color:#ffd60a;box-shadow:0 0 0 2px #ffd60a,0 0 14px rgba(255,214,10,.5);color:#fde68a}#felt .rdm span.on b{color:#ffd60a}' +
+        '#rdS{width:100%;max-width:360px;display:grid}#rdS .spot{min-height:70px;font-size:17px;min-width:200px}#rdS .spot .stk{left:auto;top:auto;right:4px;bottom:4px;transform:none;flex-direction:row;gap:2px;align-items:flex-end}#rdS .spot .pile{width:30px;height:calc(30px + (var(--n) - 1) * 3px)}#rdS .spot .pile .chip{width:30px;height:30px;bottom:calc(var(--i) * 3px)}#rdS .spot.has{color:#fff}#rdS .spot.has small{visibility:hidden}' +
+        '#felt:has(.rdz) .res{min-height:32px;height:32px;line-height:32px;white-space:nowrap;font-size:min(22px,5.2vw)}'; document.head.appendChild(st); }
+    },
+    async render(v, r) {
+      const c = document.getElementById('rdC'), z = c.closest('.tcpz'), H = document.getElementById('rdH'); z.classList.remove('win', 'lose');
+      const sorted = v.cards.slice(0, 2).slice().sort((a, b) => '23456789TJQKA'.indexOf(a[0]) - '23456789TJQKA'.indexOf(b[0]));
+      const show = async (codes) => { c.innerHTML = ''; for (let i = 0; i < codes.length; i++) { const e = codes[i] ? cardEl(codes[i], i) : el('<div class="slots"><i class="mid"></i></div>'); c.appendChild(e); if (codes[i]) { (sfx.card || sfx.click)(); await wait(200); } } };
+      if (!v.done) await show([sorted[0], null, sorted[1]]);
+      else if (v.cards.length >= 3) { if (!c.querySelector('.pcard')) await show([sorted[0], null, sorted[1]]); const m = c.querySelector('.slots'); const e = cardEl(v.cards[2], 1); e.classList.add('dealt'); if (m) c.replaceChild(e, m); else c.appendChild(e); (sfx.card || sfx.click)(); await wait(400); }
+      else await show([sorted[0], sorted[1]]);
+      document.querySelectorAll('#rdM span').forEach(x => x.classList.toggle('on', v.spread > 0 && +x.dataset.s === Math.min(4, v.spread)));
+      if (!v.done) { H.innerHTML = PKT('间隔 ', 'Spread ') + v.spread + PKT('，赔 ', ' pays ') + v.pays + ':1 · ' + PKT('加注要再押 ', 'raising adds ') + fmt(TT.bets.main || 0); showRes(PKT('加注还是直接要牌？', 'Raise or call?'), 0); return; }
+      H.innerHTML = '';
+      let o = v.out || ''; const m3 = o.match(/^In between! (\d+):1$/);
+      const OUT = m3 ? ['落在中间！' + m3[1] + ':1', 'IN BETWEEN! ' + m3[1] + ':1'] : { 'Outside — dealer wins': ['没落在中间，庄家赢', 'OUTSIDE — DEALER WINS'], 'Pair — push': ['对子，退回', 'PAIR — PUSH'], 'Consecutive — push': ['两张相连，退回', 'CONSECUTIVE — PUSH'], 'Three of a kind! 11:1': ['三条！11:1', 'THREE OF A KIND! 11:1'] }[o] || [o, o];
+      z.classList.add(r.win > (TT.curStake || 0) ? 'win' : /Outside/.test(o) ? 'lose' : 'x');
+      showRes(PKT(OUT[0], OUT[1]) + (r.win > 0 ? ' · ' + PKT('赢 ', 'WIN ') + fmt(r.win) : ''), r.win);
+    },
+    actLabel: (a) => a === 'raise' ? PKT('加注', 'RAISE') + ' ' + fmt(TT.bets.main || 0) : a === 'call' ? PKT('要牌', 'CALL') : null,
+    keepBets: false
+  };
 
   // ---- VEGAS POKER TABLES (v5.7) ----
   REND.uth = { setup(f) { pokerSetup(f, [['ante', 'Ante', 'Blind = Ante (auto)', 'big'], ['trips', 'Trips', 'Trips 3:1 → Royal 50:1']], 'Bet 3× or 4× before the flop, 2× after the flop, 1× on the river (or fold) · Dealer qualifies with a pair · Blind pays on a straight or better: 1:1 → royal 500:1', true); },

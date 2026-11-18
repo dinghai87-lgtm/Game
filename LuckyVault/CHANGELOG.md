@@ -390,3 +390,6 @@ Platform release: everything on the "do all of these" list except the public dep
 
 ## Round 20 (19:00) — Cosmic Candy & Mayan Mystery own sets
 - Cosmic Candy shared 9/11 with Candy Carnival -> lollipops / ice-cream set. Mayan Mystery shared 9/11 with Aztec Treasure Link -> stone-age ritual set (skull, fire pit, horn, roots, berries, mushrooms, herbs). New covers. sw lv-v76. Tests 90/90.
+
+## Round 21 (19:05) — Thunder Temple & Fiesta Loca own sets
+- Thunder Temple (shared 7 with Frozen Kingdom / Ice Queen) -> storm-priest tiles with gold rim. Fiesta Loca (shared 9 with Jungle Reels) -> market produce set (corn, avocado, pineapple...). New covers. sw lv-v77. Tests 90/90.

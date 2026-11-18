@@ -1,4 +1,3 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="VANTAX GAMES">
-  <rect width="32" height="32" rx="8" fill="#0a1016"/>
-  <path d="M7.5 8.2h5.15L16 20.4 19.35 8.2h5.15L16.7 24.2h-1.4L7.5 8.2z" fill="#5eead4"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><path d="M32 5.5 L53 12.2 C54.2 12.6 55 13.7 55 15 V30.5 C55 44.2 46.2 53.6 32.9 58.6 C32.3 58.8 31.7 58.8 31.1 58.6 C17.8 53.6 9 44.2 9 30.5 V15 C9 13.7 9.8 12.6 11 12.2 Z" fill="#12243b"/><path d="M32 5.5 L53 12.2 C54.2 12.6 55 13.7 55 15 V30.5 C55 44.2 46.2 53.6 32.9 58.6 C32.3 58.8 31.7 58.8 31.1 58.6 C17.8 53.6 9 44.2 9 30.5 V15 C9 13.7 9.8 12.6 11 12.2 Z" fill="none" stroke="#d8b47c" stroke-opacity=".5" stroke-width="1"/>
+<path d="M38.4 19 H46 L35.4 49 H28.6 Z" fill="#b28a59"/>
+<path d="M18 19 H25.6 L35.4 49 H28.6 Z" fill="#d8b47c" stroke="#12243b" stroke-width="1.6" stroke-linejoin="round" paint-order="stroke"/></svg>

@@ -475,3 +475,8 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 ## Round 36 (23:10) — Caribbean Stud refined
 - Zoned layout (dealer 5 slots with one up-card, player 5 slots), hand name shown while deciding, strategy tip (raise with a pair+ or A-K), Raise button shows the amount, results translated, winner glow, losing chips cleared.
 - sw lv-v103. Tests 90/90.
+
+## Round 37 (23:25) — Casino War refined
+- Dealer (red) / You (blue) panels with card slots; war cards slide in next to the first card instead of redrawing; tie prompt + cost note (开战要再押 5.00；投降退回 2.50); buttons show amounts; all results translated (开战胜利 / 开战失败 / 已投降 …); winner glows; losing chips cleared.
+- Caught a build break (left-over render line) before it shipped: build_tables_ui.sh failed silently, so this round adds a syntax check on every table module.
+- sw lv-v105. Tests 90/90.

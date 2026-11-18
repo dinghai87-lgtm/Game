@@ -946,8 +946,29 @@
     actLabel: (a) => a === 'raise' ? PKT('加注', 'RAISE') + ' ' + fmt((TT.bets.ante || 0) * 2) : a === 'fold' ? PKT('弃牌', 'FOLD') : null,
     keepBets: false
   };
-  REND.war = { setup(f) { f.innerHTML = '<div class="hands"><div class="area"><div class="lbl">Dealer</div><div class="cards" id="wD"></div></div><div class="area"><div class="lbl">You</div><div class="cards" id="wP"></div></div></div>' + resLine() + '<div class="spots" id="wS"></div><div class="pt2">Higher card wins 1:1 · On a tie, go to war (match your bet) or surrender half</div>'; document.getElementById('wS').appendChild(spotBtn('main', 'Bet', '1:1', 'big')); },
-    async render(v, r) { const D = document.getElementById('wD'), P = document.getElementById('wP'); D.innerHTML = ''; P.innerHTML = ''; v.D.forEach((c, i) => D.appendChild(cardEl(c, i))); v.P.forEach((c, i) => P.appendChild(cardEl(c, i))); (sfx.card || sfx.click)(); await wait(400); showRes((v.out || '') + (r.win > 0 ? ' · WIN ' + fmt(r.win) : ''), r.win); } };
+  // Casino War refine: two panels (dealer red / you blue) with card slots, war shown as a second card, clear results, one language
+  REND.war = {
+    setup(f) {
+      f.innerHTML = '<div class="hands bac wars"><div class="area" id="wDa"><div class="lbl lb">' + PKT('庄家', 'DEALER') + '</div><div class="cards" id="wD"></div></div><div class="area" id="wPa"><div class="lbl lp">' + PKT('你', 'YOU') + '</div><div class="cards" id="wP"></div></div></div>' + resLine() + '<div class="tcph" id="wH"></div><div class="spots" id="wS"></div><div class="pt2">' + PKT('比一张牌，大者赢 1:1（A 最大）· 平手时可开战（再押同额，赢了主注赔 1:1、开战注退回）或投降退回一半 · 开战再平手额外奖励', 'One card each, higher wins 1:1 (Ace high) · On a tie: go to war (match your bet) or surrender half · A tie in the war pays a bonus') + '</div>';
+      document.getElementById('wS').appendChild(spotBtn('main', PKT('投注', 'BET'), '1:1', 'big', '你和庄家各发一张牌，牌大者赢，赔 1:1（A 最大）。平手时可以选择开战（再押一份同额）或投降（退回一半）。<br>You and the dealer get one card each; higher card wins 1:1 (Ace high). On a tie you may go to war (match your bet) or surrender half.'));
+      if (!document.getElementById('warCss')) { const st = document.createElement('style'); st.id = 'warCss'; st.textContent = '.hands.wars .cards:empty::after{display:none}#wS{width:100%;max-width:360px;display:grid}#wS .spot{min-height:70px;font-size:17px;min-width:200px}#wS .spot .stk{left:auto;top:auto;right:4px;bottom:4px;transform:none;flex-direction:row;gap:2px;align-items:flex-end}#wS .spot .pile{width:30px;height:calc(30px + (var(--n) - 1) * 3px)}#wS .spot .pile .chip{width:30px;height:30px;bottom:calc(var(--i) * 3px)}#wS .spot.has{color:#fff}#felt:has(.wars) .res{min-height:32px;height:32px;line-height:32px;white-space:nowrap;font-size:min(22px,5.2vw)}'; document.head.appendChild(st); }
+    },
+    async render(v, r) {
+      const D = document.getElementById('wD'), P = document.getElementById('wP'), H = document.getElementById('wH');
+      ['wDa', 'wPa'].forEach(id => document.getElementById(id).classList.remove('win'));
+      const put = async (el, codes) => { const n = el.querySelectorAll('.pcard').length; if (n > codes.length) { el.innerHTML = ''; } for (let i = el.querySelectorAll('.pcard').length; i < codes.length; i++) { el.appendChild(cardEl(codes[i], i)); (sfx.card || sfx.click)(); await wait(260); } };
+      if (!v.done && v.P.length === 1) { D.innerHTML = ''; P.innerHTML = ''; }
+      if (v.done && v.P.length === 1) { D.innerHTML = ''; P.innerHTML = ''; }
+      await put(P, v.P); await put(D, v.D);
+      const OUT = { 'You win': ['你赢了', 'YOU WIN'], 'Dealer wins': ['庄家赢', 'DEALER WINS'], 'Tie! Go to war or surrender': ['平手！开战还是投降？', 'TIE! WAR OR SURRENDER?'], 'Surrendered (half returned)': ['已投降（退回一半）', 'SURRENDERED (HALF BACK)'], 'You win the war': ['开战胜利', 'YOU WIN THE WAR'], 'Tie in war! Bonus paid': ['开战再平手！奖励', 'WAR TIE! BONUS'], 'Dealer wins the war': ['开战失败', 'DEALER WINS THE WAR'] }[v.out] || [v.out, v.out];
+      if (!v.done) { H.innerHTML = PKT('开战要再押 ', 'War adds ') + fmt(TT.bets.main || 0) + PKT('；投降退回 ', ' · surrender returns ') + fmt((TT.bets.main || 0) / 2); showRes(PKT(OUT[0], OUT[1]), 0); return; }
+      H.innerHTML = '';
+      if (/^You win|Bonus/.test(v.out)) document.getElementById('wPa').classList.add('win'); else if (/^Dealer/.test(v.out)) document.getElementById('wDa').classList.add('win');
+      showRes(PKT(OUT[0], OUT[1]) + (r.win > 0 ? ' · ' + PKT('赢 ', 'WIN ') + fmt(r.win) : ''), r.win);
+    },
+    actLabel: (a) => a === 'war' ? PKT('开战', 'GO TO WAR') + ' ' + fmt(TT.bets.main || 0) : a === 'surrender' ? PKT('投降', 'SURRENDER') : null,
+    keepBets: false
+  };
   REND.reddog = { setup(f) { f.innerHTML = '<div class="cards" id="rdC"></div><div class="lbl" id="rdL">Will the third card fall in between?</div>' + resLine() + '<div class="spots" id="rdS"></div><div class="pt2">Spread 1 pays 5:1 · 2 pays 4:1 · 3 pays 2:1 · 4+ pays 1:1 · Pair + match 11:1</div>'; document.getElementById('rdS').appendChild(spotBtn('main', 'Bet', 'Raise to double', 'big')); },
     async render(v, r) { const c = document.getElementById('rdC'); const had = c.children.length; if (!v.done || v.cards.length <= 2 || !had) { c.innerHTML = ''; v.cards.forEach((x, i) => c.appendChild(cardEl(x, i))); } else c.appendChild(cardEl(v.cards[2])); (sfx.card || sfx.click)(); await wait(400);
       document.getElementById('rdL').innerHTML = v.spread > 0 ? 'Spread <b>' + v.spread + '</b> pays <b>' + v.pays + ':1</b>' : ''; showRes(v.done ? (v.out || '') + (r.win > 0 ? ' · WIN ' + fmt(r.win) : '') : 'Raise or call?', r.win); },

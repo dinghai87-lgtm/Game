@@ -635,3 +635,8 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 ## Round 82 (06:58)
 - 轮盘（单人+多人）：手机竖屏下注格加高 30→38px，更好点、不留大片空白
 - 多人骰宝/多人轮盘逐帧检查通过；ui_smoke 全部桌台 0 问题
+
+## Round 83 (07:57)
+- 21 点：手机单手牌时牌面放大（48→58px）
+- 换牌 21 点分牌后出现 3~4 手牌会超出屏幕 → 改为自动两行排列（ui_smoke 发现的问题，已修）
+- ui_smoke 增加 LV_ONLY 过滤，方便单独跑某个桌台

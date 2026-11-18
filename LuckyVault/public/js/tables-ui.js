@@ -198,7 +198,7 @@
 .pt2{font-size:12px;color:#cfe;opacity:.85;text-align:center}
 @media(max-width:560px){#felt.oval::before{border-radius:20px 20px 48% 48%/20px 20px 10% 10%;border-width:4px}#felt.oval::after{display:none}.pcard{--cw:48px}.spot{min-width:72px;min-height:58px;font-size:11px}.spot.big{min-width:96px;min-height:66px;font-size:13px}.chip{width:38px;height:38px;font-size:10px}.tbtn{height:42px;padding:0 12px;font-size:12px}.die{width:46px;height:46px}
  .rl-board{grid-template-columns:30px repeat(12,1fr) 30px;grid-auto-rows:30px;font-size:10px;width:96vw}.rl-wheel{width:150px}.kn-grid{grid-template-columns:repeat(10,1fr);width:94vw}.res{font-size:18px}}
-@media(max-width:560px) and (min-height:740px){.rl-board{grid-auto-rows:38px;font-size:12px}.rl-board .stk .chip.mini{width:24px;height:24px}}
+@media(max-width:560px) and (min-height:740px){.rl-board{grid-auto-rows:38px;font-size:12px}#felt[data-tk=blackjack]:not([data-tv=switch]):not(:has(.bjp .hand + .hand)) .pcard{--cw:58px}.rl-board .stk .chip.mini{width:24px;height:24px}}
 @media(max-height:500px) and (orientation:landscape){
  #felt{padding:6px;gap:6px}#felt.oval::after{display:none}
  .pcard{--cw:40px}.vp-cards .pcard{--cw:60px}.vp-pay{font-size:10px}.vp-pay td{padding:1px 6px}
@@ -394,7 +394,7 @@
     '#felt:has(.bjz) .res{min-height:30px;height:30px;line-height:30px;white-space:nowrap;overflow:hidden;font-size:min(22px,5vw)}' +
     '#felt .bjp .hand{border-radius:12px;padding:4px 6px;transition:box-shadow .3s,opacity .3s}#felt .bjp .hand.hw{box-shadow:0 0 0 2px #ffd60a,0 0 20px rgba(255,214,10,.45)}#felt .bjp .hand.hl{opacity:.55}' +
     '#felt .sideres:empty{display:none}#bjSpot .spot.has small{visibility:hidden}' +
-    '@media(max-width:560px){#felt .bjz{--bjw:48px}}';
+    '@media(max-width:560px){#felt .bjz{--bjw:48px}#felt .bjp:has(.hand:nth-child(3)){flex-wrap:wrap!important;height:auto!important;min-height:calc(var(--bjw) * 1.42 + 46px);gap:2px 6px}#felt .bjp:has(.hand:nth-child(3)) .hand{padding:2px 3px}#felt .bjp:has(.hand:nth-child(3)) .pcard{--cw:36px!important}}';
     document.head.appendChild(st); }
   REND.blackjack = {
     setup(f, g) { f.innerHTML = '<div class="area bjz bjd"><div class="lbl" id="dLbl">Dealer</div><div id="dCards" class="cards"></div></div>' + resLine() + '<div class="hands bjz bjp" id="pHands"></div><div class="spots" id="bjSpot"></div><div class="sideres" id="bjSide"></div><div class="pt2">' + TE.BJV[g.tv].name + ' · Blackjack pays ' + (TE.BJV[g.tv].bj === 1 ? '1:1' : TE.BJV[g.tv].bj === 1.2 ? '6:5' : '3:2') + ' · ' + ({ zh: '长按下注格看边注赔率', en: 'Long-press a bet for its payouts' }[window.LVLang && LVLang.get()] || '长按下注格看边注赔率 · Long-press a bet for its payouts') + '</div>';
@@ -1367,7 +1367,7 @@
     document.body.style.overflow = 'hidden'; const f = document.getElementById('felt'); f.innerHTML = '';
     const RULES = { blackjack: TE.BJV[g.tv] && TE.BJV[g.tv].hole ? 'Blackjack pays 3 to 2 · Insurance pays 2 to 1' : 'Blackjack pays 3 to 2', baccarat: g.tv === 'nc' ? 'Banker 6 pays 1 to 2 · Tie pays 8 to 1' : 'Banker pays 19 to 20 · Tie pays 8 to 1', dragontiger: 'Tie pays 11 to 1 · Suited tie 50 to 1', tcp: 'Dealer plays with queen high or better', holdem: 'Dealer qualifies with pair of fours', caribbean: 'Dealer qualifies with ace king', war: 'Tie: go to war or surrender', reddog: 'Spread pays up to 5 to 1' };
     const RZ = { 'Blackjack pays 3 to 2 · Insurance pays 2 to 1': '黑杰克赔 3:2 · 保险赔 2:1', 'Blackjack pays 3 to 2': '黑杰克赔 3:2', 'Banker 6 pays 1 to 2 · Tie pays 8 to 1': '庄 6 点赔 1:2 · 和局赔 8:1', 'Banker pays 19 to 20 · Tie pays 8 to 1': '庄赔 0.95:1 · 和局赔 8:1', 'Tie pays 11 to 1 · Suited tie 50 to 1': '和局赔 11:1 · 同花和 50:1', 'Dealer plays with queen high or better': '庄家 Q 高以上才合格', 'Dealer qualifies with pair of fours': '庄家一对 4 以上才合格', 'Dealer qualifies with ace king': '庄家 A-K 以上才合格', 'Tie: go to war or surrender': '平手：开战或投降', 'Spread pays up to 5 to 1': '间隔最高赔 5:1' };
-    { const L = (window.LVLang && LVLang.get()) || 'en', rr = RULES[g.tk] || ''; f.className = rr ? 'oval' : ''; f.dataset.rule = L === 'zh' ? (RZ[rr] || rr) : L === 'bi' && RZ[rr] ? RZ[rr] + ' · ' + rr : rr; }
+    { const L = (window.LVLang && LVLang.get()) || 'en', rr = RULES[g.tk] || ''; f.className = rr ? 'oval' : ''; f.dataset.tk = g.tk; f.dataset.tv = g.tv || ''; f.dataset.rule = L === 'zh' ? (RZ[rr] || rr) : L === 'bi' && RZ[rr] ? RZ[rr] + ' · ' + rr : rr; }
     { const L = TART && TART.look[LOOKK[g.tk]]; t.classList.toggle('tart', !!L); t.style.backgroundImage = L && L[0] ? 'linear-gradient(rgba(0,0,0,.25),rgba(0,0,0,.45)),url(' + TA + L[0] + ')' : '';
       f.classList.toggle('hasfelt', !!(L && L[1])); f.style.setProperty('--felt', L && L[1] ? 'url(' + TA + L[1] + ')' : 'none');
       const od = document.getElementById('tDealer'); if (od) od.remove(); if (false && L && L[2]) { const im = document.createElement('img'); im.id = 'tDealer'; im.src = TA + L[2]; im.alt = ''; t.insertBefore(im, f); } }

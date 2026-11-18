@@ -562,3 +562,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 59 (02:40) — Lobby rewards dock pass (phone, 中文)
 - Opened every dock item (收取 / 每日转盘 / 每日冲刺 / 存钱猪 / 图鉴 / VIP 俱乐部) and the starter-task card: all translated and laid out fine. Fixed the floating "+1,000 free coins" coin text (now +1,000 免费金币). sw lv-v135. Tests 90/90.
+
+## Round 60 (02:51) — Friends & clubs panel in one language
+- Top-bar panels checked (奖励 / 好友 / 通知 / 账户 / 设置). The friends + clubs panel mixed Chinese and English in almost every line (placeholders, buttons, tips, toasts, confirm dialog); rewritten to follow the language setting (25 strings). Account 'Music On' → 开. sw lv-v137. Tests 90/90.

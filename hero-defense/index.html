@@ -3461,7 +3461,7 @@ function resumeGet(){try{return JSON.parse(localStorage.getItem('hero_resume')||
 function resumeSet(o){try{if(o)localStorage.setItem('hero_resume',JSON.stringify(o));else localStorage.removeItem('hero_resume')}catch(e){}}
 let resumeData=null,resumeAsked=false;
 (function(){
-  const up=update;update=function(dt){up(dt);try{if(!G||G.over||G.firstWave||G.L.chal||G.li<0&&!G.L.endless||G.hmode)return;if(G.enemies.some(e=>!e.dead)||(G.spawnQ&&G.spawnQ.length))return;if(G.savedWave===G.wave)return;G.savedWave=G.wave;
+  const up=update;update=function(dt){up(dt);try{if(!G||G.over||G.firstWave||G.L.chal||G.li<0&&!G.L.endless||G.hmode)return;if(G.enemies.some(e=>!e.dead)||(G.spawnQ&&G.spawnQ.length))return;if(G.savedWave===G.wave)return;if(G.pwWave===G.wave&&!G.pwDone)return;G.savedWave=G.wave;
     resumeSet({li:G.li,end:G.L.endless?G.endlessMap||1:0,wave:G.wave,gold:G.gold,lives:G.lives,buf:G.buf||{},tw:G.towers.map(t=>t.type?[t.type,t.lvl,t.br==null?-1:t.br,t.para?1:0]:null),team:SAVE.team.slice(),at:Date.now(),name:String(G.L.name)})}catch(e){}};
   const eb=endBattle;endBattle=function(win){eb(win);resumeSet(null)};
   const sl=startLevel;startLevel=function(li,e){if(G)G.endlessMap=null;sl(li,e);try{if(G&&e)G.endlessMap=e}catch(_){}try{const R=resumeData;resumeData=null;if(!R||!G)return;
@@ -3559,7 +3559,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794985964';
+const BUILD_VER='1794986379';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

@@ -428,7 +428,7 @@
     if (CJK.test(raw)) { const t = raw.trim(), z = mono(t); if (z && z !== t) { ORIG.set(node, raw); node.nodeValue = raw.replace(t, z); } return; }
     if (mode === 'en') return;
     const t = raw.trim(); const z = tr(t); if (z == null) return;
-    const zo = node.parentNode && node.parentNode.hasAttribute && node.parentNode.hasAttribute('data-zh1');
+    const pn = node.parentNode, cx = pn && /^(SPAN|B|SMALL|EM|I|STRONG)$/.test(pn.nodeName) && pn.parentNode && /^(P|LI)$/.test(pn.parentNode.nodeName) ? pn.parentNode : pn, zo = pn && pn.hasAttribute && (pn.hasAttribute('data-zh1') || (cx.childNodes.length > 1 && cx.children.length > 0 && !/^(BUTTON|A|LABEL|OPTION)$/.test(cx.nodeName) && cx.textContent.trim().length > t.length + 2));
     const out = mode === 'bi' && !zo && t.length <= 14 && z !== t ? z + ' ' + biTail(t, z) : z;
     const nv = raw.replace(t, out); if (nv === raw) return;   // never re-set an unchanged value (would loop through the observer)
     ORIG.set(node, raw); node.nodeValue = nv;

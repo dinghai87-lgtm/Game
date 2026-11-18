@@ -625,3 +625,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 79 (06:20)
 - 双语模式大厅：分类标签去掉重复图标（🏠 大厅 Lobby）；新手任务卡的关闭按钮改为右上角悬浮，去掉中间空白
+
+## Round 80 (06:32)
+- 双语模式：句子中间夹数字的片段（如「200 金币。 coins.」「奖励 ×1×1 bonuses」）只显示中文，不再逐词中英混排；存钱猪、图鉴、VIP 面板已逐个截图确认

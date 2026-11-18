@@ -466,3 +466,8 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 - Cause found: while reels spin, each 3000–4200px-tall reel strip carried an SVG motion-blur filter (CPU-rendered); on large / high-DPI desktop windows this stalls rendering. Replaced with a light streak overlay (no filter on the strip). Background emoji drift with blur filter now pauses while spinning.
 - Safety net: if a spin is still 'busy' after 12s (not in a bonus/overlay, tab visible), it is fast-stopped; a second miss force-unlocks the spin button.
 - Repro runs: Koi Pond bet 50, 1069x836 @2x, turbo on and off, 40 spins each — no stuck spins. sw lv-v101. Tests 90/90.
+
+## Round 35 (23:00) — Casino Hold'em refined
+- Same zoned layout as Three Card Poker (shared helper pkZones): dealer 2 slots, board 5 slots, player 2 slots, fixed heights — no jumping as flop / turn / river land.
+- Call button shows the amount (跟注 10.00 = 2× ante) with a note; results and hand names translated (两对 / 葫芦 / 四条 / 皇家同花顺 …); winner glows; losing chips leave the table.
+- sw lv-v102. Tests 90/90.

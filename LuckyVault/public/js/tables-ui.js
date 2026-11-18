@@ -853,18 +853,37 @@
   const PKL = () => (window.LVLang && LVLang.get()) || 'bi', PKT = (zh, en) => PKL() === 'zh' ? zh : PKL() === 'en' ? en : zh + ' ' + en;
   { const st = document.createElement('style'); st.textContent =
     '#felt .tcpz{width:100%;max-width:520px;box-sizing:border-box;border-radius:14px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.08);padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;--cw:58px}' +
-    '#felt .tcpz .cards{min-height:calc(var(--cw) * 1.42);align-items:center}#felt .tcpz .cards:empty{display:grid;grid-template-columns:repeat(3,var(--cw));gap:6px}#felt .tcpz .cards:empty::before,#felt .tcpz .cards:empty::after,#felt .tcpz .cards:empty{background:none}' +
+    '#felt .tcpz .cards{min-height:calc(var(--cw) * 1.42);align-items:center;flex-wrap:nowrap}#felt .tcpb{--cw:50px}#felt .tcpz .cards:empty{display:grid;grid-template-columns:repeat(3,var(--cw));gap:6px}#felt .tcpz .cards:empty::before,#felt .tcpz .cards:empty::after,#felt .tcpz .cards:empty{background:none}' +
     '#felt .tcpz .slots{display:flex;gap:6px}#felt .tcpz .slots i{width:var(--cw);height:calc(var(--cw) * 1.4);border:2px dashed rgba(255,255,255,.22);border-radius:7px;box-sizing:border-box}' +
     '#felt .tcpz .lbl{display:inline-flex;gap:6px;align-items:center;background:#0009;border-radius:999px;padding:2px 12px;text-shadow:none;font-size:13px}' +
     '#felt .tcpz.win{border-color:#ffd60a;box-shadow:0 0 0 2px #ffd60a,0 0 20px rgba(255,214,10,.4)}#felt .tcpz.lose{opacity:.6}' +
     '#felt:has(.tcpz) .res{min-height:30px;height:30px;line-height:30px;white-space:nowrap;overflow:hidden;font-size:min(20px,4.8vw)}' +
     '#felt .tcph{min-height:20px;font:700 12px "Microsoft YaHei",Arial,sans-serif;color:#fde68a;text-align:center}' +
-    '#felt:has(.tcpz) #pkS{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:520px}#felt:has(.tcpz) #pkS .spot{min-width:0!important;min-height:60px}' +
+    '#felt:has(.tcpz) #pkS{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;width:100%;max-width:520px}#felt:has(.tcpz) #pkS .spot{min-width:0!important;min-height:60px}' +
     '#felt:has(.tcpz) #pkS .spot .stk{left:auto;top:auto;right:3px;bottom:3px;transform:none;flex-direction:row;gap:2px;align-items:flex-end}#felt:has(.tcpz) #pkS .spot .pile{width:28px;height:calc(28px + (var(--n) - 1) * 2px)}#felt:has(.tcpz) #pkS .spot .pile .chip{width:28px;height:28px;bottom:calc(var(--i) * 2px)}#felt:has(.tcpz) #pkS .spot .stk b{font-size:10px;padding:0 4px}#felt:has(.tcpz) #pkS .spot.has{color:#fff}#felt:has(.tcpz) #pkS .spot.has small{visibility:hidden}' +
-    '@media(max-width:560px){#felt .tcpz{--cw:50px}}';
+    '@media(max-width:560px){#felt .tcpz{--cw:50px}#felt .tcpb{--cw:46px}#felt .tcpz{padding:6px 4px;gap:4px}}';
     document.head.appendChild(st); }
   const H3Z = { 'High Card': '高牌', Pair: '对子', Flush: '同花', Straight: '顺子', 'Three of a Kind': '三条', 'Straight Flush': '同花顺' };
   const hn3 = h => h ? PKT(H3Z[h] || h, h) : '';
+  Object.assign(H3Z, { 'Two Pair': '两对', 'Full House': '葫芦', 'Four of a Kind': '四条', 'Royal Flush': '皇家同花顺' });
+  const PK_OUT = { 'You win': ['你赢了', 'YOU WIN'], 'Dealer wins': ['庄家赢', 'DEALER WINS'], Push: ['和局', 'PUSH'], Folded: ['已弃牌', 'FOLDED'], 'Dealer does not qualify': ['庄家不合格', 'DEALER DOESN’T QUALIFY'] };
+  const slotsH = n => '<div class="slots">' + '<i></i>'.repeat(n) + '</div>';
+  // shared zoned layout for one-hand poker games: dealer panel, optional board panel, result line, hint line, player panel, bets, rules
+  function pkZones(f, o) {
+    f.innerHTML = '<div class="tcpz" id="tcpD"><div class="lbl" id="dL">' + PKT('庄家', 'DEALER') + '</div><div class="cards" id="dC">' + slotsH(o.d) + '</div></div>' +
+      (o.b ? '<div class="tcpz tcpb"><div class="lbl">' + PKT('公共牌', 'BOARD') + '</div><div class="cards" id="bdC">' + slotsH(o.b) + '</div></div>' : '') + resLine() + '<div class="tcph" id="tcpH"></div>' +
+      '<div class="tcpz" id="tcpP"><div class="cards" id="pC">' + slotsH(o.p) + '</div><div class="lbl" id="pL">' + PKT('你的手牌', 'YOUR HAND') + '</div></div><div class="spots" id="pkS"></div><div class="pt2">' + o.note + '</div>';
+    const s = document.getElementById('pkS'); o.spots.forEach(x => s.appendChild(spotBtn(...x)));
+  }
+  async function putCards(el, codes, open, n) { if (!codes) return; const have = el.querySelectorAll('.pcard').length; if (have === codes.length && !codes.some((c, i) => c !== '??' && el.children[i] && el.children[i].dataset && el.children[i].dataset.c === '??')) {}
+    el.innerHTML = ''; for (let i = 0; i < codes.length; i++) { const e = cardEl(codes[i], open ? i : 0); e.dataset.c = codes[i]; el.appendChild(e); if (i >= (n || 0)) { (sfx.card || sfx.click)(); await wait(110); } } }
+  function pkResult(v, r, extraParts) {
+    const H = document.getElementById('tcpH'), O = PK_OUT[v.out] || [v.out || '', v.out || ''];
+    ['tcpD', 'tcpP'].forEach(id => document.getElementById(id).classList.remove('win', 'lose'));
+    if (v.out === 'You win' || v.out === 'Dealer does not qualify') document.getElementById('tcpP').classList.add('win'); else if (v.out === 'Dealer wins') { document.getElementById('tcpD').classList.add('win'); document.getElementById('tcpP').classList.add('lose'); } else if (v.out === 'Folded') document.getElementById('tcpP').classList.add('lose');
+    H.innerHTML = (extraParts || []).join(' · ');
+    showRes(PKT(O[0], O[1]) + (r.win > 0 ? ' · ' + PKT('赢 ', 'WIN ') + fmt(r.win) : ''), r.win);
+  }
   const RV = c => '23456789TJQKA'.indexOf(String(c)[0]) + 2;
   function tcpHint(P, ph) { if (ph && ph !== 'High Card') return true; const r = P.map(RV).sort((a, b) => b - a); return r[0] > 12 || (r[0] === 12 && (r[1] > 6 || (r[1] === 6 && r[2] >= 4))); }
   REND.tcp = {
@@ -895,7 +914,21 @@
     actLabel: (a) => a === 'play' ? PKT('跟注', 'PLAY') + ' ' + fmt(TT.bets.ante || 0) : a === 'fold' ? PKT('弃牌', 'FOLD') : null,
     keepBets: false
   };
-  REND.holdem = { setup(f) { pokerSetup(f, [['ante', 'Ante', 'Call = 2× ante', 'big']], 'Dealer qualifies with a pair of 4s · Ante pays 1:1 up to 100:1 for a royal flush · Call pays 1:1', true); }, render: (v, r) => pokerRender(v, r, 'Call (2× ante) or fold?') };
+  REND.holdem = {
+    setup(f) { pkZones(f, { d: 2, b: 5, p: 2, note: PKT('庄家一对 4 以上才合格 · 底注奖励：同花 2:1 → 皇家同花顺 100:1 · 跟注赔 1:1 · 长按下注格看说明', 'Dealer qualifies with a pair of 4s · Ante bonus: flush 2:1 → royal flush 100:1 · Call pays 1:1 · Long-press a bet for rules'),
+      spots: [['ante', PKT('底注', 'ANTE'), PKT('跟注 = 底注 2 倍', 'Call = 2× ante'), 'big', '先押底注，发两张手牌和三张公共牌后决定：跟注（再押底注的 2 倍）或弃牌。之后再发两张公共牌，与庄家比最大的五张。庄家一对 4 以上才合格；不合格时底注照赔、跟注退回。<br>Bet the Ante, see 2 cards plus the flop, then Call (2× ante) or Fold. Two more board cards follow; best five cards win. Dealer needs a pair of 4s; if not, the Ante pays and the Call pushes.']] }); },
+    async render(v, r) {
+      const H = document.getElementById('tcpH');
+      if (!v.done) { ['tcpD', 'tcpP'].forEach(id => document.getElementById(id).classList.remove('win', 'lose')); await putCards(document.getElementById('pC'), v.P, true); await putCards(document.getElementById('dC'), v.D, false, 2); await putCards(document.getElementById('bdC'), v.B, true);
+        document.getElementById('pL').innerHTML = PKT('你的手牌', 'YOUR HAND'); document.getElementById('dL').innerHTML = PKT('庄家', 'DEALER');
+        H.innerHTML = PKT('跟注要再押底注的 2 倍：', 'Calling adds 2× your ante: ') + fmt((TT.bets.ante || 0) * 2); showRes(PKT('跟注还是弃牌？', 'Call or fold?'), 0); return; }
+      await putCards(document.getElementById('dC'), v.D, true); await putCards(document.getElementById('bdC'), v.B, true, 3);
+      document.getElementById('pL').innerHTML = PKT('你的手牌', 'YOUR HAND') + (v.ph ? ' <b>' + hn3(v.ph) + '</b>' : ''); document.getElementById('dL').innerHTML = PKT('庄家', 'DEALER') + (v.dh ? ' <b>' + hn3(v.dh) + '</b>' : '');
+      pkResult(v, r);
+    },
+    actLabel: (a) => a === 'call' ? PKT('跟注', 'CALL') + ' ' + fmt((TT.bets.ante || 0) * 2) : a === 'fold' ? PKT('弃牌', 'FOLD') : null,
+    keepBets: false
+  };
   REND.caribbean = { setup(f) { pokerSetup(f, [['ante', 'Ante', 'Raise = 2× ante', 'big']], 'Dealer qualifies with Ace-King · Raise pays 1:1 up to 100:1 for a royal flush'); }, render: (v, r) => pokerRender(v, r, 'Raise (2× ante) or fold?') };
   REND.war = { setup(f) { f.innerHTML = '<div class="hands"><div class="area"><div class="lbl">Dealer</div><div class="cards" id="wD"></div></div><div class="area"><div class="lbl">You</div><div class="cards" id="wP"></div></div></div>' + resLine() + '<div class="spots" id="wS"></div><div class="pt2">Higher card wins 1:1 · On a tie, go to war (match your bet) or surrender half</div>'; document.getElementById('wS').appendChild(spotBtn('main', 'Bet', '1:1', 'big')); },
     async render(v, r) { const D = document.getElementById('wD'), P = document.getElementById('wP'); D.innerHTML = ''; P.innerHTML = ''; v.D.forEach((c, i) => D.appendChild(cardEl(c, i))); v.P.forEach((c, i) => P.appendChild(cardEl(c, i))); (sfx.card || sfx.click)(); await wait(400); showRes((v.out || '') + (r.win > 0 ? ' · WIN ' + fmt(r.win) : ''), r.win); } };

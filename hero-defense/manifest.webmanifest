@@ -1,6 +1,6 @@
 {
-  "name": "Hero Defense · 英雄守关",
-  "short_name": "英雄守关",
+  "name": "Hero Defense",
+  "short_name": "Hero Defense",
   "description": "© 2026 万泰游戏开发 Wantai Game Development",
   "start_url": "./index.html",
   "scope": "./",

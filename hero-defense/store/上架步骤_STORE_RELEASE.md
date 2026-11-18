@@ -1,4 +1,4 @@
-# 英雄守关 Hero Defense — 上架步骤（需要 Kev 亲自做的部分）
+# 英雄塔防 Hero Defense — 上架步骤（需要 Kev 亲自做的部分）
 
 已经准备好的：App 工程（`hero-defense/mobile/`）、图标、启动图、截图（中/英 × iPhone/iPad/Android）、Google Play 置顶图、6 种语言的商店文案（`LISTING.md`）、隐私政策 / 用户协议（已填公司信息）、游戏内「删除我的数据」、Android 测试包自动编译（GitHub Actions）。
 

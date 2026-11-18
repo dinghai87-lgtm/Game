@@ -95,6 +95,12 @@ Object.assign(I18N.ja,{"「任务」里新增 9 道残局：固定金币和塔�
 Object.assign(I18N.ko,{"「任务」里新增 9 道残局：固定金币和塔，没有英雄，靠布局过关": "「임무」에 퍼즐 9개: 골드와 탑 고정, 영웅 없이 배치로 승부", "再玩": "다시", "开始": "시작", "残局": "퍼즐", "固定金币、固定的塔，没有英雄和法术，杀敌不给钱——只靠布局取胜": "골드와 탑 고정, 영웅·마법 없음, 처치 골드 없음 — 배치로만 승리", "残局：金币只有这么多，想清楚再建！": "퍼즐: 골드는 이게 전부, 잘 생각하고 지으세요!", "通关第 5 关后开放": "5스테이지 클리어 후 개방"});
 Object.assign(I18N.es,{"「任务」里新增 9 道残局：固定金币和塔，没有英雄，靠布局过关": "9 puzles en Misiones: oro y torres fijos, sin héroes; gana con la colocación", "再玩": "Repetir", "开始": "Empezar", "残局": "Último bastión", "固定金币、固定的塔，没有英雄和法术，杀敌不给钱——只靠布局取胜": "Oro y torres fijos, sin héroes ni hechizos ni oro por bajas: solo cuenta la colocación", "残局：金币只有这么多，想清楚再建！": "Último bastión: este es todo tu oro, ¡piensa antes de construir!", "通关第 5 关后开放": "Se desbloquea tras el nivel 5"});
 
+// 英雄天赋
+Object.assign(I18N.en,{"体魄":"Vigor","可用天赋点":"Talent points","威力":"Power","疾风":"Haste","完成":"Done","重置":"Reset","所有技能伤害与效果 +10%/级":"All skill damage & effects +10%/rank","所有技能冷却 -6%/级":"All skill cooldowns -6%/rank","生命 +8%/级，护甲 +2%/级":"HP +8%/rank, armor +2%/rank","英雄天赋":"Hero Talents","英雄每升 1 级得 1 个天赋点，在英雄殿分配到威力、疾风、体魄":"Heroes earn 1 talent point per level — spend them in the Hero Hall on Power, Haste or Vigor"});
+Object.assign(I18N.ja,{"体魄":"体力","可用天赋点":"天賦ポイント","威力":"威力","疾风":"疾風","完成":"完了","重置":"リセット","所有技能伤害与效果 +10%/级":"全スキルの効果 +10%/段階","所有技能冷却 -6%/级":"全スキルのCT -6%/段階","生命 +8%/级，护甲 +2%/级":"HP +8%/段階、防御 +2%/段階","英雄天赋":"英雄の天賦","英雄每升 1 级得 1 个天赋点，在英雄殿分配到威力、疾风、体魄":"英雄はレベルごとに天賦ポイント1。英雄殿で威力・疾風・体力に振り分け"});
+Object.assign(I18N.ko,{"体魄":"체력","可用天赋点":"특성 포인트","威力":"위력","疾风":"질풍","完成":"완료","重置":"초기화","所有技能伤害与效果 +10%/级":"모든 스킬 효과 +10%/단계","所有技能冷却 -6%/级":"모든 스킬 쿨타임 -6%/단계","生命 +8%/级，护甲 +2%/级":"체력 +8%/단계, 방어 +2%/단계","英雄天赋":"영웅 특성","英雄每升 1 级得 1 个天赋点，在英雄殿分配到威力、疾风、体魄":"영웅은 레벨마다 특성 포인트 1개 — 영웅전에서 위력·질풍·체력에 분배"});
+Object.assign(I18N.es,{"体魄":"Vigor","可用天赋点":"Puntos de talento","威力":"Poder","疾风":"Prisa","完成":"Listo","重置":"Reiniciar","所有技能伤害与效果 +10%/级":"Habilidades +10% de efecto/rango","所有技能冷却 -6%/级":"Enfriamiento -6%/rango","生命 +8%/级，护甲 +2%/级":"Vida +8%/rango, armadura +2%/rango","英雄天赋":"Talentos de héroe","英雄每升 1 级得 1 个天赋点，在英雄殿分配到威力、疾风、体魄":"Los héroes ganan 1 punto de talento por nivel: repártelos en el Salón entre Poder, Prisa y Vigor"});
+
 'use strict';
 // ====================== 基础 ======================
 let W=1280,H=720,OX=0,OY=0,HOX=0,HOY=0;const WW=1280,WH=720;
@@ -2594,6 +2600,42 @@ function drawPuzzle(x,y,w){if(!feat('puzzle')){txt(TR('通关第 5 关后开放'
   if(window.__api)Object.assign(window.__api,{startLevel,callWave,endBattle});
 })();
 
+// ====================== 英雄天赋点（王国保卫战 5：英雄升级获得技能点，自由分配） ======================
+// 每升 1 级得 1 点（最多 15 点），三条路线各 5 级：威力 / 冷却 / 体魄。可免费重置。
+const HTAL=[{k:'p',n:'威力',d:'所有技能伤害与效果 +10%/级',c:'#ff8a3d'},{k:'c',n:'疾风',d:'所有技能冷却 -6%/级',c:'#5fd0ff'},{k:'h',n:'体魄',d:'生命 +8%/级，护甲 +2%/级',c:'#7be07b'}];
+ONB_F.htal=7;ONB_CARD.htal=['英雄天赋','英雄每升 1 级得 1 个天赋点，在英雄殿分配到威力、疾风、体魄'];
+const htGet=id=>{SAVE.htal=SAVE.htal||{};return SAVE.htal[id]||(SAVE.htal[id]={p:0,c:0,h:0})};
+const htTot=id=>Math.min(15,heroLvl(id)-1);
+const htUsed=id=>{const t=htGet(id);return t.p+t.c+t.h};
+const htFree=id=>Math.max(0,htTot(id)-htUsed(id));
+const htOn=()=>feat('htal');
+let htalPop=null;
+// 战斗属性
+const _ahm7=applyHeroMeta;applyHeroMeta=function(a,team){_ahm7(a,team);if(!htOn()||!a||!a.hero)return;const t=htGet(a.hero);
+  a.max*=1+.08*t.h;a.hp=a.max;a.armor=Math.min(.8,(a.armor||0)+.02*t.h);a.cdm=(a.cdm||1)*(1-.06*t.c);a.htp=t.p};
+const _hpw7=heroPower;heroPower=function(id){const r=_hpw7(id);if(htOn()){const t=htGet(id);r.hp*=1+.08*t.h;r.armor=Math.min(.8,r.armor+.02*t.h)}return r};
+// 技能威力：技能里的倍率 m=(…)*(1+.06*star)，临时把 star 换算成带天赋的值
+function htWrap(f){return function(a){if(!a||!a.htp)return f.apply(this,arguments);const s=a.star||0;a.star=((1+.06*s)*(1+.1*a.htp)-1)/.06;try{return f.apply(this,arguments)}finally{a.star=s}}}
+heroSkill=htWrap(heroSkill);heroSkill2=htWrap(heroSkill2);heroSkill3=htWrap(heroSkill3);
+// 英雄殿：按钮 + 分配面板
+const _dh7=drawHeroes;drawHeroes=function(dt){_dh7(dt);if(!htOn()||!owns(heroFocus))return;const px=690,py=92,f=htFree(heroFocus);
+  button(TR('天赋')+(f?' +'+f:''),px+408,py+128,124,40,()=>{htalPop=heroFocus;AUD.sfx('open')},{style:f?'red':'blue',size:16});
+  if(f){const t=G_T();ctx.save();ctx.fillStyle='#ff3b30';ctx.beginPath();ctx.arc(px+528,py+132,7+Math.sin(t*6),0,7);ctx.fill();ctx.restore()}
+  if(htalPop)drawHtal()};
+const G_T=()=>performance.now()/1000;
+function drawHtal(){const id=htalPop,D=HEROES[id],t=htGet(id),f=htFree(id);ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,0,W,H);hit(0,0,W,H,()=>{htalPop=null;AUD.sfx('close')});
+  const w=660,h=430,x=W/2-w/2,y=H/2-h/2;ns('ui_Window_Background',x,y,w,h,150,.4);hit(x,y,w,h,()=>{});paper(x+24,y+22,w-48,h-44);
+  txt(D.name+' · '+TR('天赋'),W/2,y+56,30,'#5a1d08','center',0);
+  fitTxt(TR('等级 ')+heroLvl(id)+'   '+TR('可用天赋点')+' '+f+' / '+htTot(id),W/2,y+92,17,560,f?'#b3260b':'#7a4a1e','center',0);
+  HTAL.forEach((B,i)=>{const yy=y+140+i*78,v=t[B.k];ctx.save();ctx.fillStyle='rgba(90,40,10,.12)';rr(x+50,yy-30,w-100,62,12);ctx.fill();ctx.restore();
+    txt(TR(B.n),x+80,yy-10,22,B.c,'left',3);fitTxt(TR(B.d),x+80,yy+16,13,250,'#3b1f0a','left',0,0,700);
+    for(let k=0;k<5;k++){ctx.save();ctx.fillStyle=k<v?B.c:'rgba(60,30,10,.25)';ctx.beginPath();ctx.arc(x+350+k*26,yy,9,0,7);ctx.fill();ctx.restore()}
+    button('-',x+500,yy-20,44,40,()=>{if(t[B.k]>0){t[B.k]--;save();AUD.sfx('click')}},{style:'gray',size:22,disabled:v<=0});
+    button('+',x+552,yy-20,44,40,()=>{if(t[B.k]<5&&htFree(id)>0){t[B.k]++;save();AUD.sfx('upgrade')}else AUD.sfx('deny')},{style:'green',size:22,disabled:v>=5||f<=0})});
+  button(TR('重置'),x+120,y+h-84,180,54,()=>{t.p=t.c=t.h=0;save();AUD.sfx('click')},{style:'gray',size:18});
+  button(TR('完成'),x+w-300,y+h-84,180,54,()=>{htalPop=null;AUD.sfx('confirm')},{style:'green',size:18})}
+Object.assign(window.__api||{},{htGet,htFree,htTot});
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -2636,7 +2678,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794973774';
+const BUILD_VER='1794974780';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

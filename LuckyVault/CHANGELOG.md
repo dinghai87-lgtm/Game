@@ -461,3 +461,8 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 - Results spelled out (庄家赢 / 你赢了 / 庄家不合格 / 和局 / 已弃牌) with per-bet wins; winner panel glows, loser dims; losing chips leave the table.
 - Fixed a translation bug: Ante was shown as 加注 (raise) — now 底注. Hand names translated (高牌/对子/同花/顺子/三条/同花顺).
 - sw lv-v100. Tests 90/90.
+
+## Round 34 (22:45) — Slot freeze/jank on large screens (owner report: Koi Pond 转了一下就卡了)
+- Cause found: while reels spin, each 3000–4200px-tall reel strip carried an SVG motion-blur filter (CPU-rendered); on large / high-DPI desktop windows this stalls rendering. Replaced with a light streak overlay (no filter on the strip). Background emoji drift with blur filter now pauses while spinning.
+- Safety net: if a spin is still 'busy' after 12s (not in a bonus/overlay, tab visible), it is fast-stopped; a second miss force-unlocks the spin button.
+- Repro runs: Koi Pond bet 50, 1069x836 @2x, turbo on and off, 40 spins each — no stuck spins. sw lv-v101. Tests 90/90.

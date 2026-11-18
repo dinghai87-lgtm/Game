@@ -91,7 +91,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .reel{position:relative;overflow:hidden;width:var(--cell);height:calc(var(--cell) * var(--rows));background:linear-gradient(rgba(0,0,0,.35),rgba(255,255,255,.04) 50%,rgba(0,0,0,.35));border-radius:6px}
 .reel.antic{box-shadow:0 0 0 2px var(--gold),0 0 24px 6px rgba(255,200,61,.75);animation:ant .25s infinite alternate}
 @keyframes ant{to{box-shadow:0 0 0 2px #fff,0 0 34px 10px rgba(255,200,61,.95)}}
-.reel.moving .strip{filter:blur(1.6px) brightness(1.1)}@media (pointer:coarse),(max-width:900px){.reel.moving .strip{filter:none}}.strip{backface-visibility:hidden;transform:translateZ(0)}
+.reel.moving .strip{filter:none}@media (pointer:coarse),(max-width:900px){.reel.moving .strip{filter:none}}.strip{backface-visibility:hidden;transform:translateZ(0)}
 .strip{position:absolute;left:0;top:0;width:100%;will-change:transform}
 .cell{width:var(--cell);height:var(--cell);display:flex;align-items:center;justify-content:center}
 #board.drop .cell{position:absolute;left:0;top:0;will-change:transform}
@@ -839,7 +839,7 @@ function openAutoplay(){if(T.busy||T.fs)return;const bet=BETS[S.bi];const A=S.au
 $('#autoBtn').onclick=e=>{e.stopPropagation();if(T.auto>0){T.auto=0;updUI();return}openAutoplay()};
 (function(){let n=0,t0=performance.now(),slow=0;try{if(localStorage.getItem('lv_lowfx')==='1')document.body.classList.add('lowfx')}catch(e){}
  (function f(t){n++;if(t-t0>=1000){const fps=n*1000/(t-t0);n=0;t0=t;if(T.g&&!document.hidden){slow=fps<28?slow+1:0;if(slow>=3&&!document.body.classList.contains('lowfx')){document.body.classList.add('lowfx');try{localStorage.setItem('lv_lowfx','1')}catch(e){}}}}requestAnimationFrame(f)})(t0)})();
-setInterval(()=>{if(T.g&&T.busy){T.busySince=T.busySince||Date.now();if(T.auto>0&&Date.now()-T.busySince>15000&&!document.querySelector('.ov.show,#gamble.show,#sqz.show')){T.busySince=Date.now();quickStop()}}else T.busySince=0;
+setInterval(()=>{if(T.g&&T.busy){T.busySince=T.busySince||Date.now();if(Date.now()-T.busySince>(T.auto>0?15000:12000)&&!document.hidden&&!document.querySelector('.ov.show,.fov.show,.hovov.show,#gamble.show,#sqz.show')){T.busySince=Date.now();T.qsN=(T.qsN||0)+1;quickStop();if(T.qsN>=2){T.qsN=0;T.busy=false;T.quick=false;document.body.classList.remove('spinning');try{updUI()}catch(e){}}}}else{T.busySince=0;T.qsN=0}
  if(T.g&&T.auto>0&&!T.busy&&!T.stopReq&&!(T.fs&&T.fs.left>0)&&!document.querySelector('.ov.show,#gamble.show')&&Date.now()-(T.lastEnd||0)>3000){T.lastEnd=Date.now();doSpin()}},1000);
 function autoCheck(r){const c=T.autoCfg;if(!c||T.auto<=0)return;let why='';
  if(c.loss&&c.bal0-S.bal>=c.loss-1e-9)why='Loss limit reached';else if(c.win&&r.win>=c.win)why='Single win limit reached';else if(c.stopFS&&(r.ev==='start'||r.res.hold))why='Bonus won';

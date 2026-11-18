@@ -8,7 +8,7 @@
   const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const css = document.createElement('style');
   css.textContent = `
-.reel.moving .strip{filter:url(#lvVBlur) brightness(1.12)!important}
+/* 2026-11-18: no filter on the spinning strip (an SVG blur on 4000px-tall strips froze the screen on large / high-DPI desktops); a light streak overlay gives the motion feel instead */ .reel.moving .strip{filter:none!important} .reel{position:relative} .reel.moving::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(255,255,255,.06) 30%,rgba(255,255,255,.06) 70%,rgba(0,0,0,.35));opacity:.9}
 .reel.settle .strip{filter:none!important}
 #fxCv{position:absolute;left:-60px;top:-60px;pointer-events:none;z-index:6}
 .cell.win .in{animation:winBounce .55s cubic-bezier(.3,1.6,.5,1) infinite alternate!important;z-index:3}

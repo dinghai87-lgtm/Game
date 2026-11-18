@@ -71,7 +71,7 @@
 @keyframes kenburns{from{transform:scale(1.02)}to{transform:scale(1.14) translate(-1.5%,-1%)}}
 #game.skinned::before{content:"";position:absolute;inset:-30%;z-index:0;pointer-events:none;background:repeating-conic-gradient(from 0deg at 50% 38%,rgba(255,255,255,.05) 0 7deg,transparent 7deg 18deg);animation:rays 60s linear infinite;will-change:transform}
 @keyframes rays{to{transform:rotate(360deg)}}
-body.spinning #bgArt.img,body.spinning #game.skinned::before,body.spinning #game.skinned::after,body.spinning #gLogo img{animation-play-state:paused!important}
+body.spinning #bgArt span,body.spinning #bgArt.img,body.spinning #game.skinned::before,body.spinning #game.skinned::after,body.spinning #gLogo img{animation-play-state:paused!important}
 body.lowfx #bgArt.img,body.lowfx #game.skinned::before,body.lowfx #game.skinned::after,body.lowfx #gLogo img{animation:none!important}
 body.lowfx #game.skinned::before{display:none}
 body.lowfx #game .symimg,body.lowfx #game .sanim{filter:none!important}

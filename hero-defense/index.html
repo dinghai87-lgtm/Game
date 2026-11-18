@@ -112,6 +112,10 @@ Object.assign(I18N.en,{"讨伐":"Boss Raid","首领讨伐":"Boss Raid","讨伐�
 Object.assign(I18N.ja,{"讨伐":"討伐","首领讨伐":"ボス討伐","讨伐进度":"与ダメ","首领撤退了":"ボスが撤退した！","首领在最后一波登场，先攒好防线":"ボスは最終ウェーブに登場。先に防衛線を整えよう","通关第 9 关后开放":"ステージ9クリアで解放","每天一只超厚血首领：登场 90 秒后撤退，按打掉的血量领奖":"毎日の超タフなボス：登場90秒で撤退。与ダメージで報酬","今日首领":"本日のボス","今日最佳":"本日の最高","击杀":"撃破","每档奖励每天领一次 · 次日 0 点换首领":"各段階の報酬は1日1回・0時にボス交代","「任务」里每天一只超厚血的首领，打掉越多血奖励越多，打死它拿大奖":"「任務」に毎日超タフなボス。削るほど報酬アップ、倒せば大当たり"});
 Object.assign(I18N.ko,{"讨伐":"토벌","首领讨伐":"보스 토벌","讨伐进度":"피해량","首领撤退了":"보스가 후퇴했다!","首领在最后一波登场，先攒好防线":"보스는 마지막 웨이브에 등장 — 먼저 방어선을 갖추세요","通关第 9 关后开放":"9스테이지 클리어 후 해금","每天一只超厚血首领：登场 90 秒后撤退，按打掉的血量领奖":"매일 초강력 보스: 등장 90초 후 후퇴, 입힌 피해로 보상","今日首领":"오늘의 보스","今日最佳":"오늘 최고","击杀":"처치","每档奖励每天领一次 · 次日 0 点换首领":"단계별 보상은 하루 1회 · 자정에 보스 교체","「任务」里每天一只超厚血的首领，打掉越多血奖励越多，打死它拿大奖":"「임무」에 매일 초강력 보스 — 피해를 많이 줄수록 큰 보상"});
 Object.assign(I18N.es,{"讨伐":"Asalto","首领讨伐":"Asalto al jefe","讨伐进度":"Daño","首领撤退了":"¡El jefe se retiró!","首领在最后一波登场，先攒好防线":"El jefe llega en la última oleada: prepara tu defensa","通关第 9 关后开放":"Se desbloquea al superar la fase 9","每天一只超厚血首领：登场 90 秒后撤退，按打掉的血量领奖":"Un jefe gigante cada día: se retira a los 90 s; premios según el daño","今日首领":"Jefe de hoy","今日最佳":"Mejor de hoy","击杀":"Matar","每档奖励每天领一次 · 次日 0 点换首领":"Cada nivel paga una vez al día · nuevo jefe a medianoche","「任务」里每天一只超厚血的首领，打掉越多血奖励越多，打死它拿大奖":"Un jefe gigante cada día en Misiones: más daño, más premio"});
+Object.assign(I18N.en,{"再点一次建造（同种塔建过 3 次后点一下直接建）":"Tap again to build (after 3 builds of a tower, one tap is enough)"});
+Object.assign(I18N.ja,{"再点一次建造（同种塔建过 3 次后点一下直接建）":"もう一度タップで建設（同じ塔を3回建てるとワンタップに）"});
+Object.assign(I18N.ko,{"再点一次建造（同种塔建过 3 次后点一下直接建）":"한 번 더 탭하면 건설 (같은 탑 3회 건설 후엔 한 번 탭)"});
+Object.assign(I18N.es,{"再点一次建造（同种塔建过 3 次后点一下直接建）":"Toca de nuevo para construir (tras 3 construcciones, basta un toque)"});
 
 'use strict';
 // ====================== 基础 ======================
@@ -1356,7 +1360,7 @@ function drawSelMenu(){const i=G.sel,tw=G.towers[i];const cx=tw.x,cy=tw.y-20;
       ctx.save();octPath(x,y,22);ctx.clip();imgW(T.imgs[0],x,y+20,42,can?twTint(T):'grayscale(1)');ctx.restore();
       ctx.fillStyle='rgba(18,10,4,.9)';rr(x-26,y+22,52,18,9);ctx.fill();coinIcon(x-14,y+31,5);txt(T.cost[0],x+6,y+31,12,can?'#ffe27a':'#999');
       ctx.font=`900 11px ${FONT}`;const nw=Math.max(54,ctx.measureText(T.name).width+14);plate(x-nw/2,y-44,nw,18);txt(T.name,x,y-35,11,'#fff');
-      hit(x-33,y-44,66,86,()=>build(i,t))})}
+      hit(x-33,y-44,66,86,()=>menuBuild(i,t))})}
   else{const T=TOWERS[tw.type];const st=towerStats(tw);
     if(tw.type!=='barracks'){ctx.save();const g=ctx.createRadialGradient(tw.x,tw.y,st.range*.6,tw.x,tw.y,st.range);g.addColorStop(0,'rgba(255,255,255,0)');g.addColorStop(1,'rgba(255,240,180,.18)');ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(tw.x,tw.y,st.range,st.range/1.15,0,0,7);ctx.fill();ctx.strokeStyle='rgba(255,240,180,.7)';ctx.lineWidth=2;ctx.setLineDash([10,8]);ctx.stroke();ctx.restore()}
     hit(cx-130,cy-130,260,260,()=>{G.sel=null;AUD.sfx('close')},'menu');
@@ -2731,6 +2735,25 @@ function drawBraid(x,y,w){if(!feat('braid')){txt(TR('通关第 9 关后开放'),
   txt(TR('每档奖励每天领一次 · 次日 0 点换首领'),x+w/2,y+400,14,'#b9a27a','center',2)}
 (function(){const dt0=drawTasks;drawTasks=function(dt){dt0(dt);if(tasksTab===7){drawBraid(W/2-460,150,920)}}})();
 
+// ====================== 建塔先看说明 + 升级预览（王国保卫战：点一下看介绍，再点一下确认；升级前看到数值变化） ======================
+// 新手教学期间和「快速建造」开关打开时，点一下直接建。
+function menuBuild(i,t){const tut=G.tut&&G.tut.L&&G.tut.L[G.tut.i];const kn=(SAVE.twKnow||{})[t]||0;if(tut||SAVE.quickBuild||kn>=3){G.preTw=null;return build(i,t)}
+  if(G.preTw===t&&G.preI===i){G.preTw=null;return build(i,t)}G.preTw=t;G.preI=i;AUD.sfx('click')}
+const avgD=st=>st&&st.dmg?Math.round((st.dmg[0]+st.dmg[1])/2):0;
+function twLine(t,lvl){const T=TOWERS[t];try{if(T.support)return TR('辅助塔');if(T.dmg){const st=towerStats({type:t,lvl:lvl||1,br:null});return '⚔ '+avgD(st)+'   ◎ '+Math.round(st.range)+(T.air?'   ✈':'')}const SS=soldierStats(lvl||1);return '❤ '+Math.round(SS.hp)+'   ⚔ '+Math.round((SS.dmg[0]+SS.dmg[1])/2)}catch(e){return ''}}
+const _dsm10=drawSelMenu;drawSelMenu=function(){const i=G.sel;if(G.preI!==i)G.preTw=null;_dsm10();const tw=G.towers[i];if(!tw)return;
+  if(!tw.type){if(G.preI!==i||!G.preTw)return;const t=G.preTw,T=TOWERS[t];const cx=tw.x,cy=tw.y-20,R=128;const ccx=clamp(cx,R+40,W-R-40),ccy=clamp(cy,R+70,H-R-145);
+    const LIST=(G.menuPage?TOWER_ORDER.slice(8):TOWER_ORDER.slice(0,8)).filter(twOpen);const j=LIST.indexOf(t);if(j<0){G.preTw=null;return}const n=LIST.length;const a=-Math.PI/2+(j+(n===4?.5:0))*2*Math.PI/n;const x=ccx+Math.cos(a)*R,y=ccy+Math.sin(a)*R*.92;
+    ctx.save();ctx.strokeStyle='#7be07b';ctx.lineWidth=4;ctx.beginPath();ctx.arc(x,y,36,0,7);ctx.stroke();ctx.restore();imgC('ui_Icon_Accept',x+24,y-24,26);
+    const pw=320,ph=74,px=clamp(ccx-pw/2,10,W-pw-10),py=Math.min(H-ph-8,ccy+R+50);ctx.save();ctx.fillStyle='rgba(12,6,2,.9)';rr(px,py,pw,ph,12);ctx.fill();ctx.strokeStyle='#7be07b';ctx.lineWidth=2;ctx.stroke();ctx.restore();
+    fitTxt(T.name+'  ·  '+twLine(t,1),px+pw/2,py+18,15,pw-20,'#ffe27a','center',2);fitTxt(T.desc,px+pw/2,py+40,13,pw-20,'#fff','center',2);fitTxt(TR('再点一次建造（同种塔建过 3 次后点一下直接建）'),px+pw/2,py+60,12,pw-20,'#7be07b','center',2);return}
+  // 已建：升级预览
+  if(G.preI===i)G.preTw=null;const T=TOWERS[tw.type];if(T.support)return;const cx=tw.x,cy=tw.y-20;const top=cy-84<110;const ux=top?cx-82:cx,uy=top?cy+14:cy-84;
+  let s='';try{if(T.dmg){const a=towerStats(tw),b=towerStats(Object.assign({},tw,{lvl:tw.lvl+1}));s='⚔ '+avgD(a)+'→'+avgD(b);if(Math.round(b.range)>Math.round(a.range))s+='  ◎ +'+Math.round(b.range-a.range)}else{const a=soldierStats(tw.lvl,tw.br),b=soldierStats(tw.lvl+1,tw.br);s='❤ '+Math.round(a.hp)+'→'+Math.round(b.hp)}}catch(e){return}
+  ctx.font=`900 12px ${FONT}`;const w=ctx.measureText(s).width+18;const yy=top?uy+58:uy-50;ctx.save();ctx.fillStyle='rgba(20,60,20,.88)';rr(ux-w/2,yy-10,w,20,10);ctx.fill();ctx.restore();txt(s,ux,yy,12,'#9dff9d','center',0)};
+const _bd10=build;build=function(i,t){G.preTw=null;const had=G.towers[i]&&G.towers[i].type;const r=_bd10.apply(this,arguments);try{if(!had&&G.towers[i]&&G.towers[i].type===t){SAVE.twKnow=SAVE.twKnow||{};SAVE.twKnow[t]=(SAVE.twKnow[t]||0)+1}}catch(e){}return r};
+if(window.__api)Object.assign(window.__api,{build,menuBuild});
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -2773,7 +2796,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794975428';
+const BUILD_VER='1794975637';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

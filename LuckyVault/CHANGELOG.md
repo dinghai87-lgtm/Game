@@ -508,3 +508,8 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 44 (01:20) — Jackpot bar on phones
 - In-game GRAND / MAJOR / MINOR / MINI pills were tiny on phones (GRAND 100,000 spilled out of its box). Bar now spans the screen width, values 12–15px and fit (GRAND slightly wider). sw lv-v114. Tests 90/90.
+
+## Round 45 (01:40) — Hold & Win header on phones; LOBBY button
+- Link-prize row (GRAND 1.0K / MAJOR 100 / MINOR 25 / MINI 10) wrapped onto two lines with MINI alone; now one compact row with a short label (金币奖 / Link prizes).
+- English "‹ LOBBY" button no longer breaks onto two lines.
+- sw lv-v117. Tests 90/90.

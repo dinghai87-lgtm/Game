@@ -210,7 +210,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .coinc.new .in{animation:cpop .45s cubic-bezier(.3,1.6,.5,1)}
 @keyframes cpop{from{transform:scale(0) rotate(-90deg)}}
 #hwBar{display:none;gap:6px;margin-bottom:8px;flex-wrap:wrap;justify-content:center}
-#hwBar.show{display:flex}
+#hwBar.show{display:flex}@media(max-width:600px){#hwBar{flex-wrap:nowrap;gap:4px;width:calc(100% - 20px);margin:0 auto 6px;box-sizing:border-box}#hwBar div{padding:2px 5px;font-size:10px;white-space:nowrap;flex:0 1 auto}#hwBar .hwl{white-space:normal;max-width:52px;line-height:1.05;font-size:9px!important;padding:0!important;text-align:right}}#back{white-space:nowrap}
 #hwBar div{border-radius:10px;padding:4px 10px;font-weight:900;font-size:12px;text-transform:uppercase;background:#000a;border:1px solid rgba(255,255,255,.25)}
 #hwBar .g{color:#ffd60a;border-color:#ffd60a}#hwBar .ma{color:#c77dff}#hwBar .mi{color:#4cc9f0}#hwBar .mn{color:#ff6b81}
 #hwBar .rs{background:#ffd60a;color:#000}
@@ -433,7 +433,7 @@ button:focus-visible,input:focus-visible,.tile:focus-visible{outline:3px solid #
     <button class="ib emo" id="sndBtn" title="Sound" aria-label="Toggle sound">🔊</button>
   </div>
   <div id="stage">
-    <div id="hwBar"><div class="hwl" style="background:none;border:0;color:#cfd3dc;font-size:10px;opacity:.85">本游戏金币奖 · Link prizes</div><div class="g">Grand <b id="jpG"></b></div><div class="ma">Major <b id="jpMa"></b></div><div class="mi">Minor <b id="jpMi"></b></div><div class="mn">Mini <b id="jpMn"></b></div><div class="rs" id="hwRs" style="display:none">Respins <b id="hwRsN">3</b></div></div>
+    <div id="hwBar"><div class="hwl" style="background:none;border:0;color:#cfd3dc;font-size:10px;opacity:.85">金币奖 · Link prizes</div><div class="g">Grand <b id="jpG"></b></div><div class="ma">Major <b id="jpMa"></b></div><div class="mi">Minor <b id="jpMi"></b></div><div class="mn">Mini <b id="jpMn"></b></div><div class="rs" id="hwRs" style="display:none">Respins <b id="hwRsN">3</b></div></div>
     <div id="gLogo"><span class="ic emo" id="gLogoIc"></span><span class="nm" id="gLogoNm"></span></div>
     <div id="fsBanner"><div>Free spins <b id="fsLeft">0</b></div><div>Win <b id="fsWin">0.00</b></div><div id="fsMultBox">Multi <b id="fsMult">x0</b></div></div>
     <div id="frame"><div class="lights"></div>

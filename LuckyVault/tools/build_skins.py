@@ -285,3 +285,8 @@ json.dump(man, open(OUT + '/manifest.json', 'w'), indent=1, ensure_ascii=False)
 # panda-fortune <- rpg-monk-skill-game-icons (square painted tiles, rounded + gold rim): h1 28 panda, h2 27 tiger, h3 26 crane, h4 29 snake, l1 37 lotus, l2 9 yin-yang, l3 35 wine jar, l4 44 incense urn, l5 48 prayer beads, W 16 golden orb, S 10 scripture book
 # royal-crown-classic <- high-quality-rpg-loot-icons (h1 31 crown, h2 27 trophy, h3 36 gold key, h4 9 four-leaf clover) + fruits pack lows (30 cherries, 18 lemon, 21 orange, 10 grapes, 38 strawberry); W/S kept
 # storm-chaser <- lightning-mage-skills-icon-pack (rounded tiles, blue rim): h1 15 storm caller, h2 45 tornado, h3 35 hammer, h4 43 trident, l1 20 bolts, l2 19 orb, l3 18 orbs, l4 12 spellbook, l5 24 scroll, W 16 lightning fist, S 5 storm sky (was sharing Thor's Hammer viking icons)
+# ---- 2026-11-18 round 15: the classic-7s group no longer shares one identical symbol set (tools: /tmp/r15.py logic) ----
+# each game: 7 and BAR hue-shifted to its colour (hot-chilli red, gold-bar gold, lucky-clover green, neon-retro magenta, liberty-bells blue, fortune-wheel orange)
+# fruit slots replaced in order from fruits-berries-vegetables-icon-512x512-set:
+#  hot-chilli-7s 20 chilli,6 pepper,7 tomato,11 mango,14 papaya,30 cherries,8 pumpkin | gold-bar-7s viking 3 ingot (gold colourised),29,27,18,45,35,32
+#  lucky-clover-7s loot 9 clover,43,17,50,4,24,9 | neon-retro-7s 19,39,31,46,44,10,2 | liberty-bells 15,30,38,16,12,39,26 | fortune-wheel-deluxe 21,35,13,11,8,45,29

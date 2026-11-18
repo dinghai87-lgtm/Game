@@ -371,3 +371,6 @@ Platform release: everything on the "do all of these" list except the public dep
 
 ## Round 14 (18:10) — Storm Chaser own symbol set
 - Was sharing Thor's Hammer viking icons; now uses CraftPix lightning-mage skill tiles (blue rim) + new cover. sw lv-v70. Tests 90/90.
+
+## Round 15 (18:35) — Classic 7s group de-duplicated
+- 6 games (Hot Chilli 7s, Gold Bar 7s, Lucky Clover 7s, Neon Retro 7s, Liberty Bells, Fortune Wheel Deluxe) shared one identical 11-symbol set. Each now has its own colour 7/BAR and its own painted fruit set (CraftPix 512px fruits; clover, gold ingot) + new covers. sw lv-v71. Tests 90/90.

@@ -177,7 +177,7 @@ body.lowfx .cell.win .in::after{animation:none!important;display:none!important}
   function pickGame(b) {
     return new Promise(res => {
       const N = 12, icons = ['🧰', '🎁', '💼', '👜'];
-      box().innerHTML = '<h2>TREASURE PICK</h2><p>Open chests to reveal prizes. The bonus ends when you find COLLECT.' + (b.mult > 1 ? ' All prizes x' + b.mult + '!' : '') + '</p><div class="chests">' + Array.from({ length: N }, (_, i) => '<button class="chest emo" data-i="' + i + '">' + icons[i % 4] + '</button>').join('') + '</div><div class="ftot" id="ptot">0.00</div>';
+      const LZ = ((window.LVLang && LVLang.get()) || 'bi'), FZ = (zh, en) => LZ === 'zh' ? zh : LZ === 'en' ? en : zh + ' ' + en; box().innerHTML = '<h2>' + FZ('宝箱选宝', 'TREASURE PICK') + '</h2><p>' + FZ('打开宝箱拿奖金，开到“收取”时奖励结束。', 'Open chests to reveal prizes. The bonus ends when you find COLLECT.') + (b.mult > 1 ? FZ(' 所有奖金 x' + b.mult + '！', ' All prizes x' + b.mult + '!') : '') + '</p><div class="chests">' + Array.from({ length: N }, (_, i) => '<button class="chest emo" data-i="' + i + '">' + icons[i % 4] + '</button>').join('') + '</div><div class="ftot" id="ptot">0.00</div>';
       ov.classList.add('show'); let k = 0, tot = 0; const bet = curBet(); let done = false;
       const open = btn => {
         if (done || btn.disabled) return; const it = b.items[k++]; btn.disabled = true; btn.classList.add('open');
@@ -196,7 +196,7 @@ body.lowfx .cell.win .in::after{animation:none!important;display:none!important}
     let s = '<svg viewBox="-110 -110 220 220">'; for (let i = 0; i < n; i++) { const a0 = (i / n) * 2 * Math.PI - Math.PI / 2 - Math.PI / n, a1 = a0 + 2 * Math.PI / n; const x0 = R * Math.cos(a0), y0 = R * Math.sin(a0), x1 = R * Math.cos(a1), y1 = R * Math.sin(a1);
       const v = vals[i]; const fill = v === 'UP' ? '#16a34a' : (i % 2 ? cols[0] : cols[1]);
       s += '<path d="M0 0 L' + x0.toFixed(1) + ' ' + y0.toFixed(1) + ' A' + R + ' ' + R + ' 0 0 1 ' + x1.toFixed(1) + ' ' + y1.toFixed(1) + 'Z" fill="' + fill + '" stroke="#ffd447" stroke-width="1.5"/>';
-      const am = (a0 + a1) / 2; s += '<text x="' + (68 * Math.cos(am)).toFixed(1) + '" y="' + (68 * Math.sin(am)).toFixed(1) + '" fill="#fff" font-family="Anton,Impact,Arial Black" font-size="' + (v === 'UP' ? 11 : 15) + '" text-anchor="middle" dominant-baseline="middle" transform="rotate(' + (am * 180 / Math.PI + 90).toFixed(1) + ' ' + (68 * Math.cos(am)).toFixed(1) + ' ' + (68 * Math.sin(am)).toFixed(1) + ')">' + (v === 'UP' ? 'UPGRADE' : v + 'x') + '</text>'; }
+      const am = (a0 + a1) / 2; s += '<text x="' + (68 * Math.cos(am)).toFixed(1) + '" y="' + (68 * Math.sin(am)).toFixed(1) + '" fill="#fff" font-family="Anton,Impact,Arial Black" font-size="' + (v === 'UP' ? 11 : 15) + '" text-anchor="middle" dominant-baseline="middle" transform="rotate(' + (am * 180 / Math.PI + 90).toFixed(1) + ' ' + (68 * Math.cos(am)).toFixed(1) + ' ' + (68 * Math.sin(am)).toFixed(1) + ')">' + (v === 'UP' ? (((window.LVLang && LVLang.get()) === 'en') ? 'UPGRADE' : '升级') : v + 'x') + '</text>'; }
     for (let i = 0; i < 24; i++) { const a = i / 24 * 2 * Math.PI; s += '<circle cx="' + (104 * Math.cos(a)).toFixed(1) + '" cy="' + (104 * Math.sin(a)).toFixed(1) + '" r="2.6" fill="#fff6c2"/>'; }
     return s + '<circle r="105" fill="none" stroke="#ffd447" stroke-width="4"/></svg>';
   }

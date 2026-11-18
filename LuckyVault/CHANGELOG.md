@@ -607,3 +607,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 ## Round 73 (04:58) — Reels at 60 fps on a slowed phone
 - Profiled spins on a 3× pixel-density phone with the CPU slowed 6×. Three costs found: the win-particle canvas was sized at 3× pixel density over the whole board (millions of pixels cleared every frame) → capped at 1.5×; its size was re-measured on every burst (forced layout) → cached with a ResizeObserver; the hidden lobby's hero carousel kept auto-scrolling behind the game → paused while playing; the new tile observer no longer rescans on every reel change.
 - Result: median frame while spinning 50 ms → 17 ms (60 fps) on Lucky 777, Thunder Temple and Dragon Fortune Link; worst long task down ~40%. Visuals unchanged. sw lv-v156. Tests 90/90.
+
+## Round 74 (05:13) — Bonus games played through (wheel, pick, choose)
+- Spun Fortune Wheel Deluxe until its prize wheel triggered (111 spins) and Treasure Island Pick until its chest pick (12 spins), captured every frame. Fixed in 中文: wheel segment UPGRADE → 升级 (+ UPGRADE! banner), Treasure Pick title/instructions, "Choose your bonus" screen texts. Both bonuses pay and return to the reels correctly. sw lv-v158. Tests 90/90.

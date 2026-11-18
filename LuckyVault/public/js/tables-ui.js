@@ -210,6 +210,16 @@
 }
 `;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+  // phones held sideways (short screens): shrink card areas so the bet spots stay on screen without scrolling
+  { const x = document.createElement('style'); x.textContent = '@media (max-height:500px) and (orientation:landscape){' +
+      '#felt{gap:4px!important;padding-top:4px!important}.hands.bac{--sw:34px!important;gap:6px!important}.hands.bac .area{padding:3px 4px 4px!important}.hands.bac .lbl{font-size:11px!important;padding:1px 10px!important}' +
+      '#felt .bjz{--bjw:34px!important;padding:3px 6px!important}#felt .bjd{height:calc(var(--bjw) * 1.42 + 30px)!important}#felt .bjp{height:calc(var(--bjw) * 1.42 + 26px)!important}' +
+      '#felt .tcpz{--cw:34px!important;padding:3px 6px!important;gap:2px!important}#felt .tcpb{--cw:32px!important}#felt .tcph{min-height:14px;font-size:11px}' +
+      '#bacS .spot,#dtS .spot{min-height:40px!important}#bacS .spot.big,#dtS .spot.big,#bacS .spot[data-k=tie],#dtS .spot[data-k=tie]{min-height:46px!important}' +
+      '#felt .pt2{display:none}#felt .res{min-height:24px!important;height:24px!important;line-height:24px!important;font-size:16px!important}' +
+      '#felt .cr-pt span{height:30px!important;font-size:15px!important}#crS .spot{min-height:38px!important}#crS .spot.big{min-height:42px!important}#felt:has(#crS) .dice .die{width:42px!important;height:42px!important}#felt:has(#crS) .dice{min-height:46px!important}' +
+      '#felt .sb2 .spot{min-height:34px!important}#felt .sb2 .w2{min-height:40px!important}#felt:has(.sb2) .dice .die{width:40px!important;height:40px!important}#felt .sb2{max-width:520px!important}#felt .sb2 .pips .die{width:13px!important;height:13px!important}#felt:has(.sb2) .dice{min-height:44px!important}}';
+    document.head.appendChild(x); }
   // no ? badges on table bet spots (looked busy, owner request 2026-11-18): every rule is one long-press away instead
   { const x = document.createElement('style'); x.textContent = '#felt .sinf{display:none!important}#felt .spot,#felt [data-k]{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}'; document.head.appendChild(x);
     let t = 0, held = null, pt = '';

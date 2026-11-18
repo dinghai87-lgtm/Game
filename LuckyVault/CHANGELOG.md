@@ -576,3 +576,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 ## Round 63 (03:26) — English mode sweep + shared tables
 - Shared Dragon Tiger / Sic Bo / Roulette joined and played one round each (bet → countdown → result): fine.
 - English-mode scan for leftover Chinese while playing slots, bonus, lobby, panels: only the copyright line remains (company name, intentional). Fixed the starter-task card header (0/5 · 全部完成再送 … → finish all for 2,000 bonus coins) and made i18n strip the Chinese half of bilingual names in English mode everywhere. sw lv-v141. Tests 90/90.
+
+## Round 64 (03:42) — Phones held sideways (844×390)
+- Checked slots + 6 tables in landscape. The new card panels were too tall there: Blackjack's bet spots and Baccarat's side bets fell below the screen. Added a short-screen layout (smaller cards, tighter panels, smaller dice and point strip, rules line hidden) so bets are visible without scrolling on Baccarat, Blackjack, Three Card Poker, Craps; Sic Bo needs a short scroll for the singles row (6-row board). Slots were already fine. sw lv-v144. Tests 90/90.

@@ -3495,6 +3495,12 @@ function giftRedeem(){const s=prompt(TR('输入兑换码：'),'');if(!s)return;c
   save();track('gift',{k});AUD.sfx('win');popup('🎁 '+TR('兑换成功'),out,[{label:TR('确定'),style:'green'}])}
 (function(){const ds=drawSettings;drawSettings=function(){ds.apply(this,arguments);try{if(morePop)return;const x=W/2-260,y=H/2-300;button('🎁 '+TR('兑换码'),x+26,y+600-84,124,44,()=>{giftRedeem()},{style:'gold',size:14})}catch(e){}}})();
 
+// ====================== 英雄殿点选台词：点英雄卡片时，头像旁冒出他的一句台词 ======================
+let hallBark=null,hallLast=null;
+(function(){const dh=drawHeroes;drawHeroes=function(dt){dh(dt);try{if(htalPop||petPop||synPop||skinPop)return;if(heroFocus!==hallLast){hallLast=heroFocus;const L=BARK[heroFocus];if(L&&!SAVE.barkOff)hallBark={s:TR(L[Math.floor(Math.random()*L.length)]),t:0}}
+  if(!hallBark)return;hallBark.t+=dt||0.016;if(hallBark.t>3){hallBark=null;return}const a=Math.min(1,hallBark.t*5,(3-hallBark.t)*3);const px=690,py=92;ctx.save();ctx.globalAlpha=a;ctx.font=`900 14px ${FONT}`;const w=Math.min(300,ctx.measureText(hallBark.s).width+24);const x=px+190,y=py+20;
+  ctx.fillStyle='rgba(255,250,235,.97)';rr(x,y-16,w,32,14);ctx.fill();ctx.strokeStyle='#5a3a14';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.moveTo(x+10,y+12);ctx.lineTo(x-6,y+24);ctx.lineTo(x+24,y+14);ctx.closePath();ctx.fillStyle='rgba(255,250,235,.97)';ctx.fill();fitTxt(hallBark.s,x+w/2,y,14,w-16,'#3b1f0a','center',0);ctx.restore()}catch(_){}}})();
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -3537,7 +3543,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794985511';
+const BUILD_VER='1794985635';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

@@ -358,3 +358,4 @@ Platform release: everything on the "do all of these" list except the public dep
 - New: Weekly Pass (Rewards panel) — 1 point per 10 coins bet, 10 tiers (300→6,000 coins), resets Monday; server-side, ledger type 'pass'.
 - High-limit bets now unlock with level (500@L3, 1,000@L5, 2,000@L8, 5,000@L10), enforced server-side; locked + button shows 🔒.
 - New: lobby big-win ticker (wins ≥2,000 and ≥20× bet, names masked, tap to open the game).
+- New: welcome-back gift — away 3+ days → 2,000 coins (+500/day, max 5,000), once a week; server-side, ledger type 'comeback'.

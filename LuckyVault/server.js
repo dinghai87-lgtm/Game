@@ -184,7 +184,17 @@ R['POST /api/login'] = async ({ b, ip }) => {
   return [200, { token: await newSession(u, ip, fpOf(b)), user: pubUser(u) }];
 };
 R['POST /api/logout'] = async ({ req }) => { await repo.sessionDel((req.headers.authorization || '').replace(/^Bearer /, '')); return [200, { ok: true }]; };
-R['GET /api/me'] = userRoute(async ({ uid }) => { const u = await repo.userById(uid); if (!u) return [401, { err: 'auth' }]; return [200, { user: pubUser(u), unread: await repo.notesUnseen(uid) }]; });
+// 回归奖励 welcome-back gift: away 3+ days → 2,000 coins (+500 per extra day, max 5,000), at most once a week
+const COMEBACK = { days: 3, base: 2000, perDay: 500, max: 5000, everyDays: 7 };
+R['GET /api/me'] = userRoute(async ({ uid }) => {
+  let wb = null;
+  { const u0 = await repo.userById(uid); if (!u0) return [401, { err: 'auth' }];
+    const away = u0.last ? (now() - u0.last) / 864e5 : 0;
+    if (!u0.banned && away >= COMEBACK.days && (!u0.wbAt || now() - u0.wbAt >= COMEBACK.everyDays * 864e5))
+      await repo.withUser(uid, async (u, t) => { const d = Math.floor((now() - (u.last || now())) / 864e5); if (d < COMEBACK.days || (u.wbAt && now() - u.wbAt < COMEBACK.everyDays * 864e5)) return { skip: true };
+        const amt = Math.min(COMEBACK.max, COMEBACK.base + COMEBACK.perDay * (d - COMEBACK.days)); u.bal = r2(u.bal + amt); u.wbAt = now(); u.last = now(); await addTx(u, 'comeback', amt, d + ' days', t); wb = { amount: amt, days: d }; }); }
+  const u = await repo.userById(uid); return [200, { user: pubUser(u), unread: await repo.notesUnseen(uid), welcomeBack: wb }];
+});
 
 // Email verification + password reset
 async function sendVerifyEmail(u) { const c = await A.issueCode(repo, 'verify:' + u.id, { email: u.email }); await N.sendEmail(repo, u.email, 'Your Lucky Vault code: ' + c, 'Your verification code is ' + c + '. It expires in 10 minutes.'); }

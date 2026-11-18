@@ -508,6 +508,9 @@ const START=1000;
 let S={bal:START,bi:3,fav:[],recent:[],snd:true,turbo:false};
 try{const d=JSON.parse(localStorage.getItem('lv_state')||'null');if(d)Object.assign(S,d)}catch(e){}
 if(!(S.bal>=0))S.bal=START;
+function welcomeBack(w){try{let d=document.getElementById('wbov');if(!d){d=document.createElement('div');d.id='wbov';d.className='ov';document.body.appendChild(d)}
+ d.innerHTML='<div class="card" style="max-width:340px;text-align:center"><h2>Welcome back!</h2><img src="assets/shop/pk5.webp" alt="" style="height:120px;margin:8px auto;display:block"><p><span>We missed you. Here is a gift for coming back:</span></p><p style="font-size:30px;font-weight:900;color:var(--gold)">+'+fmt(w.amount)+'</p><div class="btnrow"><button class="bigbtn" id="wbOk">Collect</button></div></div>';
+ d.classList.add('show');try{sfx.success&&sfx.success()}catch(e){}d.querySelector('#wbOk').onclick=()=>{d.classList.remove('show');try{sfx.coins()}catch(e){}setBal()}}catch(e){}}
 function save(){try{localStorage.setItem('lv_state',JSON.stringify(S))}catch(e){}}
 function LVVolume(){let d=document.getElementById('volov');if(!d){d=document.createElement('div');d.id='volov';d.className='ov';d.innerHTML='<div class="card" style="max-width:340px;text-align:left"><h2 style="text-align:center">音量 Volume</h2><label style="display:block;margin:14px 0 6px">音效 Sound effects <b id="vS"></b></label><input id="vSfx" type="range" min="0" max="100" style="width:100%;accent-color:var(--acc);height:28px"><label style="display:block;margin:14px 0 6px">音乐 Music <b id="vM"></b></label><input id="vMus" type="range" min="0" max="100" style="width:100%;accent-color:var(--acc);height:28px"><div class="btnrow" style="margin-top:16px"><button class="bigbtn" id="vOk">OK</button></div></div>';document.body.appendChild(d);
  const upd=()=>{$('#vS').textContent=Math.round((S.sfxVol==null?1:S.sfxVol)*100)+'%';$('#vM').textContent=Math.round((S.musVol==null?1:S.musVol)*100)+'%'};
@@ -700,7 +703,7 @@ const API={mode:'local',token:null,user:null,
 async function detectServer(){API.base=(window.LV_CONFIG&&LV_CONFIG.server||'').replace(/\/$/,'');if(location.protocol==='file:'&&!API.base)return;try{const r=await fetch(API.base+'/api/ping',{cache:'no-store'});const j=await r.json();if(j&&j.ok){API.mode='server';API.cfg=j;
   try{API.token=localStorage.getItem('lv_token')}catch(e){}
   if(j.games){j.games.forEach(x=>{const g=GAMES[x.id];if(g){g.off=!x.enabled;if(x.tag!=null)g.tag=x.tag}})}
-  if(API.token){const me=await API.call('/api/me');if(me.user)setUser(me);else API.token=null}
+  if(API.token){const me=await API.call('/api/me');if(me.user){setUser(me);if(me.welcomeBack)setTimeout(()=>welcomeBack(me.welcomeBack),1800)}else API.token=null}
   renderAuth();renderLobby()}}catch(e){}}
 function setUser(me){API.user=me.user;S.bal=me.user.bal;S.fs=me.user.fs||null;if(me.user.xp!=null)S.xp=me.user.xp;setBal();renderAuth();paintLevel()}
 function needLogin(){if(API.mode==='server'&&!API.user){openAuth();return true}return false}

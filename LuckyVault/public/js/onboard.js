@@ -28,8 +28,12 @@
   async function eventBanner() { let ev = null; try { const r = await fetch((API.base || '') + '/api/ping', { cache: 'no-store' }).then(r => r.json()); ev = r.event; } catch (e) {}
     let el = document.getElementById('evBan'); if (!ev) { if (el) el.remove(); return; } const lobby = document.getElementById('heros'); if (!lobby) return;
     if (!el) { el = document.createElement('div'); el.id = 'evBan'; lobby.insertAdjacentElement('beforebegin', el); }
-    const parts = []; if (ev.xp > 1) parts.push('经验 ×' + ev.xp + ' XP'); if (ev.bonus > 1) parts.push('免费奖励 ×' + ev.bonus + ' bonus');
-    el.innerHTML = '🎉 <b>' + String(ev.label).replace(/[<>&]/g, '') + '</b> · ' + parts.join(' · ') + (ev.end ? ' · 截止 ends ' + new Date(ev.end).toLocaleString() : ''); }
+    const L = (window.LVLang && LVLang.get()) || 'en', pick = (zh, en) => L === 'zh' ? zh : L === 'en' ? en : zh + ' ' + en;
+    let lab = String(ev.label).replace(/[<>&]/g, ''); const m = lab.match(/^([^·]*[\u4e00-\u9fff][^·]*)·\s*(.+)$/); if (m) lab = pick(m[1].trim(), m[2].trim());
+    const parts = []; if (ev.xp > 1) parts.push(pick('经验 ×' + ev.xp, ev.xp + '× XP')); if (ev.bonus > 1) parts.push(pick('免费奖励 ×' + ev.bonus, 'free bonus ×' + ev.bonus));
+    if (m && L !== 'zh' && /×/.test(m[2])) parts.length = 0;
+    const end = ev.end ? new Date(ev.end) : null, t = end ? end.toLocaleString(L === 'zh' ? 'zh-CN' : undefined, { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+    el.innerHTML = '🎉 <b>' + lab + '</b>' + (parts.length ? ' · ' + parts.join(' · ') : '') + (end ? ' · ' + (L === 'zh' ? '截止 ' : L === 'en' ? 'ends ' : '截止 ends ') + t : ''); }
   st.textContent += '#evBan{margin:8px auto 0;max-width:1100px;text-align:center;padding:7px 12px;border-radius:12px;background:linear-gradient(90deg,#b45309,#db2777,#7c3aed);color:#fff;font:800 13px "Microsoft YaHei",Arial,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.35)}#evBan b{color:#ffd60a}';
   setTimeout(eventBanner, 2000); setInterval(eventBanner, 120000);
   window.LVOnb = { refresh, paint };

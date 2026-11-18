@@ -419,3 +419,15 @@ Platform release: everything on the "do all of these" list except the public dep
 - Many server/UI strings are written bilingually ("中文 · English", "音量 VOLUME"). In English mode they showed both; in 中文 mode too. i18n now picks one side unless 双语 is selected (missions, settings buttons, toasts, onboarding card, event banner). English mode no longer translates input placeholders to Chinese.
 - Mission title 'Play 1,000 coins' -> 'Bet 1,000 coins in total'.
 - sw lv-v83. Tests 90/90.
+
+## Round 28 (20:25) — Baccarat / Dragon Tiger page rework (user: 这个页面就很差)
+Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and English, then fixed:
+- No layout jump on deal: card area has fixed height with dashed card slots; result line fixed height, never wraps.
+- Player/Banker (Dragon/Tiger) areas as panels with blue/red name pills + white point badges; winning side glows gold.
+- Bet grid: 闲/和/庄 row (blue/green/red), side bets 4 across; chips sit small in the corner so the bet name stays readable.
+- Lost chips leave the table after each hand (Rebet brings them back) instead of staying on losing spots.
+- ? badges removed (user request); rules open by long-pressing any bet; tooltip shows one language.
+- Roadmap dark theme (was bright white), counters on one swipeable row, labels in the selected language (B/P/T, Shoe/Hand/left in English).
+- Squeeze screen fully translated in 中文 mode; help text padded.
+- Achievement / mission pop moved below the top bar so it no longer covers the balance.
+- sw lv-v89. Tests 90/90.

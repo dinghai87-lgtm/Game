@@ -280,7 +280,8 @@
   function confirmNewShoe() { return !TT.shoe || !TT.shoe.road || !TT.shoe.road.length || TT.shoe.end || window.confirm('换一靴新牌？当前牌路会清空。\nStart a new shoe? The scoreboard will be cleared.'); }
   // rule card for a bet spot (tap the ? in its corner)
   function spotTip(label, info) { let t = document.getElementById('spotTip'); if (!t) { t = document.createElement('div'); t.id = 'spotTip'; document.body.appendChild(t); t.onclick = () => t.classList.remove('show'); }
-    t.innerHTML = '<div><b>' + label + '</b><p>' + info + '</p><small>点任意处关闭 · tap to close</small></div>'; t.classList.add('show'); try { sfx.click(); } catch (e) {} }
+    { const L = window.LVLang && LVLang.get(), parts = String(info).split('<br>'); if (parts.length === 2 && (L === 'en' || L === 'zh')) info = L === 'en' ? parts[1] : parts[0]; }
+    t.innerHTML = '<div><b>' + label + '</b><p>' + info + '</p><small>' + ({ en: 'tap to close', zh: '点任意处关闭' }[window.LVLang && LVLang.get()] || '点任意处关闭 · tap to close') + '</small></div>'; t.classList.add('show'); try { sfx.click(); } catch (e) {} }
   function addBet(k) {
     if (TT.phase !== 'bet' || TT.busy) return;
     { const OPP = { player: 'banker', banker: 'player', dragon: 'tiger', tiger: 'dragon' }; if ((TT.g.tk === 'baccarat' || TT.g.tk === 'dragontiger') && OPP[k] && TT.bets[OPP[k]]) { toast(TT.g.tk === 'baccarat' ? '只能下一边：庄或闲 · Player or Banker, not both' : '只能下一边：龙或虎 · Dragon or Tiger, not both'); return; } } const tot = Object.values(TT.bets).reduce((a, x) => a + x, 0);
@@ -420,10 +421,44 @@
     dealLabel: 'Spin'
   };
   // BACCARAT / DRAGON TIGER
+  // 2026-11-18 baccarat page rework (phone QA): stable card area with slots, coloured side labels, readable chips on spots, clear result banner
+  { const st = document.createElement('style'); st.textContent =
+    '.hands.bac{--sw:62px;width:100%;max-width:620px;display:grid;grid-template-columns:1fr 1fr;gap:10px}' +
+    '.hands.bac .area{background:rgba(0,0,0,.22);border-radius:14px;padding:8px 4px 10px;border:1px solid rgba(255,255,255,.08)}' +
+    '.hands.bac .cards{min-height:calc(var(--sw) * 1.42);align-items:center;flex-wrap:nowrap}' +
+    '.hands.bac .cards:empty::before,.hands.bac .cards:empty::after{content:"";width:var(--sw);height:calc(var(--sw) * 1.4);border:2px dashed rgba(255,255,255,.22);border-radius:7px;box-sizing:border-box}' +
+    '.hands.bac .lbl{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 14px;font-size:14px;letter-spacing:1px;text-shadow:none}' +
+    '.hands.bac .lbl.lp{background:#2f6fe4}.hands.bac .lbl.lb{background:#e5383b}.hands.bac .lbl b{margin:0;background:#fff;color:#111;border-radius:999px;min-width:22px;padding:0 6px;text-align:center}' +
+    '#bacS,#dtS{display:grid;grid-template-columns:repeat(12,1fr);gap:7px;width:100%;max-width:620px}' +
+    '#bacS .spot,#dtS .spot{min-width:0!important;grid-column:span 3;min-height:58px;order:2}' +
+    '#bacS .spot.big,#dtS .spot.big,#bacS .spot[data-k=tie],#dtS .spot[data-k=tie]{grid-column:span 4;order:1;min-height:74px;font-size:16px}' +
+    '#bacS:not(:has([data-k=dragon7])) .spot[data-k=ppair],#bacS:not(:has([data-k=dragon7])) .spot[data-k=bpair]{grid-column:span 6}' +
+    '#bacS .spot[data-k=ppair]{order:2}#bacS .spot[data-k=bpair]{order:3}#bacS .spot[data-k=dragon7],#bacS .spot[data-k=panda8]{order:4}' +
+    '#bacS .spot.mini{grid-column:span 4;order:6}#bacS .spot:not(.big):not([data-k=tie]){font-size:11px;letter-spacing:0}#bacS .more-sb{grid-column:1/-1;order:5}' +
+    '#bacS .spot[data-k=player]{border-color:#5b8cff;background:rgba(47,111,228,.22)}#bacS .spot[data-k=banker]{border-color:#ff6b6e;background:rgba(229,56,59,.22)}#bacS .spot[data-k=tie],#dtS .spot[data-k=tie]{border-color:#3ddc84;background:rgba(22,163,74,.2)}' +
+    '#dtS .spot[data-k=tiger]{border-color:#5b8cff;background:rgba(47,111,228,.22)}#dtS .spot[data-k=dragon]{border-color:#ff6b6e;background:rgba(229,56,59,.22)}#dtS .spot:not(.big):not([data-k=tie]){grid-column:1/-1}' +
+    '#bacS .spot.has,#dtS .spot.has{color:#fff}#bacS .spot.has small,#dtS .spot.has small{opacity:.8}' +
+    '#bacS .spot .stk,#dtS .spot .stk{left:auto;top:auto;right:3px;bottom:3px;transform:none;flex-direction:row;align-items:flex-end;gap:3px}' +
+    '#bacS .spot .pile,#dtS .spot .pile{width:30px;height:calc(30px + (var(--n) - 1) * 3px)}#bacS .spot .pile .chip,#dtS .spot .pile .chip{width:30px;height:30px;bottom:calc(var(--i) * 3px)}' +
+    '#bacS .spot .stk b,#dtS .spot .stk b{font-size:11px;padding:0 5px}' +
+    '#bacS .sinf,#dtS .sinf{display:none!important}#bacS .spot,#dtS .spot{-webkit-touch-callout:none;user-select:none}' +
+    '#felt:has(.hands.bac) .res{min-height:34px;height:34px;line-height:34px;box-sizing:border-box;white-space:nowrap;max-width:100%;overflow:hidden;font-size:min(22px,5vw);padding:0 16px;border-radius:12px}' +
+    '.hands.bac .area{transition:box-shadow .3s,border-color .3s}.hands.bac .area.win{border-color:#ffd60a;box-shadow:0 0 0 2px #ffd60a,0 0 22px rgba(255,214,10,.45)}#felt:has(.hands.bac) .res:not(:empty){background:rgba(0,0,0,.45)}' +
+    '#sqz .sq-h{padding:0 14px;box-sizing:border-box}' +
+    '#felt:has(.hands.bac) .sqzT{font-size:12px;padding:5px 12px;border-radius:999px}' +
+    '@media(max-width:560px){.hands.bac{--sw:48px;gap:8px}.hands.bac .lbl{font-size:13px;padding:2px 12px}#bacS,#dtS{gap:6px}#bacS .spot,#dtS .spot{min-height:52px;font-size:12px}#bacS .spot.big,#dtS .spot.big,#bacS .spot[data-k=tie],#dtS .spot[data-k=tie]{min-height:64px;font-size:15px}}';
+    document.head.appendChild(st); }
+  // no ? badges on the bet grid (looked busy); the rules stay one long-press away on every bet
+  function holdRules(box) { if (!box) return; box.querySelectorAll('.spot').forEach(b => { const i = b.querySelector('.sinf'); if (!i) return; let t = 0, held = false, pt = '';
+      const start = e => { pt = e.pointerType; held = false; clearTimeout(t); t = setTimeout(() => { held = true; try { navigator.vibrate && navigator.vibrate(15); } catch (e) {} i.click(); }, 480); };
+      const stop = () => clearTimeout(t);
+      b.addEventListener('pointerdown', start); ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, stop));
+      b.addEventListener('click', e => { if (held && e.target !== i) { held = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+      b.addEventListener('contextmenu', e => { if (pt === 'touch' || pt === 'pen' || held) { e.preventDefault(); e.stopImmediatePropagation(); } }, true); }); }
   REND.baccarat = {
     setup(f, g) {
       const nc = g.tv === 'nc'; this.speed = g.tv === 'speed';
-      f.innerHTML = '<div class="hands"><div class="area"><div class="lbl" id="pLbl">闲 Player</div><div class="cards" id="pC"></div></div><div class="area"><div class="lbl" id="bLbl">庄 Banker</div><div class="cards" id="bC"></div></div></div>' + resLine() + '<div class="spots" id="bacS"></div><div class="roadmap" id="bacRoad"></div><div class="pt2">' + (nc ? 'No commission: Banker wins pay 1:1, except a winning Banker 6 pays 1:2' : 'Banker pays 0.95:1 (5% commission)') + ' · 点每个下注格右上角的 <b style="color:#ffd60a">?</b> 看玩法说明 · Tap <b style="color:#ffd60a">?</b> on any bet for its rules</div>';
+      f.innerHTML = '<div class="hands bac"><div class="area"><div class="lbl lp" id="pLbl">闲 Player</div><div class="cards" id="pC"></div></div><div class="area"><div class="lbl lb" id="bLbl">庄 Banker</div><div class="cards" id="bC"></div></div></div>' + resLine() + '<div class="spots" id="bacS"></div><div class="roadmap" id="bacRoad"></div><div class="pt2">' + (nc ? 'No commission: Banker wins pay 1:1, except a winning Banker 6 pays 1:2' : 'Banker pays 0.95:1 (5% commission)') + ' · ' + ({ zh: '长按任意下注格查看玩法', en: 'Long-press any bet to see its rules' }[window.LVLang && LVLang.get()] || '长按任意下注格查看玩法 · Long-press any bet to see its rules') + '</div>';
       const s = document.getElementById('bacS'); const ez = g.tv === 'ez';
       const bankRule = ez ? '庄家点数大即赢，赔 1:1，不抽佣金；但庄家以三张牌 7 点赢时（龙7），庄注只退回本金。<br>Banker wins pay 1:1, no commission — except a 3-card Banker 7 (Dragon 7), which pushes.' : nc ? '庄家点数大即赢，赔 1:1；但庄家以 6 点赢时只赔 1:2（一半）。<br>Banker wins pay 1:1, except a Banker win on 6 pays 1:2.' : '庄家点数大即赢，赔 0.95:1（抽 5% 佣金）。和局退回本金。<br>Banker wins pay 0.95:1 (5% commission). Tie: bet returned.';
       [['ppair', '闲对 P Pair', '11:1', '', '闲家前两张牌是对子（点数相同，如两张 K）即赢，赔 11:1。<br>Player\'s first two cards are a pair — pays 11:1.'],
@@ -440,6 +475,7 @@
       if (ez) { s.appendChild(spotBtn('dragon7', '龙7 Dragon 7', '40:1', '', '庄家以 <b>三张牌 7 点</b> 赢，赔 40:1。（这时押庄只退本金）<br>Banker wins with a 3-card 7 — pays 40:1.')); s.appendChild(spotBtn('panda8', '熊猫8 Panda 8', '25:1', '', '闲家以 <b>三张牌 8 点</b> 赢，赔 25:1。<br>Player wins with a 3-card 8 — pays 25:1.')); }
       if (s.querySelector('.spot.mini')) { const mb = document.createElement('button'); mb.className = 'more-sb'; mb.textContent = '更多边注 ▾ More side bets'; mb.onclick = e => { e.stopPropagation(); const on = s.classList.toggle('more'); mb.textContent = on ? '收起边注 ▴ Fewer bets' : '更多边注 ▾ More side bets'; setTimeout(checkRule, 30); }; s.appendChild(mb); }
       if (!this.speed) { const t = document.createElement('button'); t.className = 'sqzT' + (TT.sqz ? '' : ' off'); t.textContent = '咪牌 SQUEEZE ' + (TT.sqz ? 'ON' : 'OFF'); t.onclick = e => { e.stopPropagation(); TT.sqz = !TT.sqz; try { localStorage.setItem('lv_sqz', TT.sqz ? '1' : '0'); } catch (x) {} t.className = 'sqzT' + (TT.sqz ? '' : ' off'); t.textContent = '咪牌 SQUEEZE ' + (TT.sqz ? 'ON' : 'OFF'); }; f.style.position = 'relative'; f.appendChild(t); }
+      holdRules(s);
       this.labels = null; TT.shoe = null; this.paintHist(); loadShoe();
     },
     paintShoe() { this.paintHist(); },
@@ -447,7 +483,7 @@
       LVRoad.render(el, sh ? sh.road : [], labels, sh);
       const nb = el.querySelector('.rm-new'); if (nb) nb.onclick = async () => { if (TT.busy || TT.phase === 'act') return; if (!confirmNewShoe()) return; await newShoe(); this.paintHist(labels); }; },
     async render(v, r) {
-      const pC = document.getElementById('pC'), bC = document.getElementById('bC'); pC.innerHTML = ''; bC.innerHTML = ''; const d = this.speed ? 120 : 450;
+      const pC = document.getElementById('pC'), bC = document.getElementById('bC'); pC.innerHTML = ''; bC.innerHTML = ''; document.querySelectorAll('.hands.bac .area.win').forEach(x => x.classList.remove('win')); const d = this.speed ? 120 : 450;
       // squeeze (搓牌): the side you backed is dealt face down and you peel each card yourself
       TT.sqzSkip = false; const bp = TT.bets.player || 0, bb = TT.bets.banker || 0; const side = this.speed || !TT.sqz ? null : (bb > bp ? 'B' : 'P');
       document.getElementById('pLbl').innerHTML = '闲 Player'; document.getElementById('bLbl').innerHTML = '庄 Banker';
@@ -472,10 +508,11 @@
       if (v.P[2]) await third(true);
       if (v.B[2]) await third(false);
       document.getElementById('pLbl').innerHTML = '闲 Player <b>' + v.pt + '</b>'; document.getElementById('bLbl').innerHTML = '庄 Banker <b>' + v.bt + '</b>';
-      TT.hist.push(v.win); setShoe(r.shoe); this.paintHist(); markWins(v.wins);
+      TT.hist.push(v.win); setShoe(r.shoe); this.paintHist(); markWins(v.wins); ['player', 'banker'].forEach(k => { if (v.win === k || v.win === 'tie') { const l = document.getElementById(k === 'player' ? 'pLbl' : 'bLbl'); if (l) l.closest('.area').classList.add('win'); } });
       if (v.win === 'tie') { try { setTimeout(() => sfx.voTie && sfx.voTie(), 300) } catch (e) {} }
       showRes((v.win === 'tie' ? 'TIE' : v.win.toUpperCase() + ' WINS') + (r.win > 0 ? ' · WIN ' + fmt(r.win) : ''), r.win);
-    }
+    },
+    keepBets: false
   };
   // ---- card squeeze table: all of your face-down cards side by side. Drag a card to peel it (from the bottom or the side);
   // let go and it STAYS half-peeled, so you can leave it, squeeze another one and come back. A card opens when peeled past ~85%,
@@ -517,11 +554,12 @@
     });
   }
   REND.dragontiger = {
-    setup(f) { f.innerHTML = '<div class="hands"><div class="area"><div class="lbl">龙 Dragon</div><div class="cards" id="dtD"></div></div><div class="area"><div class="lbl">虎 Tiger</div><div class="cards" id="dtT"></div></div></div>' + resLine() + '<div class="spots" id="dtS"></div><div class="roadmap" id="bacRoad"></div><div class="pt2">牌大者赢（A 最小）· 和局龙/虎注输一半 · 点 <b style="color:#ffd60a">?</b> 看说明 · Highest card wins (Ace low) · Tie: Dragon/Tiger lose half</div>';
-      const s = document.getElementById('dtS'); s.appendChild(spotBtn('dragon', '龙 Dragon', '1:1', 'big', '龙、虎各发一张牌，龙的牌大即赢，赔 1:1（A 最小，K 最大）。和局输一半。<br>Dragon card higher wins 1:1 (Ace low). Tie: lose half.')); s.appendChild(spotBtn('tie', '和 Tie', '11:1', '', '龙虎两张牌点数相同即赢，赔 11:1。<br>Same rank on both cards — pays 11:1.')); s.appendChild(spotBtn('stie', '同花和 Suited Tie', '50:1', '', '龙虎两张牌点数和花色都相同，赔 50:1。<br>Same rank and same suit — pays 50:1.')); s.appendChild(spotBtn('tiger', '虎 Tiger', '1:1', 'big', '虎的牌比龙大即赢，赔 1:1（A 最小，K 最大）。和局输一半。<br>Tiger card higher wins 1:1 (Ace low). Tie: lose half.')); TT.shoe = null; REND.baccarat.paintHist.call(REND.baccarat, { B: 'Dragon', P: 'Tiger', pairs: false }); loadShoe(); },
+    setup(f) { f.innerHTML = '<div class="hands bac"><div class="area"><div class="lbl lb">龙 Dragon</div><div class="cards" id="dtD"></div></div><div class="area"><div class="lbl lp">虎 Tiger</div><div class="cards" id="dtT"></div></div></div>' + resLine() + '<div class="spots" id="dtS"></div><div class="roadmap" id="bacRoad"></div><div class="pt2">' + ({ zh: '牌大者赢（A 最小）· 和局龙/虎注输一半 · 长按下注格看说明', en: 'Highest card wins (Ace low) · Tie: Dragon/Tiger lose half · Long-press a bet for rules' }[window.LVLang && LVLang.get()] || '牌大者赢（A 最小）· 和局龙/虎注输一半 · 长按下注格看说明 · Highest card wins (Ace low) · Tie: Dragon/Tiger lose half') + '</div>';
+      const s = document.getElementById('dtS'); s.appendChild(spotBtn('dragon', '龙 Dragon', '1:1', 'big', '龙、虎各发一张牌，龙的牌大即赢，赔 1:1（A 最小，K 最大）。和局输一半。<br>Dragon card higher wins 1:1 (Ace low). Tie: lose half.')); s.appendChild(spotBtn('tie', '和 Tie', '11:1', '', '龙虎两张牌点数相同即赢，赔 11:1。<br>Same rank on both cards — pays 11:1.')); s.appendChild(spotBtn('stie', '同花和 Suited Tie', '50:1', '', '龙虎两张牌点数和花色都相同，赔 50:1。<br>Same rank and same suit — pays 50:1.')); s.appendChild(spotBtn('tiger', '虎 Tiger', '1:1', 'big', '虎的牌比龙大即赢，赔 1:1（A 最小，K 最大）。和局输一半。<br>Tiger card higher wins 1:1 (Ace low). Tie: lose half.')); holdRules(s); TT.shoe = null; REND.baccarat.paintHist.call(REND.baccarat, { B: 'Dragon', P: 'Tiger', pairs: false }); loadShoe(); },
     paintShoe() { REND.baccarat.paintHist.call(REND.baccarat, { B: 'Dragon', P: 'Tiger', pairs: false }); },
-    async render(v, r) { const D = document.getElementById('dtD'), Tg = document.getElementById('dtT'); D.innerHTML = ''; Tg.innerHTML = ''; { const e = cardEl(v.D); e.classList.add('dealt'); D.appendChild(e); } (sfx.card || sfx.click)(); await wait(500); { const e = cardEl(v.T); e.classList.add('dealt'); Tg.appendChild(e); } (sfx.card || sfx.click)(); await wait(400);
-      TT.hist.push(v.win === 'dragon' ? 'banker' : v.win === 'tiger' ? 'player' : 'tie'); setShoe(r.shoe); REND.baccarat.paintHist.call(REND.baccarat, { B: 'Dragon', P: 'Tiger', pairs: false }); markWins(v.wins); showRes((v.win === 'tie' ? 'TIE' : v.win.toUpperCase() + ' WINS') + (r.win > 0 ? ' · WIN ' + fmt(r.win) : ''), r.win); }
+    async render(v, r) { const D = document.getElementById('dtD'), Tg = document.getElementById('dtT'); D.innerHTML = ''; Tg.innerHTML = ''; document.querySelectorAll('.hands.bac .area.win').forEach(x => x.classList.remove('win')); { const e = cardEl(v.D); e.classList.add('dealt'); D.appendChild(e); } (sfx.card || sfx.click)(); await wait(500); { const e = cardEl(v.T); e.classList.add('dealt'); Tg.appendChild(e); } (sfx.card || sfx.click)(); await wait(400);
+      TT.hist.push(v.win === 'dragon' ? 'banker' : v.win === 'tiger' ? 'player' : 'tie'); setShoe(r.shoe); REND.baccarat.paintHist.call(REND.baccarat, { B: 'Dragon', P: 'Tiger', pairs: false }); markWins(v.wins); [['dragon', D], ['tiger', Tg]].forEach(([k, el]) => { if (v.win === k || v.win === 'tie') el.closest('.area').classList.add('win'); }); showRes((v.win === 'tie' ? 'TIE' : v.win.toUpperCase() + ' WINS') + (r.win > 0 ? ' · WIN ' + fmt(r.win) : ''), r.win); },
+    keepBets: false
   };
   // ---- SHARED MULTIPLAYER TABLES (多人桌): baccarat, dragon tiger, sic bo, roulette ----
   // Everyone in the room plays the same round. The server runs the clock: 下注 bet (countdown) -> 开牌 deal -> 结果 result.

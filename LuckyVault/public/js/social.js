@@ -29,7 +29,7 @@
 .tour-hole{position:fixed;z-index:96;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.72),0 0 0 3px #facc15;transition:all .25s;pointer-events:none}
 .tour-tip{position:fixed;z-index:97;max-width:300px;background:#111c2b;border:1px solid #facc15;border-radius:14px;padding:14px;color:#e6eef8;box-shadow:0 10px 30px #000a;transition:all .25s}
 .tour-tip b{display:block;font-size:16px;margin-bottom:4px;color:#facc15}.tour-tip p{margin:0 0 10px;font-size:14px;line-height:1.4}.tour-tip .row{display:flex;gap:8px;justify-content:flex-end;align-items:center}.tour-tip .row span{flex:1;color:#8a9bb0;font-size:12px}
-.achpop{position:fixed;left:50%;top:14px;transform:translate(-50%,-120%);z-index:90;background:linear-gradient(135deg,#3b2a05,#111c2b);border:1px solid #facc15;border-radius:14px;padding:10px 16px;display:flex;gap:10px;align-items:center;color:#fff;box-shadow:0 8px 24px #000b;transition:transform .35s}
+.achpop{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 62px);pointer-events:none;transform:translate(-50%,calc(-100% - 80px));z-index:90;background:linear-gradient(135deg,#3b2a05,#111c2b);border:1px solid #facc15;border-radius:14px;padding:10px 16px;display:flex;gap:10px;align-items:center;color:#fff;box-shadow:0 8px 24px #000b;transition:transform .35s}
 .achpop.show{transform:translate(-50%,0)}.achpop .ic{font-size:28px}.achpop small{display:block;color:#facc15;font-weight:800;font-size:11px;letter-spacing:.5px}
 .tile .cov{position:absolute;inset:0;background-size:cover;background-position:center;z-index:-1}
 .tile.has-art .art,.tile.has-art .fl{display:none}

@@ -643,3 +643,7 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 84 (08:08)
 - 多人桌角落小筹码只在手机生效，电脑端保持原样；电脑端多人百家乐截图确认
+
+## Round 85 (08:27)
+- 全量回归：slot_smoke 200 次 0 问题；ui_smoke 全部桌台 0 问题；单元测试 90/90；翻译缺失扫描 0 条；360px 小屏 6 个页面截图正常
+- 发现：vantaxgame.com/luckyvault 仍是 lv-v106（GitHub 已是最新 lv-v172），总站自动部署没有跟上，需要 Grok 检查

@@ -484,3 +484,8 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 ## Round 38 (23:15) — Red Dog refined
 - Three slots (low · ? · high) with the two cards sorted, the third card drops into the middle slot; spread meter (1 → 5:1, 2 → 4:1, 3 → 2:1, 4+ → 1:1) lights the live payout; raise button shows the amount; results translated (落在中间！5:1 / 没落在中间，庄家赢 / 两张相连，退回 / 三条！11:1).
 - sw lv-v106. Tests 90/90.
+
+## Round 39 (23:55) — Video poker refined (6 games)
+- Suggested hold: after the deal the cards a basic strategy would keep get a gold edge, a hint line says how many to hold, and an AUTO HOLD / 按建议保留 button applies it in one tap (wild cards always kept in Deuces Wild / Joker Poker).
+- All buttons and results in one language (币值 / 投注 / 最大投注 / 换牌 / 发牌; result "三条 · 赢 15.00"), result line no longer upper-cases Chinese away.
+- Strategy helper unit-checked on 7 sample hands. sw lv-v108. Tests 90/90.

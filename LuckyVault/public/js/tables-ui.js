@@ -800,23 +800,50 @@
     dealLabel: 'Roll', keepBets: false
   };
   // VIDEO POKER
+  // 2026-11-19 video poker refine: one-language labels, translated results, "suggested hold" (basic strategy) with one-tap AUTO HOLD
+  const VPL = () => (window.LVLang && LVLang.get()) || 'bi', VPT = (zh, en) => VPL() === 'zh' ? zh : VPL() === 'en' ? en : zh + ' ' + en;
+  const vpName = n => { if (!n) return ''; const z = window.LVLang && LVLang.zhOf ? LVLang.zhOf(n) : ''; return VPT(z || n, n.toUpperCase()); };
+  const VR = c => c === '??' ? 0 : '23456789TJQKA'.indexOf(c[0]) + 2, VS = c => c[c.length - 1];
+  // simple, widely used holding guide for jacks-or-better style games (wild cards treated as their face value)
+  function vpSuggest(hand, cfg) {
+    const isW = c => cfg && cfg.wild === 'deuce' ? c[0] === '2' : cfg && cfg.wild === 'joker' ? c === 'JK' : false;
+    if (hand.some(isW)) { const rest = hand.map((c, i) => [c, i]).filter(([c]) => !isW(c)); const sub = vpSuggest(rest.map(x => x[0]).concat(Array(5 - rest.length).fill('??')).slice(0, 5), null);
+      const keep = hand.map(c => isW(c) ? 1 : 0); const wild = keep.reduce((a, x) => a + x, 0);
+      rest.forEach(([c], k) => { if (sub[k] && (rest.filter(([d]) => VR(d) === VR(c)).length > 1 || sub.reduce((a, x) => a + x, 0) >= 3)) keep[rest[k][1]] = 1; });
+      if (wild >= 1) { const cnt = {}; rest.forEach(([c]) => cnt[VR(c)] = (cnt[VR(c)] || 0) + 1); Object.keys(cnt).forEach(k => { if (cnt[k] >= 2) rest.forEach(([c, i]) => { if (VR(c) === +k) keep[i] = 1; }); }); }
+      return keep; }
+    const r = hand.map(VR), s = hand.map(VS), cnt = {}; r.forEach(x => { if (x) cnt[x] = (cnt[x] || 0) + 1; });
+    const pick = f => hand.map((_, i) => f(i) ? 1 : 0); const vals = Object.values(cnt);
+    const flushSuit = Object.entries(hand.filter(c => c !== '??').map(VS).reduce((a, x) => (a[x] = (a[x] || 0) + 1, a), {})).find(([, n]) => n >= 4);
+    const u = [...new Set(r.filter(Boolean))].sort((a, b) => a - b), isStr = u.length === 5 && (u[4] - u[0] === 4 || u.join() === '2,3,4,5,14');
+    if (vals.includes(4) || (vals.includes(3) && vals.includes(2)) || isStr || (flushSuit && flushSuit[1] === 5)) return [1, 1, 1, 1, 1];
+    if (vals.includes(3)) return pick(i => cnt[r[i]] === 3);
+    if (vals.filter(v => v === 2).length === 2) return pick(i => cnt[r[i]] === 2);
+    if (flushSuit) return pick(i => s[i] === flushSuit[0]);
+    const pr = Object.keys(cnt).find(k => cnt[k] === 2); if (pr) return pick(i => r[i] === +pr);
+    for (const lo of [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]) { const want = [0, 1, 2, 3, 4].map(k => lo + k === 1 ? 14 : lo + k); if (want.filter(x => r.includes(x)).length === 4 && lo >= 2) { const used = {}; return pick(i => want.includes(r[i]) && !used[r[i]] && (used[r[i]] = 1)); } }
+    const hi = hand.map((c, i) => [VR(c), i]).filter(([x]) => x >= 11).sort((a, b) => b[0] - a[0]).slice(0, 2).map(x => x[1]);
+    return pick(i => hi.includes(i));
+  }
+  { const st = document.createElement('style'); st.textContent = '.vp-cards>div.sug .pcard{box-shadow:0 0 0 2px rgba(255,214,10,.85),0 0 12px rgba(255,214,10,.45)}.vp-cards>div.sug::before{content:attr(data-s);}#felt .vph{min-height:20px;font:700 12px "Microsoft YaHei",Arial,sans-serif;color:#fde68a;text-align:center}#felt:has(#vpC) .res{min-height:30px;white-space:nowrap;font-size:min(22px,5vw)}'; document.head.appendChild(st); }
   REND.videopoker = {
     setup(f, g) {
       const cfg = TE.VP[g.tv]; this.cfg = cfg; TT.extra = {}; this.coins = this.coins || 5; this.denom = this.denom || 1; this.hold = [0, 0, 0, 0, 0];
       let t = '<table class="vp-pay" id="vpT">'; cfg.rows.forEach(([n, p]) => { t += '<tr data-n="' + n + '"><td>' + n + '</td>' + [1, 2, 3, 4, 5].map(c => '<td data-c="' + c + '">' + ((/Royal/.test(n) && !/Wild/.test(n) && c === 5) ? 4000 : p * c) + '</td>').join('') + '</tr>'; }); t += '</table>';
       const nh = cfg.hands || 1; const mini = nh > 1 ? '<div class="vpmulti' + (nh > 3 ? ' ten' : '') + '" id="vpM">' + Array.from({ length: nh - 1 }, () => '<div class="vpm"><span class="mc">' + '<i></i>'.repeat(5) + '</span><b></b></div>').join('') + '</div>' : '';
-      f.innerHTML = t + mini + resLine() + '<div class="cards vp-cards" id="vpC"></div><div class="pt2">' + (nh > 1 ? nh + ' hands · held cards copy to every hand · ' : '') + cfg.name + (cfg.wild ? ' · ' + (cfg.wild === 'deuce' ? 'All 2s are wild' : 'Joker is wild') : '') + ' · Tap cards to hold</div>';
+      f.innerHTML = t + mini + resLine() + '<div class="cards vp-cards" id="vpC"></div><div class="tcph vph" id="vpHint"></div><div class="pt2">' + (nh > 1 ? VPT(nh + ' 手牌 · 保留的牌会复制到每一手 · ', nh + ' hands · held cards copy to every hand · ') : '') + (cfg.wild ? VPT(cfg.wild === 'deuce' ? '所有 2 都是百搭 · ' : '小丑是百搭 · ', cfg.wild === 'deuce' ? 'All 2s are wild · ' : 'Joker is wild · ') : '') + VPT('点牌保留，再按换牌', 'Tap cards to hold, then Draw') + '</div>';
       const c = document.getElementById('vpC'); for (let i = 0; i < 5; i++) { const w = document.createElement('div'); w.appendChild(cardEl('??')); w.appendChild(el('<span class="holdtag"></span>')); c.appendChild(w); }
       this.paintPay(); TT.bets = { coins: this.coins, denom: this.denom };
     },
     paintPay(hit) { document.querySelectorAll('#vpT td[data-c]').forEach(td => td.classList.toggle('on', +td.dataset.c === this.coins)); document.querySelectorAll('#vpT tr').forEach(tr => tr.classList.toggle('hit', !!hit && tr.dataset.n === hit)); },
     controls(c) {
       const me = REND.videopoker; const draw = TT.phase === 'act';
-      c.innerHTML = '<div class="tsmall"><button class="tbtn" id="vpDen">Coin ' + fmt(me.denom) + '</button><button class="tbtn" id="vpBet"' + (draw ? ' disabled' : '') + '>Bet ' + me.coins + '</button><button class="tbtn warn" id="vpMax"' + (draw ? ' disabled' : '') + '>Bet max</button></div><div class="lbl">Bet <b>' + fmt(me.coins * me.denom * (me.cfg.hands || 1)) + '</b>' + ((me.cfg.hands || 1) > 1 ? ' (' + me.cfg.hands + ' hands)' : '') + '</div><button class="tbtn go" id="vpGo"' + (TT.busy ? ' disabled' : '') + '>' + (draw ? 'Draw' : 'Deal') + '</button>';
+      c.innerHTML = '<div class="tsmall"><button class="tbtn" id="vpDen">' + VPT('币值 ', 'Coin ') + fmt(me.denom) + '</button><button class="tbtn" id="vpBet"' + (draw ? ' disabled' : '') + '>' + VPT('投注 ', 'Bet ') + me.coins + '</button><button class="tbtn warn" id="vpMax"' + (draw ? ' disabled' : '') + '>' + VPT('最大投注', 'Bet max') + '</button>' + (draw ? '<button class="tbtn" id="vpAuto">' + VPT('按建议保留', 'Auto hold') + '</button>' : '') + '</div><div class="lbl">' + VPT('投注', 'Bet') + ' <b>' + fmt(me.coins * me.denom * (me.cfg.hands || 1)) + '</b>' + ((me.cfg.hands || 1) > 1 ? ' (' + me.cfg.hands + ' hands)' : '') + '</div><button class="tbtn go" id="vpGo"' + (TT.busy ? ' disabled' : '') + '>' + (draw ? VPT('换牌', 'DRAW') : VPT('发牌', 'DEAL')) + '</button>';
       const den = [0.2, 1, 2, 5, 10];
       document.getElementById('vpDen').onclick = () => { if (draw || TT.busy) return; me.denom = den[(den.indexOf(me.denom) + 1) % den.length]; TT.bets = { coins: me.coins, denom: me.denom }; updCtrl(); };
       document.getElementById('vpBet').onclick = () => { me.coins = me.coins % 5 + 1; TT.bets = { coins: me.coins, denom: me.denom }; me.paintPay(); updCtrl(); };
       document.getElementById('vpMax').onclick = () => { me.coins = 5; TT.bets = { coins: 5, denom: me.denom }; me.paintPay(); updCtrl(); deal(); };
+      { const a = document.getElementById('vpAuto'); if (a) a.onclick = () => me.applyHold && me.applyHold(); }
       document.getElementById('vpGo').onclick = () => { if (draw) doAct('draw'); else { TT.bets = { coins: me.coins, denom: me.denom }; deal(); } };
     },
     actInput() { return { hold: this.hold.map(Boolean) }; },
@@ -830,7 +857,11 @@
         Array.from(M.children).forEach((row, k) => { const ii = row.querySelectorAll('i'); const m = v.multi && v.multi[k + 1];
           ii.forEach((e, j) => { const code = m ? m.hand[j] : (!v.done && this.hold[j] ? v.hand[j] : '??'); e.textContent = lab(code); e.className = code === '??' ? 'bk' : (/[hd]$/.test(code) ? 'rd' : ''); });
           row.lastChild.textContent = m && m.w > 0 ? (m.res || '').toUpperCase() + ' ' + fmt(m.w) : ''; row.classList.toggle('won', !!(m && m.w > 0)); }); }
-      if (first && v.res) showRes(v.res, 0); else if (!first && v.multi && v.multi.length > 1) { const nw = v.multi.filter(m => m.w > 0).length; showRes(r.win > 0 ? nw + ' of ' + v.multi.length + ' hands won · TOTAL WIN ' + fmt(r.win) : 'GAME OVER', r.win); } else if (!first) showRes(v.res ? v.res.toUpperCase() + (r.win > 0 ? ' · WIN ' + fmt(r.win) : '') : 'GAME OVER', r.win); else showRes('');
+      if (first) { const sg = vpSuggest(v.hand, this.cfg); this.sugg = sg; wraps.forEach((w, i) => w.classList.toggle('sug', !!sg[i]));
+        this.applyHold = () => { wraps.forEach((w, i) => { if (!!this.hold[i] !== !!sg[i]) w.onclick(); }); };
+        const keep = sg.reduce((a, x) => a + x, 0); const H = document.getElementById('vpHint'); if (H) H.innerHTML = VPT('建议：', 'Suggested: ') + (keep === 0 ? VPT('全部换掉', 'draw five new cards') : keep === 5 ? VPT('全部保留', 'hold all five') : VPT('保留金色标记的 ' + keep + ' 张', 'hold the ' + keep + ' marked cards')); }
+      else { wraps.forEach(w => w.classList.remove('sug')); const H = document.getElementById('vpHint'); if (H) H.innerHTML = ''; }
+      if (first && v.res) showRes(vpName(v.res), 0); else if (!first && v.multi && v.multi.length > 1) { const nw = v.multi.filter(m => m.w > 0).length; showRes(r.win > 0 ? VPT(v.multi.length + ' 手中赢 ' + nw + ' 手 · 共赢 ', nw + ' of ' + v.multi.length + ' hands won · TOTAL WIN ') + fmt(r.win) : VPT('本局结束', 'GAME OVER'), r.win); } else if (!first) showRes(v.res ? vpName(v.res) + (r.win > 0 ? ' · ' + VPT('赢 ', 'WIN ') + fmt(r.win) : '') : VPT('没有中奖', 'NO WIN'), r.win); else showRes('');
     }
   };
   // POKER TABLE GAMES

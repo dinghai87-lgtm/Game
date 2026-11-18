@@ -640,3 +640,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 - 21 点：手机单手牌时牌面放大（48→58px）
 - 换牌 21 点分牌后出现 3~4 手牌会超出屏幕 → 改为自动两行排列（ui_smoke 发现的问题，已修）
 - ui_smoke 增加 LV_ONLY 过滤，方便单独跑某个桌台
+
+## Round 84 (08:08)
+- 多人桌角落小筹码只在手机生效，电脑端保持原样；电脑端多人百家乐截图确认

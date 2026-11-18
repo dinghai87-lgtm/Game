@@ -31,6 +31,7 @@ with sync_playwright() as p:
     pg.evaluate("""(async()=>{const r=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'ui'+Date.now()%1e7,pass:'password1',adult:true})}).then(r=>r.json());if(r.token)localStorage.setItem('lv_token',r.token)})()""")
     pg.wait_for_timeout(600); pg.reload(); pg.wait_for_timeout(2500)
     ids = pg.evaluate("GAMES.filter(g=>g&&!g.slot&&vis(g)).map(g=>[g.id,g.name])")
+    if os.environ.get('LV_ONLY'): ids = [x for x in ids if os.environ['LV_ONLY'].lower() in x[1].lower()]
     for gid, name in ids:
       errs.clear(); log = []
       pg.evaluate("document.querySelectorAll('.ov.show').forEach(o=>o.classList.remove('show'));document.querySelectorAll('.hovov').forEach(o=>o.remove())")

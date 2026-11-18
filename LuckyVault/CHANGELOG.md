@@ -454,3 +454,10 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 - Bets on solid cells: Pass (green) / Don't Pass (red) wide, Field / Any 7 / Any Craps / Yo four across; chips in the corner; rules box readable over the dice wallpaper.
 - Losing chips leave the table when the round ends; all text one language; long-press rules.
 - Tested a full point round (come-out 10 → 8 → 7 seven-out). sw lv-v98. Tests 90/90.
+
+## Round 33 (22:30) — Three Card Poker refined
+- Dealer and player panels with three dashed card slots each; fixed heights so nothing moves when cards land.
+- Strategy tip under the question: PLAY with Q-6-4 or better, otherwise FOLD; buttons read "跟注 5.00 / 弃牌".
+- Results spelled out (庄家赢 / 你赢了 / 庄家不合格 / 和局 / 已弃牌) with per-bet wins; winner panel glows, loser dims; losing chips leave the table.
+- Fixed a translation bug: Ante was shown as 加注 (raise) — now 底注. Hand names translated (高牌/对子/同花/顺子/三条/同花顺).
+- sw lv-v100. Tests 90/90.

@@ -848,7 +848,53 @@
     if (v.wins) markWins(v.wins);
     showRes(v.done ? (v.out || '') + (r.win > 0 ? ' · WIN ' + fmt(r.win) : '') : (extra || ''), r.win);
   }
-  REND.tcp = { setup(f) { pokerSetup(f, [['ante', 'Ante', 'Play = Ante', 'big'], ['pairplus', 'Pair Plus', 'Pair 1:1 → SF 40:1']], 'Dealer qualifies with Queen-high · Ante bonus: Straight 1:1, Trips 4:1, Straight flush 5:1'); }, render: (v, r) => pokerRender(v, r, 'Play (= ante) or fold?') };
+  // 2026-11-18 Three Card Poker refine (phone QA): dealer / player panels with fixed card slots (no jumping), Q-6-4 play hint,
+  // result spelled out per bet, losing chips leave the table, one language
+  const PKL = () => (window.LVLang && LVLang.get()) || 'bi', PKT = (zh, en) => PKL() === 'zh' ? zh : PKL() === 'en' ? en : zh + ' ' + en;
+  { const st = document.createElement('style'); st.textContent =
+    '#felt .tcpz{width:100%;max-width:520px;box-sizing:border-box;border-radius:14px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.08);padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;--cw:58px}' +
+    '#felt .tcpz .cards{min-height:calc(var(--cw) * 1.42);align-items:center}#felt .tcpz .cards:empty{display:grid;grid-template-columns:repeat(3,var(--cw));gap:6px}#felt .tcpz .cards:empty::before,#felt .tcpz .cards:empty::after,#felt .tcpz .cards:empty{background:none}' +
+    '#felt .tcpz .slots{display:flex;gap:6px}#felt .tcpz .slots i{width:var(--cw);height:calc(var(--cw) * 1.4);border:2px dashed rgba(255,255,255,.22);border-radius:7px;box-sizing:border-box}' +
+    '#felt .tcpz .lbl{display:inline-flex;gap:6px;align-items:center;background:#0009;border-radius:999px;padding:2px 12px;text-shadow:none;font-size:13px}' +
+    '#felt .tcpz.win{border-color:#ffd60a;box-shadow:0 0 0 2px #ffd60a,0 0 20px rgba(255,214,10,.4)}#felt .tcpz.lose{opacity:.6}' +
+    '#felt:has(.tcpz) .res{min-height:30px;height:30px;line-height:30px;white-space:nowrap;overflow:hidden;font-size:min(20px,4.8vw)}' +
+    '#felt .tcph{min-height:20px;font:700 12px "Microsoft YaHei",Arial,sans-serif;color:#fde68a;text-align:center}' +
+    '#felt:has(.tcpz) #pkS{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:520px}#felt:has(.tcpz) #pkS .spot{min-width:0!important;min-height:60px}' +
+    '#felt:has(.tcpz) #pkS .spot .stk{left:auto;top:auto;right:3px;bottom:3px;transform:none;flex-direction:row;gap:2px;align-items:flex-end}#felt:has(.tcpz) #pkS .spot .pile{width:28px;height:calc(28px + (var(--n) - 1) * 2px)}#felt:has(.tcpz) #pkS .spot .pile .chip{width:28px;height:28px;bottom:calc(var(--i) * 2px)}#felt:has(.tcpz) #pkS .spot .stk b{font-size:10px;padding:0 4px}#felt:has(.tcpz) #pkS .spot.has{color:#fff}#felt:has(.tcpz) #pkS .spot.has small{visibility:hidden}' +
+    '@media(max-width:560px){#felt .tcpz{--cw:50px}}';
+    document.head.appendChild(st); }
+  const H3Z = { 'High Card': '高牌', Pair: '对子', Flush: '同花', Straight: '顺子', 'Three of a Kind': '三条', 'Straight Flush': '同花顺' };
+  const hn3 = h => h ? PKT(H3Z[h] || h, h) : '';
+  const RV = c => '23456789TJQKA'.indexOf(String(c)[0]) + 2;
+  function tcpHint(P, ph) { if (ph && ph !== 'High Card') return true; const r = P.map(RV).sort((a, b) => b - a); return r[0] > 12 || (r[0] === 12 && (r[1] > 6 || (r[1] === 6 && r[2] >= 4))); }
+  REND.tcp = {
+    setup(f) {
+      const slots = '<div class="slots"><i></i><i></i><i></i></div>';
+      f.innerHTML = '<div class="tcpz" id="tcpD"><div class="lbl" id="dL">' + PKT('庄家', 'DEALER') + '</div><div class="cards" id="dC">' + slots + '</div></div>' + resLine() + '<div class="tcph" id="tcpH"></div>' +
+        '<div class="tcpz" id="tcpP"><div class="cards" id="pC">' + slots + '</div><div class="lbl" id="pL">' + PKT('你的手牌', 'YOUR HAND') + '</div></div><div class="spots" id="pkS"></div><div class="pt2">' + PKT('庄家 Q 高以上才合格 · 底注奖励：顺子 1:1、三条 4:1、同花顺 5:1 · 长按下注格看说明', 'Dealer qualifies with Queen-high · Ante bonus: straight 1:1, trips 4:1, straight flush 5:1 · Long-press a bet for rules') + '</div>';
+      const s = document.getElementById('pkS');
+      [['ante', PKT('底注', 'ANTE'), PKT('跟注 = 底注', 'Play = Ante'), 'big', '先押底注，看牌后决定：跟注（再押一份和底注一样多）或弃牌（输掉底注）。庄家 Q 高以上才合格；不合格时底注赔 1:1、跟注退回。顺子 / 三条 / 同花顺另有底注奖励。<br>Bet the Ante, look at your cards, then Play (match the Ante) or Fold (lose the Ante). Dealer needs Queen-high; if not, Ante pays 1:1 and Play pushes. Straight / trips / straight flush earn an ante bonus.'],
+       ['pairplus', PKT('对子加注', 'PAIR PLUS'), PKT('对子 1:1 → 同花顺 40:1', 'Pair 1:1 → SF 40:1'), 'big', '只看你自己的牌，与庄家无关：对子 1:1、同花 3:1、顺子 6:1、三条 30:1、同花顺 40:1。<br>Pays on your own hand only: pair 1:1, flush 3:1, straight 6:1, trips 30:1, straight flush 40:1.']].forEach(x => s.appendChild(spotBtn(...x)));
+    },
+    async render(v, r) {
+      const d = document.getElementById('dC'), p = document.getElementById('pC'), H = document.getElementById('tcpH');
+      ['tcpD', 'tcpP'].forEach(id => document.getElementById(id).classList.remove('win', 'lose'));
+      if (!v.done || !p.querySelector('.pcard')) { p.innerHTML = ''; for (let i = 0; i < v.P.length; i++) { p.appendChild(cardEl(v.P[i], i)); (sfx.card || sfx.click)(); await wait(120); } }
+      d.innerHTML = ''; v.D.forEach((c, i) => d.appendChild(cardEl(c, v.done ? i : 0))); if (v.done) { (sfx.card || sfx.click)(); await wait(300); }
+      document.getElementById('pL').innerHTML = PKT('你的手牌', 'YOUR HAND') + (v.ph ? ' <b>' + hn3(v.ph) + '</b>' : '');
+      document.getElementById('dL').innerHTML = PKT('庄家', 'DEALER') + (v.dh ? ' <b>' + hn3(v.dh) + '</b>' : '');
+      if (!v.done) { const go = tcpHint(v.P, v.ph); H.innerHTML = PKT('建议：', 'Tip: ') + (go ? PKT('跟注（手牌 Q-6-4 或更好）', 'PLAY (Q-6-4 or better)') : PKT('弃牌（低于 Q-6-4）', 'FOLD (below Q-6-4)')); showRes(PKT('跟注还是弃牌？', 'Play or fold?'), 0); return; }
+      H.innerHTML = '';
+      if (v.wins) markWins(v.wins);
+      const OUT = { 'You win': ['你赢了', 'YOU WIN'], 'Dealer wins': ['庄家赢', 'DEALER WINS'], Push: ['和局', 'PUSH'], Folded: ['已弃牌', 'FOLDED'], 'Dealer does not qualify': ['庄家不合格', 'DEALER DOESN’T QUALIFY'] }[v.out] || [v.out || '', v.out || ''];
+      const w = v.wins || {}, parts = []; if (w.main) parts.push(PKT('底注+跟注 ', 'Ante+Play ') + fmt(w.main)); if (w.pairplus) parts.push(PKT('对子加注 ', 'Pair Plus ') + fmt(w.pairplus));
+      if (v.out === 'You win' || v.out === 'Dealer does not qualify') document.getElementById('tcpP').classList.add('win'); else if (v.out === 'Dealer wins') { document.getElementById('tcpD').classList.add('win'); document.getElementById('tcpP').classList.add('lose'); } else if (v.out === 'Folded') document.getElementById('tcpP').classList.add('lose');
+      H.innerHTML = parts.join(' · ');
+      showRes(PKT(OUT[0], OUT[1]) + (r.win > 0 ? ' · ' + PKT('赢 ', 'WIN ') + fmt(r.win) : ''), r.win);
+    },
+    actLabel: (a) => a === 'play' ? PKT('跟注', 'PLAY') + ' ' + fmt(TT.bets.ante || 0) : a === 'fold' ? PKT('弃牌', 'FOLD') : null,
+    keepBets: false
+  };
   REND.holdem = { setup(f) { pokerSetup(f, [['ante', 'Ante', 'Call = 2× ante', 'big']], 'Dealer qualifies with a pair of 4s · Ante pays 1:1 up to 100:1 for a royal flush · Call pays 1:1', true); }, render: (v, r) => pokerRender(v, r, 'Call (2× ante) or fold?') };
   REND.caribbean = { setup(f) { pokerSetup(f, [['ante', 'Ante', 'Raise = 2× ante', 'big']], 'Dealer qualifies with Ace-King · Raise pays 1:1 up to 100:1 for a royal flush'); }, render: (v, r) => pokerRender(v, r, 'Raise (2× ante) or fold?') };
   REND.war = { setup(f) { f.innerHTML = '<div class="hands"><div class="area"><div class="lbl">Dealer</div><div class="cards" id="wD"></div></div><div class="area"><div class="lbl">You</div><div class="cards" id="wP"></div></div></div>' + resLine() + '<div class="spots" id="wS"></div><div class="pt2">Higher card wins 1:1 · On a tie, go to war (match your bet) or surrender half</div>'; document.getElementById('wS').appendChild(spotBtn('main', 'Bet', '1:1', 'big')); },

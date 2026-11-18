@@ -15,7 +15,7 @@ Kevin：vantaxgame.com 是我们所有官网和游戏的集合站，**以后每�
   - **Hero Defense / 英雄塔防** — 已上线，链接 `/hero-defense/`，素材 `img/ui_logo_full.webp`、`img/en_1_battle.webp`、`img/zh_1_battle.webp`、`img/icon.webp`
   - **LuckyVault** — Kevin 已确认上线（2026-11-18），链接 `/luckyvault/`（社交娱乐场：老虎机 + 桌游，虚拟币，仅供娱乐，18+，金币没有现金价值），素材 `img/luckyvault_hero.webp`、`img/luckyvault_icon.png`；卡片上标 18+ 和「仅供娱乐 · For entertainment only」
   - 其他游戏（万泰扑克 VANTAX POKER 等）先做「即将推出」卡片，Kevin 确认后再放上线
-- 旗下官网入口：ELERONZEN TECHNOLOGY INC → https://eleronzentechnology.com/
+- 不要显示 eleronzentechnology.com 的官网入口（Kevin 要求）
 - 页脚：© 2026 Wantai Game Development / ELERONZEN TECHNOLOGY INC；联系 info@eleronzentechnology.com；隐私 / 条款链接到 `/hero-defense/privacy.html`、`/hero-defense/terms.html`
 - 中英双语切换（默认跟随浏览器语言），手机 / 平板 / 笔电 / 1920 / 2K 都要好看，图片不变形，不依赖外部 CDN。
 

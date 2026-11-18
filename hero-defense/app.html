@@ -3683,7 +3683,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794995813';
+const BUILD_VER='1794996066';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);
@@ -3736,13 +3736,26 @@ function showBoard(){const go=()=>{const B=NET.board||[];const me=B.findIndex(r=
 const VOICE={monk:['阿弥陀佛！',.8,.95],archer:['箭雨，落！',1.15,1.05],old:['老夫还没老！',.6,.9],blade:['一刀两断！',.9,1.1],assassin:['影随我动。',.85,1],whiteninja:['千刃飞雪！',1.25,1.1],
   mage:['天雷，听我号令！',1,1],healer:['众生皆安。',.95,.9],ghostk:['亡魂，起来！',.5,.85],hunter:['猎物，跑不掉！',1,1.1],anubis:['冥界，开门！',.7,.9],succubus:['看着我的眼睛～',1.45,.95],sentry:['黄沙为盾！',.75,.95]};
 const VOICE_LANG={zh:'zh-CN','zh-TW':'zh-TW',en:'en-US',ja:'ja-JP',ko:'ko-KR',es:'es-ES'};
-let _vT=0,_vVoices=null;
-function pickVoice(lang){try{if(!_vVoices||!_vVoices.length)_vVoices=speechSynthesis.getVoices();const l=lang.toLowerCase();return _vVoices.find(v=>v.lang&&v.lang.toLowerCase()===l)||_vVoices.find(v=>v.lang&&v.lang.toLowerCase().startsWith(l.slice(0,2)))||null}catch(_){return null}}
-function heroVoice(h,force){try{if(SAVE.voice===false||!window.speechSynthesis)return;const V=VOICE[h];if(!V)return;const now=performance.now();if(!force&&now-_vT<3500)return;_vT=now;
+let _vT=-1e9,_vVoices=null;
+// 男声优先：各系统常见男声名字；找不到男声就用同语言的声音并压低音调
+const MALE_V=/(kangkang|yunxi|yunjian|yunyang|yunhao|yunfeng|yunze|yunjhe|wanlung|zhiwei|li-mu|liang|danny|david|mark|guy|ryan|eric|christopher|andrew|brian|roger|steffan|daniel|alex|fred|aaron|arthur|tom|ichiro|keita|takumi|hyunsu|injoon|bongjin|pablo|alvaro|jorge|diego|male|\bman\b)/i;
+const FEM_V=/(huihui|yaoyao|xiaoxiao|xiaoyi|hanhan|yating|tracy|zira|aria|jenny|samantha|karen|tessa|victoria|ayumi|haruka|nanami|heami|sunhi|helena|laura|elvira|female|woman|ting-ting|mei-jia|sin-ji|google)/i;
+function pickVoice(lang){try{if(!_vVoices||!_vVoices.length)_vVoices=speechSynthesis.getVoices();const l=lang.toLowerCase();
+  const same=_vVoices.filter(v=>v.lang&&v.lang.toLowerCase().replace('_','-')===l),near=_vVoices.filter(v=>v.lang&&v.lang.toLowerCase().startsWith(l.slice(0,2)));
+  for(const L of [same,near]){const m=L.find(v=>MALE_V.test(v.name));if(m)return {v:m,male:true}}
+  const any=same[0]||near[0]||null;return any?{v:any,male:!FEM_V.test(any.name)&&false}:null}catch(_){return null}}
+// 只在玩家正看着游戏、游戏声音开着、正在战斗时才说话
+function voiceOkBase(){try{if(document.hidden||!document.hasFocus())return false;const c=AUD&&AUD.ctx;return !c||c.state==='running'}catch(_){return false}}
+function voiceOk(){try{if(document.hidden||!document.hasFocus())return false;if(typeof scene!=='undefined'&&scene!=='battle')return false;if(typeof paused!=='undefined'&&paused)return false;if(typeof G!=='undefined'&&(!G||G.over))return false;
+  const c=AUD&&AUD.ctx;if(!c||c.state!=='running')return false;const m=AUD.master;if(m&&m.gain&&m.gain.value<0.05)return false;return true}catch(_){return false}}
+function heroVoice(h,force){try{if(SAVE.voice===false||!window.speechSynthesis)return;const V=VOICE[h];if(!V)return;if(!(force?voiceOkBase():voiceOk()))return;const now=performance.now();if(!force&&now-_vT<3500)return;_vT=now;
   const vol=(AUD&&AUD.V&&AUD.V.sfx!=null)?AUD.V.sfx:.8;if(vol<=0.01)return;const lang=VOICE_LANG[LANG]||'en-US';
-  const u=new SpeechSynthesisUtterance(TR(V[0]));u.lang=lang;const vv=pickVoice(lang);if(vv)u.voice=vv;u.pitch=V[1];u.rate=V[2]*(typeof speed!=='undefined'&&speed>1?1.15:1);u.volume=Math.min(1,vol);
+  const u=new SpeechSynthesisUtterance(TR(V[0]));u.lang=lang;const pv=pickVoice(lang);if(pv)try{u.voice=pv.v}catch(_){};
+  const female=h==='succubus'||h==='healer';// 女性角色保持原音色，其余用男声
+  u.pitch=female?V[1]:Math.min(V[1],pv&&pv.male?.95:.55);u.rate=V[2]*(typeof speed!=='undefined'&&speed>1?1.15:1);u.volume=Math.min(1,vol);
   speechSynthesis.cancel();speechSynthesis.speak(u)}catch(_){}}
-try{if(window.speechSynthesis){speechSynthesis.onvoiceschanged=()=>{_vVoices=speechSynthesis.getVoices()};document.addEventListener('visibilitychange',()=>{if(document.hidden)try{speechSynthesis.cancel()}catch(_){}})}}catch(_){}
+try{if(window.speechSynthesis){speechSynthesis.onvoiceschanged=()=>{_vVoices=speechSynthesis.getVoices()};const stop=()=>{try{speechSynthesis.cancel()}catch(_){}};
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)stop()});addEventListener('blur',stop);addEventListener('pagehide',stop)}}catch(_){}
 {const _hs=heroSkill;heroSkill=function(a){const before=a&&a.scd;const r=_hs.apply(this,arguments);try{if(a&&!a.dead&&!(before>0)&&a.scd>0)heroVoice(a.hero)}catch(_){}return r}}
 
 // 删除我的数据（App Store 5.1.1(v) / GDPR）：删除云端存档、分数、昵称、统计和账号，并清空本机存档

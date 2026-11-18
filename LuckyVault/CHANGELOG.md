@@ -350,3 +350,4 @@ Platform release: everything on the "do all of these" list except the public dep
 - Phone landscape lobby: brand text hidden below 900px so the level bar no longer overlaps it; rewards dock compact on short screens.
 - First load: sounds and music now download after the first tap (browsers can't play audio before that) — lobby first load 2.4 MB → 1.05 MB.
 - Re-encoded 139 high-bitrate sounds (112k sfx / 128k music): audio 16 MB → 14 MB.
+- Phone tap targets: ante button no longer squeezed to 21px, onboarding ✕ / GO and bet −/+ enlarged.

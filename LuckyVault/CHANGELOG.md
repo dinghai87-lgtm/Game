@@ -528,3 +528,7 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 49 (01:17) — Mississippi Stud refined
 - Zoned layout (3 community slots, your 2), street stepper 第 3 / 4 / 5 张, ante + three street circles with amounts, buttons 押 3 倍 15.00 / 押 1 倍 5.00 / 弃牌, per-street tip, translated results (两对 赔 2:1 · 返还 60.00 …). sw lv-v122. Tests 90/90.
+
+## Round 50 (01:23) — Four Card Poker & High Card Flush refined
+- Both moved to the zoned table (dealer 6 / you 5 for Four Card; 7 / 7 for HCF) with fixed card slots; buttons with amounts (押 1 倍 5.00 / 加注 5.00 / 弃牌); Four Card tip (3× with aces+, 1× with a pair); HCF shows flush length in Chinese (2 张同花 · Q 高) and the raise size before you decide; results translated; Aces Up side bet with rules.
+- sw lv-v123. Tests 90/90.

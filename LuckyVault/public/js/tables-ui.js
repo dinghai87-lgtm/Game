@@ -1061,11 +1061,39 @@
     actLabel: (a) => { const A = TT.bets.ante || 0; return { bet4: PKT('押 4 倍 ', 'BET 4× ') + fmt(A * 4), bet3: PKT('押 3 倍 ', 'BET 3× ') + fmt(A * 3), bet2: PKT('押 2 倍 ', 'BET 2× ') + fmt(A * 2), bet1: PKT('押 1 倍 ', 'BET 1× ') + fmt(A), check: PKT('过牌', 'CHECK'), fold: PKT('弃牌', 'FOLD') }[a] || null; },
     keepBets: false
   };
-  REND.fourcard = { setup(f) { pokerSetup(f, [['ante', 'Ante', 'Play 1-3×', 'big'], ['acesup', 'Aces Up', 'Aces → quads 50:1']], 'Best 4 cards from your 5 vs the dealer’s best 4 from 6 · ties go to you · Play up to 3× with a pair of aces or better · Ante bonus: trips 2:1, straight flush 20:1, quads 25:1'); },
-    render: (v, r) => pokerRender(v, r, 'Play or fold?') };
-  REND.hcf = { setup(f) { pokerSetup(f, [['ante', 'Ante', 'Raise 1-3× by flush size', 'big']], 'Seven cards each · the longest flush wins (then highest cards) · raise 1× (2-4 card flush), 2× (5-card), 3× (6-7 card) · dealer qualifies with a 3-card 9-high flush'); },
-    actLabel(a, v) { return a === 'raise' && v ? 'Raise ' + v.mult + '×' : null; },
-    render: (v, r) => pokerRender(v, r, 'Raise or fold?') };
+  // Four Card Poker refine: zoned (dealer 6 incl. 1 up, you 5), play buttons with amounts, tip, translated
+  REND.fourcard = {
+    setup(f) { pkZones(f, { d: 6, p: 5, note: PKT('你的 5 张选最好 4 张，对庄家 6 张选最好 4 张 · 平手算你赢 · 有一对 A 以上才能押 3 倍 · 底注奖励：三条 2:1、同花顺 20:1、四条 25:1 · 长按下注格看说明', 'Best 4 cards from your 5 vs the dealer’s best 4 from 6 · ties go to you · Play up to 3× with a pair of aces or better · Ante bonus: trips 2:1, SF 20:1, quads 25:1 · Long-press a bet for rules'),
+      spots: [['ante', PKT('底注', 'ANTE'), PKT('跟注 1–3 倍', 'Play 1-3×'), 'big', '先押底注，看牌后跟注（底注的 1 倍；有一对 A 以上可押到 3 倍）或弃牌。用你 5 张里最好的 4 张对庄家 6 张里最好的 4 张，平手算你赢。<br>Bet the Ante, then Play 1× (up to 3× with a pair of aces or better) or fold. Your best four of five vs the dealer’s best four of six; ties go to you.'],
+        ['acesup', PKT('A 对奖', 'ACES UP'), PKT('一对 A → 四条 50:1', 'Aces → quads 50:1'), '', '只看你自己的牌：一对 A 1:1、两对 2:1、顺子 5:1、同花 6:1、三条 9:1、同花顺 40:1、四条 50:1。<br>Pays on your own hand: pair of aces 1:1 up to quads 50:1.']] });
+      document.querySelector('#tcpD').style.setProperty('--cw', '44px'); },
+    async render(v, r) {
+      const H = document.getElementById('tcpH'); ['tcpD', 'tcpP'].forEach(id => document.getElementById(id).classList.remove('win', 'lose'));
+      await putCards(document.getElementById('pC'), v.P, true, document.getElementById('pC').querySelectorAll('.pcard').length === 5 ? 5 : 0); await putCards(document.getElementById('dC'), v.D, v.done, v.done ? 1 : 0);
+      document.getElementById('pL').innerHTML = PKT('你的手牌', 'YOUR HAND') + (v.ph ? ' <b>' + hn3(v.ph) + '</b>' : ''); document.getElementById('dL').innerHTML = PKT('庄家', 'DEALER') + (v.dh ? ' <b>' + hn3(v.dh) + '</b>' : '');
+      if (!v.done) { const big = (v.actions || []).includes('p3'); const pr = v.ph && v.ph !== 'High Card';
+        H.innerHTML = PKT('建议：', 'Tip: ') + (big ? PKT('押 3 倍', 'play 3×') : pr ? PKT('押 1 倍', 'play 1×') : PKT('牌小可以弃牌', 'fold a weak hand')); showRes(PKT('跟注还是弃牌？', 'Play or fold?'), 0); return; }
+      H.innerHTML = ''; if (v.out === 'Tie goes to you') v.out = 'You win'; pkResult(v, r);
+    },
+    actLabel: (a) => { const A = TT.bets.ante || 0; return { p3: PKT('押 3 倍 ', 'PLAY 3× ') + fmt(A * 3), p2: PKT('押 2 倍 ', 'PLAY 2× ') + fmt(A * 2), p1: PKT('押 1 倍 ', 'PLAY 1× ') + fmt(A), fold: PKT('弃牌', 'FOLD') }[a] || null; },
+    keepBets: false
+  };
+  // High Card Flush refine: zoned (dealer 7, you 7), flush length shown, raise button with amount, translated
+  const hcfName = h => { if (!h) return ''; const m = String(h).match(/^(\d)-card flush, (.+?) high$/); return m ? PKT(m[1] + ' 张同花 · ' + m[2] + ' 高', h) : h; };
+  REND.hcf = {
+    setup(f) { pkZones(f, { d: 7, p: 7, note: PKT('每人 7 张牌 · 同花张数多者赢（相同再比大牌）· 加注：2–4 张同花 1 倍、5 张 2 倍、6–7 张 3 倍 · 庄家要 3 张同花且 9 高以上才合格 · 长按下注格看说明', 'Seven cards each · the longest flush wins (then highest cards) · raise 1× (2-4 card flush), 2× (5-card), 3× (6-7 card) · dealer qualifies with a 3-card 9-high flush · Long-press a bet for rules'),
+      spots: [['ante', PKT('底注', 'ANTE'), PKT('按同花张数加注 1–3 倍', 'Raise 1-3× by flush size'), 'big', '你和庄家各 7 张牌，比同一花色的张数（同花越长越大）。看牌后加注或弃牌，加注倍数由你的同花张数决定。庄家不合格时底注赔 1:1、加注退回。<br>Seven cards each; the longest flush wins. Raise (size set by your flush length) or fold. If the dealer does not qualify, the Ante pays 1:1 and the Raise pushes.']] });
+      ['tcpD', 'tcpP'].forEach(id => document.getElementById(id).style.setProperty('--cw', '40px')); },
+    async render(v, r) {
+      const H = document.getElementById('tcpH'); ['tcpD', 'tcpP'].forEach(id => document.getElementById(id).classList.remove('win', 'lose'));
+      await putCards(document.getElementById('pC'), v.P, true, document.getElementById('pC').querySelectorAll('.pcard').length === 7 ? 7 : 0); await putCards(document.getElementById('dC'), v.D, v.done, v.done ? 0 : 7);
+      document.getElementById('pL').innerHTML = PKT('你的手牌', 'YOUR HAND') + (v.ph ? ' <b>' + hcfName(v.ph) + '</b>' : ''); document.getElementById('dL').innerHTML = PKT('庄家', 'DEALER') + (v.dh ? ' <b>' + hcfName(v.dh) + '</b>' : '');
+      if (!v.done) { H.innerHTML = PKT('加注倍数：', 'Raise size: ') + v.mult + PKT(' 倍（' + fmt((TT.bets.ante || 0) * v.mult) + '）', '× (' + fmt((TT.bets.ante || 0) * v.mult) + ')'); showRes(PKT('加注还是弃牌？', 'Raise or fold?'), 0); return; }
+      H.innerHTML = ''; const nq = /does not qualify/.test(v.out || ''); if (nq) v.out = 'Dealer does not qualify'; pkResult(v, r, nq ? [PKT('底注赔 1:1，加注退回', 'Ante pays, raise pushes')] : []);
+    },
+    actLabel(a, v) { return a === 'raise' && v ? PKT('加注 ', 'RAISE ') + fmt((TT.bets.ante || 0) * v.mult) : a === 'fold' ? PKT('弃牌', 'FOLD') : null; },
+    keepBets: false
+  };
   // Let It Ride refine: zoned (2 community + your 3), three bet circles, pull/ride buttons in one language, simple tip, translated result
   const HNZ = { 'High Card': '高牌', Pair: '对子', 'Two Pair': '两对', 'Three of a Kind': '三条', Straight: '顺子', Flush: '同花', 'Full House': '葫芦', 'Four of a Kind': '四条', 'Straight Flush': '同花顺', 'Royal Flush': '皇家同花顺' };
   function lrTip(P, st) { const r = P.map(RV), su = P.map(c => c[c.length - 1]); const cnt = {}; r.forEach(x => cnt[x] = (cnt[x] || 0) + 1);

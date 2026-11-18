@@ -384,3 +384,6 @@ Platform release: everything on the "do all of these" list except the public dep
 ## Round 18 (18:35) — Lobby polish from a phone QA pass
 - Event banner no longer mixes Chinese and English: shows the label in the chosen language (中文 / English / 双语) and a short end time.
 - Table-game tiles: dashed inner border replaced with a thin gold inset line. sw lv-v74. Tests 90/90.
+
+## Round 19 (18:55) — Space / robot group de-duplicated
+- 5 games shared the same rocket lows and purple enemy ships. Each now has its own low set (painted space gems / player ships) and its own ship colour (sprite animations recoloured too) + new covers. sw lv-v75. Tests 90/90.

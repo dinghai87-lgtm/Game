@@ -292,3 +292,4 @@ json.dump(man, open(OUT + '/manifest.json', 'w'), indent=1, ensure_ascii=False)
 #  lucky-clover-7s loot 9 clover,43,17,50,4,24,9 | neon-retro-7s 19,39,31,46,44,10,2 | liberty-bells 15,30,38,16,12,39,26 | fortune-wheel-deluxe 21,35,13,11,8,45,29
 # round 16: dragon-empire-4096 <- dragon loot 3,32,31,36,34,28,43,49,12,W47,S45 ; neon-nights <- gems 20,3,92,78,81,82,61,76,26,W64,S30 (both were 11/11 identical to golden-dragon / star-gems)
 # round 17: ice-queen <- rpg-elixir-icons 50,17,21,35,10,19,25,6,47,W37,S13 (frost potions) ; bamboo-panda lows <- elixir 12 wine gourd,20,22,11,9 (herbal tonics)
+# round 19: space/robot group: lows replaced (alien gems 23,86,41,35,31 | space-odyssey planes 1,4,6,8,3 | cosmic gems 42,11,4,7,16 | robot-factory gems 79,28,53,62,24 | robot-walkers planes 2,5,7,9,10); h1-h4 + a_h* sprite sheets hue-shifted (odyssey 200, cosmic 110, factory 40, walkers 150)

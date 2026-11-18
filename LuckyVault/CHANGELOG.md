@@ -545,3 +545,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 54 (02:06) — Slot engines spot-check (cluster / classic 3-reel / ways)
 - Gem Mine, Hot Chilli 7s, Buffalo Stampede played on a phone in 中文: layouts hold. Fixed: the album card pop ("NEW CARD!") covered the reels on phones — now smaller and above the controls, and translated (新卡片！/ 重复卡片 / 集齐一套！). sw lv-v130. Tests 90/90.
+
+## Round 55 (02:15) — Hold & Win feature run (Dragon Fortune Link)
+- Spun until Hold & Win triggered (40 spins) and captured every frame: respin counter, coin lock, big-win count-up, collect/gamble bar all fine. Fixed leftovers in 中文: 'ACHIEVEMENT +300' pop (only +100/+500/+1,000 were translated — now any amount), 'HOLD & WIN 36.00' win line → 金币奖, 'Line 3' → 第 3 线, mission/level pops by pattern. sw lv-v131. Tests 90/90.

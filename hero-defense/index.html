@@ -268,6 +268,12 @@ Object.assign(I18N.ja,{"兑换码":"ギフトコード","输入兑换码：":"�
 Object.assign(I18N.ko,{"兑换码":"쿠폰","输入兑换码：":"쿠폰 코드 입력:","兑换码无效":"잘못된 코드","这个兑换码已经用过了":"이미 사용한 코드","出战英雄碎片":"출전 영웅 조각"});
 Object.assign(I18N.es,{"兑换码":"Código","输入兑换码：":"Introduce el código:","兑换码无效":"Código no válido","这个兑换码已经用过了":"Código ya usado","出战英雄碎片":"Fragmentos del equipo"});
 
+// 更新公告
+Object.assign(I18N.en,{"本次更新": "What's New", "新名字「英雄塔防」和全新 Logo": "A fresh new logo", "英雄天赋、宠物、羁绊合击、巅峰塔合体": "Hero talents, pets, Bond Combos and Paragon towers", "每日首领讨伐、每周远征、残局、自制关卡": "Daily Boss Raid, weekly Odyssey, Last Stand puzzles and custom stages", "能量超载、空投补给、完美防守奖励": "Overcharge, supply drops and Perfect Wave bonuses", "今日待办、玩法指南、断点续玩、每日免费召唤": "To-Do Today, Game Guide, resume battles and a free daily summon"});
+Object.assign(I18N.ja,{"本次更新": "今回のアップデート", "新名字「英雄塔防」和全新 Logo": "新しいロゴ", "英雄天赋、宠物、羁绊合击、巅峰塔合体": "英雄の天賦、ペット、絆の合体技、極致タワー", "每日首领讨伐、每周远征、残局、自制关卡": "毎日のボス討伐、週替わり遠征、詰め防衛、自作ステージ", "能量超载、空投补给、完美防守奖励": "オーバーチャージ、補給箱、パーフェクトボーナス", "今日待办、玩法指南、断点续玩、每日免费召唤": "今日のやること、遊び方ガイド、戦闘の再開、毎日無料召喚"});
+Object.assign(I18N.ko,{"本次更新": "업데이트 내용", "新名字「英雄塔防」和全新 Logo": "새 로고", "英雄天赋、宠物、羁绊合击、巅峰塔合体": "영웅 특성, 펫, 인연 합격, 정점 탑", "每日首领讨伐、每周远征、残局、自制关卡": "매일 보스 토벌, 주간 원정, 퍼즐, 자작 스테이지", "能量超载、空投补给、完美防守奖励": "과부하, 보급 상자, 완벽 방어 보너스", "今日待办、玩法指南、断点续玩、每日免费召唤": "오늘의 할 일, 게임 가이드, 전투 이어하기, 매일 무료 소환"});
+Object.assign(I18N.es,{"本次更新": "Novedades", "新名字「英雄塔防」和全新 Logo": "Nuevo logo", "英雄天赋、宠物、羁绊合击、巅峰塔合体": "Talentos de héroes, mascotas, combos de vínculo y torres Paragón", "每日首领讨伐、每周远征、残局、自制关卡": "Asalto diario al jefe, odisea semanal, puzles y fases propias", "能量超载、空投补给、完美防守奖励": "Sobrecarga, suministros y bonus de oleada perfecta", "今日待办、玩法指南、断点续玩、每日免费召唤": "Pendiente hoy, guía del juego, continuar batallas e invocación diaria gratis"});
+
 'use strict';
 // ====================== 基础 ======================
 let W=1280,H=720,OX=0,OY=0,HOX=0,HOY=0;const WW=1280,WH=720;
@@ -3501,6 +3507,12 @@ let hallBark=null,hallLast=null;
   if(!hallBark)return;hallBark.t+=dt||0.016;if(hallBark.t>3){hallBark=null;return}const a=Math.min(1,hallBark.t*5,(3-hallBark.t)*3);const px=690,py=92;ctx.save();ctx.globalAlpha=a;ctx.font=`900 14px ${FONT}`;const w=Math.min(300,ctx.measureText(hallBark.s).width+24);const x=px+190,y=py+20;
   ctx.fillStyle='rgba(255,250,235,.97)';rr(x,y-16,w,32,14);ctx.fill();ctx.strokeStyle='#5a3a14';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.moveTo(x+10,y+12);ctx.lineTo(x-6,y+24);ctx.lineTo(x+24,y+14);ctx.closePath();ctx.fillStyle='rgba(255,250,235,.97)';ctx.fill();fitTxt(hallBark.s,x+w/2,y,14,w-16,'#3b1f0a','center',0);ctx.restore()}catch(_){}}})();
 
+// ====================== 更新公告：老玩家更新后第一次进地图页，弹出「本次更新」要点 ======================
+const NEWS_ID='2026-11-18';
+const NEWS=['新名字「英雄塔防」和全新 Logo','英雄天赋、宠物、羁绊合击、巅峰塔合体','每日首领讨伐、每周远征、残局、自制关卡','能量超载、空投补给、完美防守奖励','今日待办、玩法指南、断点续玩、每日免费召唤'];
+(function(){const ml=metaLevels;metaLevels=function(){ml.apply(this,arguments);try{if(SAVE.newsSeen===NEWS_ID||POP||lvPop)return;if(prog()<3||!(SAVE.lastSeen>0)){SAVE.newsSeen=NEWS_ID;save();return}if(typeof backPending!=='undefined'&&backPending)return;
+  SAVE.newsSeen=NEWS_ID;save();popup('📢 '+TR('本次更新'),NEWS.map(s=>'• '+TR(s)),[{label:TR('玩法指南'),style:'blue',fn:()=>{guidePop=true;guidePage=0}},{label:TR('确定'),style:'green'}])}catch(e){}}})();
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -3543,7 +3555,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794985635';
+const BUILD_VER='1794985803';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

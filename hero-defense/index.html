@@ -233,7 +233,7 @@ const LEVELS=[
  {name:TR('废弃矿洞'),map:2,paths:[0,1],waves:10,gold:340,pool:['bandit','skel','orc','ninja','bat'],diff:1.05},
  {name:TR('矿洞深处'),map:2,paths:[0,1,2],waves:12,gold:400,pool:['skel','orc','ninja','barb','shaman','bat','eye','ogre'],boss:'mino',diff:1.08},
  {name:TR('雪原古墓'),map:3,paths:[1,0],waves:12,gold:440,pool:['skel','orc','barb','ninja','wasp','skel3','shaman','eye'],diff:1.25},
- {name:TR('冰封王座'),map:3,paths:[0,1,2],waves:14,gold:480,pool:['skel','barb','ninja','skel3','wasp','ronin','samurai','shaman','eye','ogre'],boss:'golem',diff:1.28},
+ {name:TR('冰封王座'),map:3,paths:[0,1,2],waves:14,gold:480,pool:['skel','barb','ninja','skel3','wasp','ronin','samurai','shaman','eye','ogre'],boss:'golem',diff:1.2},
  {name:TR('迷雾沼泽'),map:4,paths:[0,2],waves:14,gold:560,pool:['bandit','skel','orc','ronin','wasp','skel3','samurai','shaman','sksam','demon','ogre'],diff:1.22},
  {name:TR('亡灵之境'),map:4,paths:[0,1,2],waves:16,gold:700,pool:['skel','orc','ninja','ronin','skel3','wasp','samurai','shaman','sksam','demon','ogre'],boss:'reaper',diff:1.12},
 ];
@@ -2165,7 +2165,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794965276';
+const BUILD_VER='1794965342';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

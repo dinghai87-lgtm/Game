@@ -582,3 +582,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 65 (03:48) — First-run screens; fix brand name being cut
 - Fresh-visitor flow checked in both languages (age gate, log-in / sign-up, store). Found a regression from round 27's one-language filter: in 中文 the age-gate title showed only "欢迎来到" — the brand "Lucky Vault" after the Chinese was being stripped as if it were a translation. The filter now keeps the brand and every game title (e.g. 试玩 Thunder Temple). sw lv-v145. Tests 90/90.
+
+## Round 66 (03:55) — Store purchase confirmation in Chinese
+- Store checked in both languages; the purchase confirmation was still English in 中文 mode → 确认购买 / 订单号 / 测试支付：不会扣真钱。/ 支付 $4.99 / 取消. (Sandbox only — no real payments involved.) sw lv-v146. Tests 90/90.

@@ -183,6 +183,12 @@ Object.assign(I18N.ko,{"兵营的武僧能拦住地面敌人，让箭塔和炮�
 Object.assign(I18N.es,{"兵营的武僧能拦住地面敌人，让箭塔和炮塔慢慢输出": "Los monjes del cuartel frenan a los enemigos de tierra mientras tus torres disparan", "炮塔打不到飞行敌人，记得配箭塔、法塔或冰霜塔": "Los cañones no alcanzan voladores: combínalos con arqueros, magos o hielo", "法塔无视护甲，专克重甲的骑士和石魔": "Las torres de mago ignoran la armadura: ideales contra caballeros y gólems", "提前召唤下一波能拿额外金币，场上清空时最划算": "Llamar oleadas antes da oro extra; mejor con el campo despejado", "点英雄头像，再点地图，就能把英雄挪到危险的路口": "Toca el retrato de un héroe y luego el mapa para moverlo", "选中一座塔能看到升级后的数值变化，再决定升不升": "Selecciona una torre para ver sus estadísticas mejoradas antes de pagar", "敌人头上的红色读条是 BOSS 要放技能，用晕眩或冰冻打断它能拿金币": "La barra roja sobre un jefe avisa de una habilidad: aturde o congela para cortarla", "带上有羁绊的两位英雄，战斗中能放出强力的合击": "Lleva dos héroes con vínculo para lanzar un Combo poderoso", "捡到 ⚡ 能量后选中一座塔点 ⚡，让它超载 6 秒": "Recoge ⚡, elige una torre y toca ⚡ para sobrecargarla 6 s", "每关有 3 枚勋章，回头重打拿全有额外钻石": "Cada fase tiene 3 medallas: consíguelas todas para más gemas", "「今日待办」里能看到今天还有什么奖励没拿": "Mira «Pendiente hoy» para ver premios sin reclamar", "打掉障碍物能拿金币，还能腾出新的建塔位": "Romper obstáculos da oro y libera huecos para construir", "残局模式不靠养成，只看布局，卡关时换个摆法试试": "Último bastión es pura colocación: si te atascas, cambia el diseño", "英雄每升 1 级有 1 个天赋点，在英雄殿分配": "Los héroes ganan 1 punto de talento por nivel; úsalos en el Salón", "把通关成绩做成链接发给朋友，看谁守得更好": "Comparte tu victoria como enlace y reta a tus amigos"});
 Object.assign(I18N.en,{"本局 MVP":"MVP"});Object.assign(I18N.ja,{"本局 MVP":"今回のMVP"});Object.assign(I18N.ko,{"本局 MVP":"이번 판 MVP"});Object.assign(I18N.es,{"本局 MVP":"MVP"});
 
+// 新玩法成就
+Object.assign(I18N.en,{"使用能量超载 {n} 次": "Overcharge towers {n} times", "完成远征 {n} 次": "Complete {n} Odysseys", "收集宠物 {n} 只": "Collect {n} pets", "获得关卡勋章 {n} 枚": "Earn {n} stage medals", "解开残局 {n} 道": "Solve {n} Last Stand puzzles", "讨伐击杀首领 {n} 次": "Kill the Boss Raid boss {n} times", "赢下好友挑战 {n} 次": "Win {n} friend challenges", "释放羁绊合击 {n} 次": "Unleash {n} Bond Combos"});
+Object.assign(I18N.ja,{"使用能量超载 {n} 次": "オーバーチャージを{n}回使う", "完成远征 {n} 次": "遠征を{n}回完了", "收集宠物 {n} 只": "ペットを{n}匹集める", "获得关卡勋章 {n} 枚": "ステージ勲章を{n}個獲得", "解开残局 {n} 道": "詰め防衛を{n}問クリア", "讨伐击杀首领 {n} 次": "ボス討伐で{n}回撃破", "赢下好友挑战 {n} 次": "フレンド挑戦に{n}回勝つ", "释放羁绊合击 {n} 次": "絆の合体技を{n}回使う"});
+Object.assign(I18N.ko,{"使用能量超载 {n} 次": "과부하 {n}회 사용", "完成远征 {n} 次": "원정 {n}회 완료", "收集宠物 {n} 只": "펫 {n}마리 수집", "获得关卡勋章 {n} 枚": "스테이지 훈장 {n}개 획득", "解开残局 {n} 道": "퍼즐 {n}개 해결", "讨伐击杀首领 {n} 次": "보스 토벌 {n}회 처치", "赢下好友挑战 {n} 次": "친구 도전 {n}회 승리", "释放羁绊合击 {n} 次": "인연 합격 {n}회 사용"});
+Object.assign(I18N.es,{"使用能量超载 {n} 次": "Sobrecarga torres {n} veces", "完成远征 {n} 次": "Completa {n} odiseas", "收集宠物 {n} 只": "Reúne {n} mascotas", "获得关卡勋章 {n} 枚": "Gana {n} medallas de fase", "解开残局 {n} 道": "Resuelve {n} puzles", "讨伐击杀首领 {n} 次": "Derrota al jefe del asalto {n} veces", "赢下好友挑战 {n} 次": "Gana {n} retos de amigos", "释放羁绊合击 {n} 次": "Lanza {n} combos de vínculo"});
+
 'use strict';
 // ====================== 基础 ======================
 let W=1280,H=720,OX=0,OY=0,HOX=0,HOY=0;const WW=1280,WH=720;
@@ -3087,6 +3093,21 @@ function mvpOf(){const d=G&&G.dstat;if(!d)return null;const tot=Object.values(d)
   const t=performance.now()/1000;ctx.save();ctx.shadowColor='#ffd84a';ctx.shadowBlur=6+4*Math.sin(t*3);ctx.fillStyle='rgba(60,30,5,.92)';rr(bx,by,bw,24,12);ctx.fill();ctx.restore();ctx.strokeStyle='#ffd84a';ctx.lineWidth=1.5;rr(bx,by,bw,24,12);ctx.stroke();
   if(m.k.startsWith('h:')&&HEROES[m.k.slice(2)])portrait(HEROES[m.k.slice(2)].set,bx+16,by+12,11);else txt("🏅",bx+16,by+12,13,'#fff','center',0);fitTxt(s,bx+bw/2+10,by+12.5,13,bw-44,'#ffe27a','center',2)}catch(e){}}})();
 
+// ====================== 新玩法成就：把超载、合击、勋章、残局、讨伐、远征、宠物、好友挑战都接进成就系统 ======================
+[['oc','使用能量超载 {n} 次',[1,20,100],[20,60,150]],['combo','释放羁绊合击 {n} 次',[1,20,100],[20,60,150]],['medal','获得关卡勋章 {n} 枚',[3,15,45],[30,80,200]],
+ ['puz','解开残局 {n} 道',[1,5,9],[20,60,150]],['raidk','讨伐击杀首领 {n} 次',[1,5,20],[50,120,300]],['odyf','完成远征 {n} 次',[1,4,12],[60,150,400]],
+ ['pets','收集宠物 {n} 只',[2,3,4],[30,60,120]],['chw','赢下好友挑战 {n} 次',[1,5,20],[30,80,200]]].forEach(([k,d,ns,rw])=>ns.forEach((n,i)=>ACH.push({id:k+'_'+n,k,n,d,yb:rw[i]})));
+function achSync(){SAVE.st=SAVE.st||{};const S=SAVE.st;try{S.medal=Object.values(SAVE.bdg||{}).reduce((a,b)=>a+(b.safe?1:0)+(b.clr?1:0)+(b.ex?1:0),0)}catch(_){}try{S.puz=Object.keys(SAVE.puz||{}).length}catch(_){}try{S.pets=Object.keys((SAVE.pets||{}).own||{}).length}catch(_){}}
+(function(){
+  const oc=overcharge;overcharge=function(i){const n=G&&G.pf;oc(i);if(G&&G.pf<n)stAdd('oc')};
+  const cf=cmbFire;cmbFire=function(p){const e=G&&G.cmbE;cf(p);if(G&&e>=1&&G.cmbE<1)stAdd('combo')};
+  const eb=endBattle;endBattle=function(win){const first=G&&!G.over,L=G&&G.L;const ch0=(typeof chGet==='function')?chGet():null;const of0=(L&&L.chal==='ody')?odySave().fin:1;eb(win);try{if(!first||!L)return;
+    if(L.chal==='boss'&&G.brBoss&&G.brBoss.dead)stAdd('raidk');if(L.chal==='ody'&&!of0&&odySave().fin)stAdd('odyf');if(win&&ch0&&!chGet())stAdd('chw');achSync()}catch(e){}};
+  const ml=metaLevels;metaLevels=function(){achSync();return ml.apply(this,arguments)};
+  const dt=drawTasks;drawTasks=function(d){achSync();return dt.apply(this,arguments)};
+  if(window.__api)Object.assign(window.__api,{endBattle});
+})();
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -3129,7 +3150,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794979389';
+const BUILD_VER='1794979579';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

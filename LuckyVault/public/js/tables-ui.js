@@ -1212,11 +1212,14 @@
   };
 
   // ---- ROCKET CRASH ----
+  // 2026-11-19 crash refine: taller chart on phones, bigger rocket, translated buttons / results, history shows the last 10 crash points
+  const CRT = (zh, en) => { const L = (window.LVLang && LVLang.get()) || 'bi'; return L === 'zh' ? zh : L === 'en' ? en : zh + ' ' + en; };
+  { const st = document.createElement('style'); st.textContent = '@media(max-width:600px){.cr-wrap{width:100%}.cr-m{font-size:52px}}#felt:has(.cr-wrap) .res{min-height:32px;height:32px;line-height:32px;white-space:nowrap;overflow:hidden;font-size:min(20px,4.8vw)}#crS{width:100%;max-width:360px;display:grid}#crS .spot{min-height:60px;font-size:17px}#crS .spot .stk{left:auto;top:auto;right:4px;bottom:4px;transform:none;flex-direction:row;gap:2px;align-items:flex-end}#crS .spot .pile{width:28px;height:calc(28px + (var(--n) - 1) * 3px)}#crS .spot .pile .chip{width:28px;height:28px;bottom:calc(var(--i) * 3px)}#crS .spot.has{color:#fff}#crS .spot.has small{visibility:hidden}'; document.head.appendChild(st); }
   REND.crash = {
     setup(f) { this.auto = this.auto || 0; this.hist = this.hist || [];
-      f.innerHTML = '<div class="cr-wrap"><canvas id="crC" width="900" height="420"></canvas><div class="cr-m" id="crM">1.00x</div><div class="cr-hist" id="crH"></div></div>' + resLine() + '<div class="cr-auto" id="crA"></div><div class="spots" id="crS"></div><div class="pt2">The multiplier climbs from 1.00x — cash out before the rocket flies away · auto cash-out locks in your target · the crash point is decided by the server when the round starts (about 97% return) · max 1,000x</div>';
-      document.getElementById('crS').appendChild(spotBtn('main', 'BET', 'Cash out before the crash', 'big')); this.paintAuto(); this.paintHist(); this.draw(1, false); },
-    paintAuto() { const A = document.getElementById('crA'); if (!A) return; A.innerHTML = 'Auto cash-out: ' + [0, 1.5, 2, 3, 5, 10, 50].map(x => '<button class="' + (x === this.auto ? 'on' : '') + '" data-x="' + x + '">' + (x ? x + 'x' : 'Off') + '</button>').join('');
+      f.innerHTML = '<div class="cr-wrap"><canvas id="crC" width="900" height="' + (innerWidth < 600 ? 640 : 420) + '"></canvas><div class="cr-m" id="crM">1.00x</div><div class="cr-hist" id="crH"></div></div>' + resLine() + '<div class="cr-auto" id="crA"></div><div class="spots" id="crS"></div><div class="pt2">The multiplier climbs from 1.00x — cash out before the rocket flies away · auto cash-out locks in your target · the crash point is decided by the server when the round starts (about 97% return) · max 1,000x</div>';
+      document.getElementById('crS').appendChild(spotBtn('main', CRT('投注', 'BET'), CRT('坠毁前兑现', 'Cash out before the crash'), 'big', CRT('押注后火箭起飞，倍数一路上升。在它飞走（坠毁）前点兑现，就按当时倍数赢；没来得及兑现就输掉这一注。', 'Place a bet and launch. The multiplier climbs until the rocket flies away; cash out before then to win your bet × the multiplier.'))); this.paintAuto(); this.paintHist(); this.draw(1, false); },
+    paintAuto() { const A = document.getElementById('crA'); if (!A) return; A.innerHTML = CRT('自动兑现：', 'Auto cash-out: ') + [0, 1.5, 2, 3, 5, 10, 50].map(x => '<button class="' + (x === this.auto ? 'on' : '') + '" data-x="' + x + '">' + (x ? x + 'x' : CRT('关', 'Off')) + '</button>').join('');
       A.querySelectorAll('button').forEach(b => b.onclick = () => { if (TT.phase === 'act') return; this.auto = +b.dataset.x; TT.extra = this.auto ? { picks: [Math.round(this.auto * 100)] } : {}; this.paintAuto(); sfx.click(); }); TT.extra = this.auto ? { picks: [Math.round(this.auto * 100)] } : {}; },
     paintHist() { const H = document.getElementById('crH'); if (H) H.innerHTML = this.hist.slice(-10).map(x => '<span class="' + (x >= 10 ? 'hi' : x >= 2 ? 'md' : 'lo') + '">' + x.toFixed(2) + 'x</span>').join(''); },
     draw(m, crashed) { const c = document.getElementById('crC'); if (!c) return; const g = c.getContext('2d'), W = c.width, H = c.height; g.clearRect(0, 0, W, H);
@@ -1225,19 +1228,20 @@
       g.beginPath(); g.moveTo(X(0), Y(1)); for (let i = 1; i <= 60; i++) { const tt = t * i / 60; g.lineTo(X(tt), Y(Math.exp(0.075 * tt))); }
       g.strokeStyle = crashed ? '#ff4d4d' : '#ffd60a'; g.lineWidth = 5; g.shadowColor = g.strokeStyle; g.shadowBlur = 14; g.stroke(); g.shadowBlur = 0;
       g.lineTo(X(t), H - 30); g.lineTo(X(0), H - 30); g.closePath(); g.fillStyle = crashed ? 'rgba(255,77,77,.12)' : 'rgba(255,214,10,.12)'; g.fill();
-      g.font = '46px serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.save(); g.translate(X(t), Y(m)); g.rotate(crashed ? .6 : -0.6); g.fillText(crashed ? '💥' : '🚀', 0, 0); g.restore(); },
-    actLabel(a) { return a === 'cash' ? 'Cash out' : null; },
+      g.font = (H > 500 ? 84 : 56) + 'px serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.save(); g.translate(X(t), Y(m)); g.rotate(crashed ? .6 : -0.6); g.fillText(crashed ? '💥' : '🚀', 0, 0); g.restore(); },
+    actLabel(a) { return a === 'cash' ? CRT('兑现', 'CASH OUT') : null; },
+    dealLabel: CRT('起飞', 'LAUNCH'),
     async render(v, r) { const M = document.getElementById('crM');
       if (!v.done) { if (this.run) return; const t0 = performance.now(), bet = TT.bets.main || 0; this.run = true; sfx.spin(); let lastPoll = 0;
         const loop = async () => { if (!this.run || !TT.g || TT.g.tk !== 'crash') return; const sec = (performance.now() - t0) / 1000; const m = Math.floor(Math.exp(0.075 * sec) * 100) / 100;
-          M.textContent = m.toFixed(2) + 'x'; M.className = 'cr-m fly'; this.draw(m, false); const b = document.querySelector('#tctrl [data-a="cash"]'); if (b) b.innerHTML = 'CASH OUT<br><small>' + fmt(bet * m) + '</small>';
+          M.textContent = m.toFixed(2) + 'x'; M.className = 'cr-m fly'; this.draw(m, false); const b = document.querySelector('#tctrl [data-a="cash"]'); if (b) b.innerHTML = CRT('兑现', 'CASH OUT') + '<br><small>' + fmt(bet * m) + '</small>';
           if (this.auto && m >= this.auto && !TT.busy) { this.run = false; doAct('cash'); return; }
           if (performance.now() - lastPoll > 700 && !TT.busy) { lastPoll = performance.now(); const rr = await call({ a: 'end' }); if (rr && rr.done && this.run) { this.run = false; setB3Before(rr); await handle(rr); return; } }
           requestAnimationFrame(loop); };
         requestAnimationFrame(loop); showRes('', 0); return; }
       this.run = false; const crashed = !v.at; this.draw(v.at || v.crash, crashed); if (!crashed) { await wait(10); }
       this.hist.push(v.crash); this.paintHist(); M.textContent = (v.at ? v.at : v.crash).toFixed(2) + 'x'; M.className = 'cr-m ' + (v.at ? 'won' : 'bust');
-      if (crashed) sfx.stop(); showRes(v.out + (v.at ? ' · rocket reached ' + v.crash.toFixed(2) + 'x · WIN ' + fmt(r.win) : ''), r.win); },
+      if (crashed) sfx.stop(); showRes(v.at ? CRT(v.at.toFixed(2) + 'x 兑现 · 赢 ', 'CASHED ' + v.at.toFixed(2) + 'x · WIN ') + fmt(r.win) : CRT('坠毁于 ' + v.crash.toFixed(2) + 'x', 'CRASHED AT ' + v.crash.toFixed(2) + 'x'), r.win); },
     keepBets: true
   };
   // MONEY WHEEL

@@ -532,3 +532,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 ## Round 50 (01:23) — Four Card Poker & High Card Flush refined
 - Both moved to the zoned table (dealer 6 / you 5 for Four Card; 7 / 7 for HCF) with fixed card slots; buttons with amounts (押 1 倍 5.00 / 加注 5.00 / 弃牌); Four Card tip (3× with aces+, 1× with a pair); HCF shows flush length in Chinese (2 张同花 · Q 高) and the raise size before you decide; results translated; Aces Up side bet with rules.
 - sw lv-v123. Tests 90/90.
+
+## Round 51 (01:35) — Rocket Crash refined
+- Taller chart on phones (rocket and curve were squeezed into a thin strip), larger rocket; buttons 起飞 / 兑现 5.35 (LAUNCH / CASH OUT); auto cash-out row, rules and bet spot translated; short result (1.16x 兑现 · 赢 5.80 / 坠毁于 2.51x) — the crash point also lands in the history chips. sw lv-v125. Tests 90/90.

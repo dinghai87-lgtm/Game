@@ -431,3 +431,8 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 - Squeeze screen fully translated in 中文 mode; help text padded.
 - Achievement / mission pop moved below the top bar so it no longer covers the balance.
 - sw lv-v89. Tests 90/90.
+
+## Round 29 (21:05) — Blackjack refined (one game at a time, per owner)
+- ? badges removed on every table (rules = long-press a bet); rule popups show one language.
+- Blackjack: dealer and player zones with dashed card slots, fixed heights; control bar height locked so nothing jumps between bet and play; side-bet spots stay visible (dimmed) during the hand; chips in spot corners; winning hand glows, losing hand dims; rules line shortened and translated; Insurance/No insurance and hand results translated.
+- sw lv-v92. Tests 90/90.

@@ -210,6 +210,16 @@
 }
 `;
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+  // no ? badges on table bet spots (looked busy, owner request 2026-11-18): every rule is one long-press away instead
+  { const x = document.createElement('style'); x.textContent = '#felt .sinf{display:none!important}#felt .spot,#felt [data-k]{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}'; document.head.appendChild(x);
+    let t = 0, held = null, pt = '';
+    const host = e => { const h = e.target.closest && e.target.closest('#felt .spot, #felt [data-k]'); return h && h.querySelector('.sinf') ? h : null; };
+    document.addEventListener('pointerdown', e => { const h = host(e); clearTimeout(t); held = null; if (!h) return; pt = e.pointerType;
+      t = setTimeout(() => { held = h; try { navigator.vibrate && navigator.vibrate(15); } catch (q) {} h.querySelector('.sinf').click(); }, 480); }, true);
+    ['pointerup', 'pointercancel'].forEach(ev => document.addEventListener(ev, () => clearTimeout(t), true));
+    document.addEventListener('pointermove', e => { if (Math.abs(e.movementX) + Math.abs(e.movementY) > 6) clearTimeout(t); }, true);
+    document.addEventListener('click', e => { if (held && !e.target.closest('.sinf') && held.contains(e.target)) { held = null; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+    document.addEventListener('contextmenu', e => { const h = host(e); if (h && (pt === 'touch' || pt === 'pen' || held)) { e.preventDefault(); e.stopImmediatePropagation(); } }, true); }
   const sec = document.createElement('section'); sec.id = 'table';
   sec.innerHTML = '<div class="gbar"><button class="ib" id="tBack">‹ LOBBY</button><div class="gt"><span id="tName"></span><small id="tSub"></small></div><div class="bal"><span class="coin"></span><b id="bal3">0.00</b></div><button class="ib" id="tHist">⏱</button><button class="ib" id="tInfo">i</button></div><div id="felt"></div><div id="tctrl"></div>';
   document.body.appendChild(sec);
@@ -280,7 +290,7 @@
   function confirmNewShoe() { return !TT.shoe || !TT.shoe.road || !TT.shoe.road.length || TT.shoe.end || window.confirm('换一靴新牌？当前牌路会清空。\nStart a new shoe? The scoreboard will be cleared.'); }
   // rule card for a bet spot (tap the ? in its corner)
   function spotTip(label, info) { let t = document.getElementById('spotTip'); if (!t) { t = document.createElement('div'); t.id = 'spotTip'; document.body.appendChild(t); t.onclick = () => t.classList.remove('show'); }
-    { const L = window.LVLang && LVLang.get(), parts = String(info).split('<br>'); if (parts.length === 2 && (L === 'en' || L === 'zh')) info = L === 'en' ? parts[1] : parts[0]; }
+    { const L = window.LVLang && LVLang.get(), parts = String(info).split('<br>'), hz = x => /[\u3400-\u9fff]/.test(x.replace(/<[^>]+>/g, '')); if (parts.length > 1 && (L === 'en' || L === 'zh')) { const k = parts.filter(x => L === 'zh' ? hz(x) : !hz(x)); if (k.length) info = k.join('<br>'); } }
     t.innerHTML = '<div><b>' + label + '</b><p>' + info + '</p><small>' + ({ en: 'tap to close', zh: '点任意处关闭' }[window.LVLang && LVLang.get()] || '点任意处关闭 · tap to close') + '</small></div>'; t.classList.add('show'); try { sfx.click(); } catch (e) {} }
   function addBet(k) {
     if (TT.phase !== 'bet' || TT.busy) return;
@@ -308,7 +318,10 @@
     setTimeout(() => b.classList.add('out'), 1700); setTimeout(() => b.remove(), 2200); }
 
   // ---------- controls ----------
-  function updCtrl() {
+  // keep the control bar one height through bet and play phases, so the table above never jumps when the action buttons replace the chips
+  function lockCtrl() { const c = document.getElementById('tctrl'); if (!c) return; requestAnimationFrame(() => { const k = TT.g && TT.g.slug + ':' + innerWidth + 'x' + innerHeight; if (TT.tchK !== k) { TT.tchK = k; TT.tch = 0; c.style.minHeight = ''; } const h = c.offsetHeight; if (h > (TT.tch || 0)) { TT.tch = h; c.style.minHeight = h + 'px'; } }); }
+  function updCtrl() { updCtrl0(); lockCtrl(); }
+  function updCtrl0() {
     const c = document.getElementById('tctrl'); const R = REND[TT.g.tk]; const custom = R.controls; if (custom) { custom(c); return; }
     const acts = (TT.view && !TT.view.done && TT.view.actions) || [];
     if (TT.phase === 'act' && acts.length) {
@@ -360,16 +373,27 @@
   const REND = {};
   const resLine = () => '<div class="res" id="tRes"></div>';
   // BLACKJACK
+  { const st = document.createElement('style'); st.textContent =
+    '#felt .bjz{width:100%;max-width:560px;box-sizing:border-box;border-radius:14px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.08);padding:8px 6px}' +
+    '#felt .bjd{height:calc(var(--bjw,62px) * 1.42 + 50px)}#felt .bjd .cards{min-height:calc(var(--bjw,62px) * 1.42)}#felt .bjd .cards:empty::before,#felt .bjd .cards:empty::after{content:"";width:var(--bjw,62px);height:calc(var(--bjw,62px) * 1.4);border:2px dashed rgba(255,255,255,.22);border-radius:7px;box-sizing:border-box}' +
+    '#felt .bjp{height:calc(var(--bjw,62px) * 1.42 + 46px);flex-wrap:nowrap;display:flex;align-items:center;justify-content:center}#felt .bjp:empty::before{content:"";width:calc(var(--bjw,62px) * 2 + 6px);height:calc(var(--bjw,62px) * 1.4);border:2px dashed rgba(255,255,255,.22);border-radius:7px}' +
+    '#felt .bjd .lbl,#felt .bjp .lbl{text-shadow:none}#felt .bjd .lbl{display:inline-flex;gap:6px;align-items:center;background:#0009;border-radius:999px;padding:2px 12px}' +
+    '#bjSpot{transition:opacity .2s}#bjSpot.dim{opacity:.45;pointer-events:none}#bjSpot .spot.has{color:#fff}#bjSpot .spot .stk{left:auto;top:auto;right:3px;bottom:3px;transform:none;flex-direction:row;align-items:flex-end;gap:3px}#bjSpot .spot .pile{width:30px;height:calc(30px + (var(--n) - 1) * 3px)}#bjSpot .spot .pile .chip{width:30px;height:30px;bottom:calc(var(--i) * 3px)}#bjSpot .spot .stk b{font-size:11px;padding:0 5px}' +
+    '#felt:has(.bjz) .res{min-height:30px;height:30px;line-height:30px;white-space:nowrap;overflow:hidden;font-size:min(22px,5vw)}' +
+    '#felt .bjp .hand{border-radius:12px;padding:4px 6px;transition:box-shadow .3s,opacity .3s}#felt .bjp .hand.hw{box-shadow:0 0 0 2px #ffd60a,0 0 20px rgba(255,214,10,.45)}#felt .bjp .hand.hl{opacity:.55}' +
+    '#felt .sideres:empty{display:none}#bjSpot .spot.has small{visibility:hidden}' +
+    '@media(max-width:560px){#felt .bjz{--bjw:48px}}';
+    document.head.appendChild(st); }
   REND.blackjack = {
-    setup(f, g) { f.innerHTML = '<div class="area"><div class="lbl" id="dLbl">Dealer</div><div id="dCards" class="cards"></div></div>' + resLine() + '<div class="hands" id="pHands"></div><div class="spots" id="bjSpot"></div><div class="sideres" id="bjSide"></div><div class="pt2">' + TE.BJV[g.tv].name + ' · Blackjack pays ' + (TE.BJV[g.tv].bj === 1 ? '1:1' : TE.BJV[g.tv].bj === 1.2 ? '6:5' : '3:2') + ' · Side bets: Perfect Pairs (mixed 6:1, coloured 12:1, perfect 25:1) · 21+3 with the dealer up card (flush 5:1, straight 10:1, trips 30:1, straight flush 40:1, suited trips 100:1)</div>';
+    setup(f, g) { f.innerHTML = '<div class="area bjz bjd"><div class="lbl" id="dLbl">Dealer</div><div id="dCards" class="cards"></div></div>' + resLine() + '<div class="hands bjz bjp" id="pHands"></div><div class="spots" id="bjSpot"></div><div class="sideres" id="bjSide"></div><div class="pt2">' + TE.BJV[g.tv].name + ' · Blackjack pays ' + (TE.BJV[g.tv].bj === 1 ? '1:1' : TE.BJV[g.tv].bj === 1.2 ? '6:5' : '3:2') + ' · ' + ({ zh: '长按下注格看边注赔率', en: 'Long-press a bet for its payouts' }[window.LVLang && LVLang.get()] || '长按下注格看边注赔率 · Long-press a bet for its payouts') + '</div>';
       const S = document.getElementById('bjSpot'); S.appendChild(spotBtn('pp', '完美对子 Perfect Pairs', '6:1 · 12:1 · 25:1', '', '你的前两张牌是对子即赢：<br>混色对子（不同颜色）6:1 · 同色对子（同颜色不同花）12:1 · 完美对子（同花同点）25:1。<br>Your first two cards are a pair: mixed 6:1, coloured 12:1, perfect 25:1.')); S.appendChild(spotBtn('main', '主注 BET', TE.BJV[g.tv].switch ? 'One bet per hand · 2 hands' : 'Tap to add chips', 'big', '21 点主注：比庄家更接近 21 点且不爆牌即赢 1:1；Blackjack（A + 10 点牌）赔 3:2。边注需要先下主注。<br>Beat the dealer without going over 21 — wins 1:1, blackjack 3:2. Side bets need a main bet.')); S.appendChild(spotBtn('t213', '21+3', '5:1 → 100:1', '', '你的前两张牌加庄家明牌组成三张牌扑克：<br>同花 5:1 · 顺子 10:1 · 三条 30:1 · 同花顺 40:1 · 同花三条 100:1。<br>Your two cards + the dealer up card: flush 5:1, straight 10:1, trips 30:1, straight flush 40:1, suited trips 100:1.')); },
     async render(v, r) {
-      document.getElementById('bjSpot').style.display = 'none';
+      document.getElementById('bjSpot').classList.add('dim');
       { const sd = document.getElementById('bjSide'); if (sd) sd.innerHTML = v.side ? Object.entries(v.side.r).map(([k, t]) => '<span class="' + (/No /.test(t) ? '' : 'w') + '">' + (k === 'pp' ? 'Perfect Pairs' : '21+3') + ': ' + t + '</span>').join('') : ''; }
       const dc = document.getElementById('dCards'); dc.innerHTML = ''; v.dealer.forEach((c, i) => dc.appendChild(cardEl(c, i)));
       document.getElementById('dLbl').innerHTML = 'Dealer <b>' + (v.done ? v.dealerTotal : v.dealerTotal) + '</b>';
       const ph = document.getElementById('pHands'); ph.innerHTML = '';
-      v.hands.forEach((h, i) => { const w = document.createElement('div'); w.className = 'hand' + (!v.done && i === v.cur && v.hands.length > 1 ? ' cur' : ''); w.appendChild(cardsEl(h.cards));
+      v.hands.forEach((h, i) => { const w = document.createElement('div'); w.className = 'hand' + (!v.done && i === v.cur && v.hands.length > 1 ? ' cur' : '') + (v.done && h.res ? (/win|blackjack/.test(h.res) ? ' hw' : /lose|bust|surrender/.test(h.res) ? ' hl' : '') : ''); w.appendChild(cardsEl(h.cards));
         w.appendChild(el('<div class="lbl">' + (h.bj ? 'Blackjack' : (h.soft && h.total < 21 ? 'Soft ' : '') + h.total) + ' <b>' + fmt(h.bet) + '</b>' + (h.free ? ' <b class="free">+' + fmt(h.free) + ' FREE</b>' : '') + (h.bonus ? ' <b class="free">21 bonus ' + h.bonus + ':1</b>' : '') + (h.res ? ' · ' + ({ win: 'WIN', lose: 'LOSE', push: 'PUSH', bust: 'BUST', blackjack: 'BLACKJACK!', surrender: 'SURRENDERED' })[h.res] : '') + '</div>')); ph.appendChild(w); });
       (sfx.card || sfx.click)(); await wait(250);
       if (v.actions && v.actions.includes('switch')) showRes('Switch the second cards of your two hands?', 0);
@@ -377,7 +401,7 @@
       else if (v.done) showRes((v.insRes === 'won' ? 'INSURANCE PAYS · ' : '') + (r.win > 0 ? 'WIN ' + fmt(r.win) : (v.hands.some(h => h.res === 'push') ? 'PUSH' : 'DEALER WINS')), r.win);
       else if (v.insRes === 'lost') showRes('No dealer blackjack · insurance lost', 0); else showRes('', 0);
     },
-    after() { setTimeout(() => { if (TT.phase === 'bet') { document.getElementById('bjSpot').style.display = ''; } }, 50); }
+    after() { setTimeout(() => { if (TT.phase === 'bet') { document.getElementById('bjSpot').classList.remove('dim'); } }, 50); }
   };
   // ROULETTE
   const EU_ORDER = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
@@ -441,20 +465,12 @@
     '#bacS .spot .stk,#dtS .spot .stk{left:auto;top:auto;right:3px;bottom:3px;transform:none;flex-direction:row;align-items:flex-end;gap:3px}' +
     '#bacS .spot .pile,#dtS .spot .pile{width:30px;height:calc(30px + (var(--n) - 1) * 3px)}#bacS .spot .pile .chip,#dtS .spot .pile .chip{width:30px;height:30px;bottom:calc(var(--i) * 3px)}' +
     '#bacS .spot .stk b,#dtS .spot .stk b{font-size:11px;padding:0 5px}' +
-    '#bacS .sinf,#dtS .sinf{display:none!important}#bacS .spot,#dtS .spot{-webkit-touch-callout:none;user-select:none}' +
-    '#felt:has(.hands.bac) .res{min-height:34px;height:34px;line-height:34px;box-sizing:border-box;white-space:nowrap;max-width:100%;overflow:hidden;font-size:min(22px,5vw);padding:0 16px;border-radius:12px}' +
+        '#felt:has(.hands.bac) .res{min-height:34px;height:34px;line-height:34px;box-sizing:border-box;white-space:nowrap;max-width:100%;overflow:hidden;font-size:min(22px,5vw);padding:0 16px;border-radius:12px}' +
     '.hands.bac .area{transition:box-shadow .3s,border-color .3s}.hands.bac .area.win{border-color:#ffd60a;box-shadow:0 0 0 2px #ffd60a,0 0 22px rgba(255,214,10,.45)}#felt:has(.hands.bac) .res:not(:empty){background:rgba(0,0,0,.45)}' +
     '#sqz .sq-h{padding:0 14px;box-sizing:border-box}' +
     '#felt:has(.hands.bac) .sqzT{font-size:12px;padding:5px 12px;border-radius:999px}' +
     '@media(max-width:560px){.hands.bac{--sw:48px;gap:8px}.hands.bac .lbl{font-size:13px;padding:2px 12px}#bacS,#dtS{gap:6px}#bacS .spot,#dtS .spot{min-height:52px;font-size:12px}#bacS .spot.big,#dtS .spot.big,#bacS .spot[data-k=tie],#dtS .spot[data-k=tie]{min-height:64px;font-size:15px}}';
     document.head.appendChild(st); }
-  // no ? badges on the bet grid (looked busy); the rules stay one long-press away on every bet
-  function holdRules(box) { if (!box) return; box.querySelectorAll('.spot').forEach(b => { const i = b.querySelector('.sinf'); if (!i) return; let t = 0, held = false, pt = '';
-      const start = e => { pt = e.pointerType; held = false; clearTimeout(t); t = setTimeout(() => { held = true; try { navigator.vibrate && navigator.vibrate(15); } catch (e) {} i.click(); }, 480); };
-      const stop = () => clearTimeout(t);
-      b.addEventListener('pointerdown', start); ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, stop));
-      b.addEventListener('click', e => { if (held && e.target !== i) { held = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
-      b.addEventListener('contextmenu', e => { if (pt === 'touch' || pt === 'pen' || held) { e.preventDefault(); e.stopImmediatePropagation(); } }, true); }); }
   REND.baccarat = {
     setup(f, g) {
       const nc = g.tv === 'nc'; this.speed = g.tv === 'speed';
@@ -475,7 +491,6 @@
       if (ez) { s.appendChild(spotBtn('dragon7', '龙7 Dragon 7', '40:1', '', '庄家以 <b>三张牌 7 点</b> 赢，赔 40:1。（这时押庄只退本金）<br>Banker wins with a 3-card 7 — pays 40:1.')); s.appendChild(spotBtn('panda8', '熊猫8 Panda 8', '25:1', '', '闲家以 <b>三张牌 8 点</b> 赢，赔 25:1。<br>Player wins with a 3-card 8 — pays 25:1.')); }
       if (s.querySelector('.spot.mini')) { const mb = document.createElement('button'); mb.className = 'more-sb'; mb.textContent = '更多边注 ▾ More side bets'; mb.onclick = e => { e.stopPropagation(); const on = s.classList.toggle('more'); mb.textContent = on ? '收起边注 ▴ Fewer bets' : '更多边注 ▾ More side bets'; setTimeout(checkRule, 30); }; s.appendChild(mb); }
       if (!this.speed) { const t = document.createElement('button'); t.className = 'sqzT' + (TT.sqz ? '' : ' off'); t.textContent = '咪牌 SQUEEZE ' + (TT.sqz ? 'ON' : 'OFF'); t.onclick = e => { e.stopPropagation(); TT.sqz = !TT.sqz; try { localStorage.setItem('lv_sqz', TT.sqz ? '1' : '0'); } catch (x) {} t.className = 'sqzT' + (TT.sqz ? '' : ' off'); t.textContent = '咪牌 SQUEEZE ' + (TT.sqz ? 'ON' : 'OFF'); }; f.style.position = 'relative'; f.appendChild(t); }
-      holdRules(s);
       this.labels = null; TT.shoe = null; this.paintHist(); loadShoe();
     },
     paintShoe() { this.paintHist(); },
@@ -555,7 +570,7 @@
   }
   REND.dragontiger = {
     setup(f) { f.innerHTML = '<div class="hands bac"><div class="area"><div class="lbl lb">龙 Dragon</div><div class="cards" id="dtD"></div></div><div class="area"><div class="lbl lp">虎 Tiger</div><div class="cards" id="dtT"></div></div></div>' + resLine() + '<div class="spots" id="dtS"></div><div class="roadmap" id="bacRoad"></div><div class="pt2">' + ({ zh: '牌大者赢（A 最小）· 和局龙/虎注输一半 · 长按下注格看说明', en: 'Highest card wins (Ace low) · Tie: Dragon/Tiger lose half · Long-press a bet for rules' }[window.LVLang && LVLang.get()] || '牌大者赢（A 最小）· 和局龙/虎注输一半 · 长按下注格看说明 · Highest card wins (Ace low) · Tie: Dragon/Tiger lose half') + '</div>';
-      const s = document.getElementById('dtS'); s.appendChild(spotBtn('dragon', '龙 Dragon', '1:1', 'big', '龙、虎各发一张牌，龙的牌大即赢，赔 1:1（A 最小，K 最大）。和局输一半。<br>Dragon card higher wins 1:1 (Ace low). Tie: lose half.')); s.appendChild(spotBtn('tie', '和 Tie', '11:1', '', '龙虎两张牌点数相同即赢，赔 11:1。<br>Same rank on both cards — pays 11:1.')); s.appendChild(spotBtn('stie', '同花和 Suited Tie', '50:1', '', '龙虎两张牌点数和花色都相同，赔 50:1。<br>Same rank and same suit — pays 50:1.')); s.appendChild(spotBtn('tiger', '虎 Tiger', '1:1', 'big', '虎的牌比龙大即赢，赔 1:1（A 最小，K 最大）。和局输一半。<br>Tiger card higher wins 1:1 (Ace low). Tie: lose half.')); holdRules(s); TT.shoe = null; REND.baccarat.paintHist.call(REND.baccarat, { B: 'Dragon', P: 'Tiger', pairs: false }); loadShoe(); },
+      const s = document.getElementById('dtS'); s.appendChild(spotBtn('dragon', '龙 Dragon', '1:1', 'big', '龙、虎各发一张牌，龙的牌大即赢，赔 1:1（A 最小，K 最大）。和局输一半。<br>Dragon card higher wins 1:1 (Ace low). Tie: lose half.')); s.appendChild(spotBtn('tie', '和 Tie', '11:1', '', '龙虎两张牌点数相同即赢，赔 11:1。<br>Same rank on both cards — pays 11:1.')); s.appendChild(spotBtn('stie', '同花和 Suited Tie', '50:1', '', '龙虎两张牌点数和花色都相同，赔 50:1。<br>Same rank and same suit — pays 50:1.')); s.appendChild(spotBtn('tiger', '虎 Tiger', '1:1', 'big', '虎的牌比龙大即赢，赔 1:1（A 最小，K 最大）。和局输一半。<br>Tiger card higher wins 1:1 (Ace low). Tie: lose half.')); TT.shoe = null; REND.baccarat.paintHist.call(REND.baccarat, { B: 'Dragon', P: 'Tiger', pairs: false }); loadShoe(); },
     paintShoe() { REND.baccarat.paintHist.call(REND.baccarat, { B: 'Dragon', P: 'Tiger', pairs: false }); },
     async render(v, r) { const D = document.getElementById('dtD'), Tg = document.getElementById('dtT'); D.innerHTML = ''; Tg.innerHTML = ''; document.querySelectorAll('.hands.bac .area.win').forEach(x => x.classList.remove('win')); { const e = cardEl(v.D); e.classList.add('dealt'); D.appendChild(e); } (sfx.card || sfx.click)(); await wait(500); { const e = cardEl(v.T); e.classList.add('dealt'); Tg.appendChild(e); } (sfx.card || sfx.click)(); await wait(400);
       TT.hist.push(v.win === 'dragon' ? 'banker' : v.win === 'tiger' ? 'player' : 'tie'); setShoe(r.shoe); REND.baccarat.paintHist.call(REND.baccarat, { B: 'Dragon', P: 'Tiger', pairs: false }); markWins(v.wins); [['dragon', D], ['tiger', Tg]].forEach(([k, el]) => { if (v.win === k || v.win === 'tie') el.closest('.area').classList.add('win'); }); showRes((v.win === 'tie' ? 'TIE' : v.win.toUpperCase() + ' WINS') + (r.win > 0 ? ' · WIN ' + fmt(r.win) : ''), r.win); },
@@ -691,7 +706,7 @@
       for (let i = 1; i <= 6; i++) b += '<button class="spot" data-k="tr' + i + '" title="围骰 Specific triple: three ' + i + 's · 180:1">围 ' + i + i + i + '<small>180:1</small><span class="stk"></span></button>'; b += '<span></span>';
       for (let i = 4; i <= 17; i++) b += '<button class="spot" data-k="t' + i + '" title="点数 Total ' + i + ' · ' + TE.SB_T[i] + ':1">' + i + '<small>' + TE.SB_T[i] + ':1</small><span class="stk"></span></button>';
       for (let i = 1; i <= 6; i++) b += '<button class="spot" data-k="s' + i + '" title="单骰 Single ' + i + ': pays 1:1 per ' + i + ' shown (1 die 1:1, 2 dice 2:1, 3 dice 3:1)">单骰 ' + i + '<small>1:1 / 2:1 / 3:1</small><span class="stk"></span></button>';
-      b += '</div><div class="pt2">对子 Double 10:1 · 围骰 Triple 180:1 · 点数 Total 4–17 · 单骰 Single: 1 个 1:1、2 个 2:1、3 个 3:1 · 点 <b style="color:#ffd60a">?</b> 看说明</div>';
+      b += '</div><div class="pt2">对子 Double 10:1 · 围骰 Triple 180:1 · 点数 Total 4–17 · 单骰 Single: 1 个 1:1、2 个 2:1、3 个 3:1 · 长按下注格看说明 · Long-press a bet for its rules</div>';
       f.innerHTML = '<div class="dice" id="sbD"></div>' + resLine() + b;
       f.querySelectorAll('.sb-board [data-k]').forEach(x => { x.onclick = e => { const ti = e.target.closest('.sinf'); if (ti) { e.stopPropagation(); spotTip(x.firstChild.textContent, ti.dataset.tip); return; } addBet(x.dataset.k); }; x.oncontextmenu = e => { e.preventDefault(); removeBet(x.dataset.k); }; });
       [1, 2, 3].forEach(n => document.getElementById('sbD').appendChild(dieEl(n)));

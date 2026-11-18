@@ -349,3 +349,4 @@ Platform release: everything on the "do all of these" list except the public dep
 - Short landscape screens: popups use compact buttons so the whole settings menu fits; volume panel styled as a card with themed sliders.
 - Phone landscape lobby: brand text hidden below 900px so the level bar no longer overlaps it; rewards dock compact on short screens.
 - First load: sounds and music now download after the first tap (browsers can't play audio before that) — lobby first load 2.4 MB → 1.05 MB.
+- Re-encoded 139 high-bitrate sounds (112k sfx / 128k music): audio 16 MB → 14 MB.

@@ -535,3 +535,7 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 51 (01:35) — Rocket Crash refined
 - Taller chart on phones (rocket and curve were squeezed into a thin strip), larger rocket; buttons 起飞 / 兑现 5.35 (LAUNCH / CASH OUT); auto cash-out row, rules and bet spot translated; short result (1.16x 兑现 · 赢 5.80 / 坠毁于 2.51x) — the crash point also lands in the history chips. sw lv-v125. Tests 90/90.
+
+## Round 52 (01:52) — Pai Gow Poker & Pai Gow Tiles refined
+- Everything in one language: labels, hints (点 2 张牌作为小牌，或按庄家方式自动摆), live split preview (大牌：对子 · 小牌：高牌), buttons 按我的摆法 / 庄家方式, final rows (大牌 · 三条 / 小牌 · 对子; tiles 头 · 杂七 / 尾 · 天九), results (庄家两手都赢 / 各赢一手 · 平局 / 你两手都赢 · 赔 1:1（扣 5%）), Fortune result on its own line, rules on long-press.
+- Chips sit in the bet-box corner so MAIN BET / 主注 stays readable. sw lv-v128. Tests 90/90.

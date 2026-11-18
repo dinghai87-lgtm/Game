@@ -613,3 +613,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 75 (05:39) — Full table regression (all 53 tables, phone + desktop)
 - Ran tools/ui_smoke.py over every table game: every round finished, no page errors. The only flags were the roadmap's counter pills on baccarat, which now scroll sideways by design (round 28); the checker ignores those scroll rows now. Lobby on phone re-checked top to bottom.
+
+## Round 76 (05:58) — Full slot regression after tonight's changes
+- tools/slot_smoke.py: all 100 slots × phone and desktop, 2 spins each incl. any triggered features: 200 runs, 0 problems (no errors, no stuck spins, reels/board/spin button on screen).

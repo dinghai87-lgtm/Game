@@ -559,3 +559,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 58 (02:34) — Slot win line no longer under the spin button (desktop)
 - On laptop / desktop screens the raised round spin button covered the win line (祝你好运 / WIN 36.00). The win line now keeps clear space above the control bar on wide screens; reels re-size to fit. Checked 1440×900 and 1280×720. sw lv-v134. Tests 90/90.
+
+## Round 59 (02:40) — Lobby rewards dock pass (phone, 中文)
+- Opened every dock item (收取 / 每日转盘 / 每日冲刺 / 存钱猪 / 图鉴 / VIP 俱乐部) and the starter-task card: all translated and laid out fine. Fixed the floating "+1,000 free coins" coin text (now +1,000 免费金币). sw lv-v135. Tests 90/90.

@@ -344,6 +344,8 @@
     "Cash symbols show a prize. In free spins every collector WILD grabs every prize on screen. Every 4 wilds collected: +10 spins and x2, x3, then x10 prizes.": "现金符号上显示奖金。免费旋转中每个收集百搭会收走屏幕上所有奖金。每收集 4 个百搭：加 10 次旋转，奖金依次 x2、x3、x10。",
   };
   const RULES = [
+    [/^\+([\d,.]+) free coins$/, (m) => '+' + m[1] + ' 免费金币'],
+    [/^\+([\d,.]+) coins$/, (m) => '+' + m[1] + ' 金币'],
     [/^Line (\d+)$/, (m) => '第 ' + m[1] + ' 线'],
     [/^ACHIEVEMENT \+([\d,.]+)$/, (m) => '成就 +' + m[1]],
     [/^MISSION COMPLETE \+([\d,.]+)$/, (m) => '任务完成 +' + m[1]],

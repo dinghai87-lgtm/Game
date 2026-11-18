@@ -631,3 +631,7 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 81 (06:43)
 - 多人百家乐：自己下的筹码改为右下角小筹码+金额，不再压住「庄/闲」字（之前挂着的遗留问题）
+
+## Round 82 (06:58)
+- 轮盘（单人+多人）：手机竖屏下注格加高 30→38px，更好点、不留大片空白
+- 多人骰宝/多人轮盘逐帧检查通过；ui_smoke 全部桌台 0 问题

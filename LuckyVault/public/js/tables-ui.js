@@ -198,6 +198,7 @@
 .pt2{font-size:12px;color:#cfe;opacity:.85;text-align:center}
 @media(max-width:560px){#felt.oval::before{border-radius:20px 20px 48% 48%/20px 20px 10% 10%;border-width:4px}#felt.oval::after{display:none}.pcard{--cw:48px}.spot{min-width:72px;min-height:58px;font-size:11px}.spot.big{min-width:96px;min-height:66px;font-size:13px}.chip{width:38px;height:38px;font-size:10px}.tbtn{height:42px;padding:0 12px;font-size:12px}.die{width:46px;height:46px}
  .rl-board{grid-template-columns:30px repeat(12,1fr) 30px;grid-auto-rows:30px;font-size:10px;width:96vw}.rl-wheel{width:150px}.kn-grid{grid-template-columns:repeat(10,1fr);width:94vw}.res{font-size:18px}}
+@media(max-width:560px) and (min-height:740px){.rl-board{grid-auto-rows:38px;font-size:12px}.rl-board .stk .chip.mini{width:24px;height:24px}}
 @media(max-height:500px) and (orientation:landscape){
  #felt{padding:6px;gap:6px}#felt.oval::after{display:none}
  .pcard{--cw:40px}.vp-cards .pcard{--cw:60px}.vp-pay{font-size:10px}.vp-pay td{padding:1px 6px}

@@ -295,3 +295,4 @@ json.dump(man, open(OUT + '/manifest.json', 'w'), indent=1, ensure_ascii=False)
 # round 19: space/robot group: lows replaced (alien gems 23,86,41,35,31 | space-odyssey planes 1,4,6,8,3 | cosmic gems 42,11,4,7,16 | robot-factory gems 79,28,53,62,24 | robot-walkers planes 2,5,7,9,10); h1-h4 + a_h* sprite sheets hue-shifted (odyssey 200, cosmic 110, factory 40, walkers 150)
 # round 20: cosmic-candy <- sweets-2d-game-items 22,32,34,39,11,37,24,35,8 ; mayan-mystery <- stone-age 25,45,9,42,27,26,30,15,36 (W/S kept)
 # round 21: thunder-temple <- lightning-mage tiles (gold rim) 23,44,13,25,9,10,31,46,34 ; fiesta-loca <- fruits-512 5 corn,17 avocado,45 pineapple,40 garlic,3,24,25,1,34
+# round 22: triple-sevens: 777/BAR/diamond/star hue +190 (cyan), lows -> kit items 10 cards, 14 dice, 15 banana (was 7/11 identical to lucky-777)

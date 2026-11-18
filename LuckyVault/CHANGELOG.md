@@ -393,3 +393,6 @@ Platform release: everything on the "do all of these" list except the public dep
 
 ## Round 21 (19:05) — Thunder Temple & Fiesta Loca own sets
 - Thunder Temple (shared 7 with Frozen Kingdom / Ice Queen) -> storm-priest tiles with gold rim. Fiesta Loca (shared 9 with Jungle Reels) -> market produce set (corn, avocado, pineapple...). New covers. sw lv-v77. Tests 90/90.
+
+## Round 22 (19:10) — Triple Sevens no longer a copy of Lucky 777
+- Cyan sevens/BAR/star, new lows (cards, dice, banana), new cover. sw lv-v78. Tests 90/90.

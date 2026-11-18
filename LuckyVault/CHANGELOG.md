@@ -597,3 +597,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 70 (04:26) — Small Android phones (360×740)
 - Lobby, a slot, baccarat, Three Card Poker, Sic Bo, video poker checked at 360 px wide: all fit. Sic Bo's triple-dice faces overflowed their boxes — smaller faces under 380 px. sw lv-v151. Tests 90/90.
+
+## Round 71 (04:34) — Lobby scroll smoothness on mid-range phones
+- Profiled the lobby with a 6× slowed CPU: 710 CSS animations were running at once (a shine on all ~285 game tiles, 365 flickering windows in the Las Vegas skyline). Now only tiles on screen shimmer and the skyline animates 1 in 5 windows only while visible → 68 running animations. Scrolling frame time halved (median 67 ms → 33 ms, worst long task 108 ms → ~55 ms). Looks the same. sw lv-v152. Tests 90/90.

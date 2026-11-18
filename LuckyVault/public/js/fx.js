@@ -43,7 +43,7 @@
 @keyframes spinIdle{50%{box-shadow:0 0 0 4px rgba(36,209,126,.25),0 0 26px rgba(36,209,126,.55)}}
 /* lobby */
 .tile::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:4;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.28) 50%,transparent 65%);background-size:300% 100%;background-position:150% 0;animation:tileShine 7s ease-in-out infinite;animation-delay:var(--sd,0s)}
-@keyframes tileShine{0%,70%{background-position:150% 0}100%{background-position:-50% 0}}
+/* only tiles on screen shimmer (285 running animations were dragging lobby scroll on mid-range phones) */ .tile:not(.onscr)::after{animation:none!important} @keyframes tileShine{0%,70%{background-position:150% 0}100%{background-position:-50% 0}}
 .tile:hover .art{animation:artFloat 1.4s ease-in-out infinite alternate}
 @keyframes artFloat{to{transform:translateY(-6px) scale(1.06)}}
 .tile .art{animation:artIdle 3.2s ease-in-out infinite alternate;animation-delay:var(--sd,0s)}
@@ -154,3 +154,9 @@
     setInterval(() => { if (Date.now() < hold || heros.offsetParent === null || document.hidden) return; if (heros.scrollWidth <= heros.clientWidth + 20) return; go((cur() + 1) % n); }, 5000);
   }
 })();
+
+// 2026-11-19 perf: mark lobby tiles that are on screen; only those animate their shine
+(function () { if (!('IntersectionObserver' in window)) { document.documentElement.classList.add('noio'); return; }
+  const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('onscr', e.isIntersecting)), { rootMargin: '60px' });
+  const seen = new WeakSet(); const scan = () => document.querySelectorAll('.tile, #vgSky').forEach(t => { if (!seen.has(t)) { seen.add(t); io.observe(t); } });
+  new MutationObserver(() => scan()).observe(document.body, { childList: true, subtree: true }); scan(); })();

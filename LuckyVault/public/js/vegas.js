@@ -34,7 +34,7 @@
 @keyframes vgBulb{0%{fill:#fff6c8}50%{fill:#8a6a1a}}
 /* Strip skyline above the footer */
 #vgSky{display:block;width:100%;height:120px;margin-top:18px;opacity:.9}
-#vgSky .win{animation:vgWin 3s steps(1) infinite}#vgSky .win.b{animation-delay:-1.3s}#vgSky .win.c{animation-delay:-2.1s}
+#vgSky .win{animation:none}#vgSky.onscr .win:nth-child(5n){animation:vgWin 3s steps(1) infinite}#vgSky .win.b{animation-delay:-1.3s}#vgSky .win.c{animation-delay:-2.1s}
 @keyframes vgWin{0%,60%{opacity:1}61%,100%{opacity:.25}}
 /* tables: Vegas limit placard + printed felt marking */
 #vgPlac{position:absolute;left:max(10px,calc(50% - 560px));top:58px;z-index:3;pointer-events:none;background:linear-gradient(#141414,#000);border:2px solid #c9a227;border-radius:8px;padding:4px 10px 5px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.08);font:700 9px Arial;color:#c9a227;letter-spacing:1.5px}

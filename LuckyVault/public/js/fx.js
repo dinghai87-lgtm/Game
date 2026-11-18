@@ -43,7 +43,7 @@
 @keyframes spinIdle{50%{box-shadow:0 0 0 4px rgba(36,209,126,.25),0 0 26px rgba(36,209,126,.55)}}
 /* lobby */
 .tile::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:4;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.28) 50%,transparent 65%);background-size:300% 100%;background-position:150% 0;animation:tileShine 7s ease-in-out infinite;animation-delay:var(--sd,0s)}
-/* only tiles on screen shimmer (285 running animations were dragging lobby scroll on mid-range phones) */ .tile:not(.onscr)::after{animation:none!important} @keyframes tileShine{0%,70%{background-position:150% 0}100%{background-position:-50% 0}}
+/* only tiles on screen shimmer (285 running animations were dragging lobby scroll on mid-range phones) */ .tile:not(.onscr)::after{animation:none!important} body:has(#game.show) #lobby *,body:has(#game.show) #lobby *::after,body:has(#game.show) #lobby *::before,body:has(#table.show) #lobby *::before,body:has(#table.show) #lobby *,body:has(#table.show) #lobby *::after,body:has(#game.show) #hovDock *,body:has(#table.show) #hovDock *{animation-play-state:paused!important} @keyframes tileShine{0%,70%{background-position:150% 0}100%{background-position:-50% 0}}
 .tile:hover .art{animation:artFloat 1.4s ease-in-out infinite alternate}
 @keyframes artFloat{to{transform:translateY(-6px) scale(1.06)}}
 .tile .art{animation:artIdle 3.2s ease-in-out infinite alternate;animation-delay:var(--sd,0s)}

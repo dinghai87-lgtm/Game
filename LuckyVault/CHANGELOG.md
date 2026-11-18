@@ -600,3 +600,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 71 (04:34) — Lobby scroll smoothness on mid-range phones
 - Profiled the lobby with a 6× slowed CPU: 710 CSS animations were running at once (a shine on all ~285 game tiles, 365 flickering windows in the Las Vegas skyline). Now only tiles on screen shimmer and the skyline animates 1 in 5 windows only while visible → 68 running animations. Scrolling frame time halved (median 67 ms → 33 ms, worst long task 108 ms → ~55 ms). Looks the same. sw lv-v152. Tests 90/90.
+
+## Round 72 (04:44) — Lobby animations pause while you play
+- The hidden lobby kept ~60 animations running behind every game and table (marquee bulbs, sign flicker, hero sparkles, dock pulse). They now pause while a game/table is open and resume on return (61 → 7 while playing → 62 back in lobby). Less battery and smoother reels on phones. sw lv-v154. Tests 90/90.

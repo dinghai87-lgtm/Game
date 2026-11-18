@@ -238,6 +238,10 @@ Object.assign(I18N.en,{"再召唤 {n} 次必出整个英雄（保底）":"Guaran
 Object.assign(I18N.ja,{"再召唤 {n} 次必出整个英雄（保底）":"あと{n}回で英雄確定（天井）","英雄保底：连续 40 次没出整个英雄，第 40 次必出":"英雄天井：40回連続で英雄が出なければ40回目で確定"});
 Object.assign(I18N.ko,{"再召唤 {n} 次必出整个英雄（保底）":"{n}회 더 소환 시 영웅 확정 (천장)","英雄保底：连续 40 次没出整个英雄，第 40 次必出":"영웅 천장: 40회 연속 영웅이 없으면 40회째 확정"});
 Object.assign(I18N.es,{"再召唤 {n} 次必出整个英雄（保底）":"Héroe garantizado en {n} invocaciones más","英雄保底：连续 40 次没出整个英雄，第 40 次必出":"Garantía: si en 40 invocaciones seguidas no sale un héroe, la 40ª lo garantiza"});
+Object.assign(I18N.en,{"点空投箱子拿补给！":"Tap the supply drop!","捡起空投补给 {n} 个":"Collect {n} supply drops"});
+Object.assign(I18N.ja,{"点空投箱子拿补给！":"補給箱をタップ！","捡起空投补给 {n} 个":"補給箱を{n}個拾う"});
+Object.assign(I18N.ko,{"点空投箱子拿补给！":"보급 상자를 탭하세요!","捡起空投补给 {n} 个":"보급 상자 {n}개 줍기"});
+Object.assign(I18N.es,{"点空投箱子拿补给！":"¡Toca el suministro!","捡起空投补给 {n} 个":"Recoge {n} suministros"});
 
 'use strict';
 // ====================== 基础 ======================
@@ -3342,6 +3346,22 @@ const PITY_N=40;
   const dg=drawGacha;drawGacha=function(dt){dg(dt);try{if(gachaRes)return;const left=PITY_N-(SAVE.pity||0);const s=TR('再召唤 {n} 次必出整个英雄（保底）').replace('{n}',left);ctx.font=`900 15px ${FONT}`;const w=ctx.measureText(s).width+40;ctx.fillStyle='rgba(60,20,90,.85)';rr(W/2-w/2,462,w,30,15);ctx.fill();fitTxt(s,W/2,477,15,w-20,'#e7c9ff','center',2);
     hpbar(W/2-120,496,240,8,(SAVE.pity||0)/PITY_N,'#7a3cc0','#d6a8ff')}catch(e){}};if(window.__api)Object.assign(window.__api,{pull})})();
 
+// ====================== 空投补给（植物大战僵尸的「捡阳光」式互动）：战斗中不时空投箱子，点一下拿金币或 ⚡ ======================
+(function(){
+  const cw=callWave;callWave=function(early){const w0=G&&G.wave;cw(early);try{if(!G||G.L.chal==='puzzle'||G.L.chal==='custom'||G.wave===w0)return;if(G.wave%3===0&&G.wave<G.L.waves){const p=G.paths[Math.floor(Math.random()*G.paths.length)];const q=pathAt(p,p.len*(.3+Math.random()*.4));
+    const x=clamp(q.x+(Math.random()-.5)*120,140,W-260),y=clamp(q.y-30+(Math.random()-.5)*80,150,H-170);G.drops=G.drops||[];G.drops.push({x,y,t:0,life:9,k:Math.random()<.3&&typeof pfOn==='function'&&pfOn()?'pf':'gold'})}}catch(e){}};
+  const up=update;update=function(dt){up(dt);if(!G||!G.drops)return;for(const d of G.drops)d.t+=dt;G.drops=G.drops.filter(d=>d.t<d.life&&!d.got)};
+  const be=battleExtra;battleExtra=function(t){be(t);try{if(scene!=='battle'||!G||!G.drops||G.over)return;for(const d of G.drops){const fall=Math.min(1,d.t/1.2),y=d.y-(1-fall)*260,fade=d.life-d.t<2?(Math.sin(d.t*14)>0?1:.4):1;ctx.save();ctx.globalAlpha=fade;
+      if(fall<1){ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(d.x-16,y-14);ctx.lineTo(d.x-26,y-46);ctx.moveTo(d.x+16,y-14);ctx.lineTo(d.x+26,y-46);ctx.stroke();ctx.fillStyle='#e8492e';ctx.beginPath();ctx.arc(d.x,y-46,30,Math.PI,0);ctx.fill()}
+      else{ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(d.x,y+18,22,7,0,0,7);ctx.fill()}
+      ctx.fillStyle='#8a5a2e';rr(d.x-18,y-16,36,32,5);ctx.fill();ctx.strokeStyle='#4a2a10';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#ffd84a';ctx.fillRect(d.x-3,y-16,6,32);txt(d.k==='pf'?'⚡':'💰',d.x,y-34+Math.sin(d.t*5)*3,18,'#fff','center',0);ctx.restore();
+      if(fall>=1)hit(d.x-34,y-40,68,70,()=>{if(d.got)return;d.got=1;if(d.k==='pf'){G.pf=Math.min(PF_MAX,(G.pf||0)+1);floatText('⚡+1',d.x,d.y-40,'#7dff7a',1)}else{const g=Math.round((50+15*Math.max(0,G.li))*(G.L.goldX||1));G.gold+=g;floatText('+'+g,d.x,d.y-40,'#ffd84a',1)}AUD.sfx('coin');try{buzz('ok')}catch(_){}stAdd('drops');
+        if(!SAVE.dropTip){SAVE.dropTip=1;save()}})}
+    if(!SAVE.dropTip&&G.drops.some(d=>d.t>1.2))fitTxt(TR('点空投箱子拿补给！'),W/2,H-150,18,500,'#ffe27a','center',4)}catch(e){console.error(e)}};
+  if(window.__api)Object.assign(window.__api,{callWave,update});
+})();
+ACH.push({id:'drops_10',k:'drops',n:10,d:'捡起空投补给 {n} 个',yb:30},{id:'drops_100',k:'drops',n:100,d:'捡起空投补给 {n} 个',yb:120});
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -3384,7 +3404,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794982573';
+const BUILD_VER='1794982739';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

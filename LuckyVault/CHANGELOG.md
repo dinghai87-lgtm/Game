@@ -585,3 +585,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 66 (03:55) — Store purchase confirmation in Chinese
 - Store checked in both languages; the purchase confirmation was still English in 中文 mode → 确认购买 / 订单号 / 测试支付：不会扣真钱。/ 支付 $4.99 / 取消. (Sandbox only — no real payments involved.) sw lv-v146. Tests 90/90.
+
+## Round 67 (04:06) — Gamble (博倍) and daily reward screens in Chinese
+- Won on Lucky 777, opened 博倍 and played it: the whole gamble card screen was English in 中文 mode (instructions, RED/BLACK x2, COLLECT, "5 gambles left…", win/lose lines) → translated. Daily-reward dialog (title, streak note, Day N, Collect N / come back tomorrow) translated too. sw lv-v148. Tests 90/90.

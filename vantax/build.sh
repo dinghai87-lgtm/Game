@@ -6,4 +6,4 @@ cp -r vantax/. dist/ && rm -f dist/build.sh dist/BRIEF_GROK.md
 # 游戏：每个游戏发布一份到总站（新增游戏就在这里加一行）
 cp -r hero-defense dist/hero-defense && rm -rf dist/hero-defense/mobile dist/hero-defense/store
 # LuckyVault 社交娱乐场（静态单机模式，虚拟币仅供娱乐）
-cp -r LuckyVault/public dist/luckyvault
+cp -r LuckyVault/public dist/luckyvault && rm -f dist/luckyvault/admin.html

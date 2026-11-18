@@ -296,3 +296,4 @@ json.dump(man, open(OUT + '/manifest.json', 'w'), indent=1, ensure_ascii=False)
 # round 20: cosmic-candy <- sweets-2d-game-items 22,32,34,39,11,37,24,35,8 ; mayan-mystery <- stone-age 25,45,9,42,27,26,30,15,36 (W/S kept)
 # round 21: thunder-temple <- lightning-mage tiles (gold rim) 23,44,13,25,9,10,31,46,34 ; fiesta-loca <- fruits-512 5 corn,17 avocado,45 pineapple,40 garlic,3,24,25,1,34
 # round 22: triple-sevens: 777/BAR/diamond/star hue +190 (cyan), lows -> kit items 10 cards, 14 dice, 15 banana (was 7/11 identical to lucky-777)
+# round 23: buffalo-wild-reels <- CraftPix hunting-trophy loot icons (cpx eb4d967a): 3 skull,7 stag,8 boar,13 horns,17 bear paw,25 pelt,5 fang,47 feather,42 antler (W/S kept)

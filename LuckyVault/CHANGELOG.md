@@ -396,3 +396,8 @@ Platform release: everything on the "do all of these" list except the public dep
 
 ## Round 22 (19:10) — Triple Sevens no longer a copy of Lucky 777
 - Cyan sevens/BAR/star, new lows (cards, dice, banana), new cover. sw lv-v78. Tests 90/90.
+
+## Round 23 (19:15) — Buffalo Wild Reels frontier set; load check
+- Buffalo Wild Reels shared 9/11 with Buffalo Stampede (viking loot). Now a frontier hunting-trophy set (stag skull, boar, horns, bear paw, pelt...) + cover.
+- Load check (phone, cold): 0.73s, 67 requests, 1.2 MB, gzip on.
+- sw lv-v79. Tests 90/90.

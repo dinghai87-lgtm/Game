@@ -442,3 +442,9 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 - Chips on the board shrink to a corner dot so the number stays readable; winning number gets a gold frame; losing chips leave the table (Rebet restores).
 - Outside bets and rules line in one language, larger text; old long rules line replaced with a short payout summary.
 - sw lv-v94. Tests 90/90.
+
+## Round 31 (21:55) — Sic Bo refined
+- Board rebuilt as a regular 6-column grid on solid dark cells (dice wallpaper no longer shows through): 小/全围/大 colour row, Double and Triple shown as die faces, totals 4–17 in two rows of 7, single-die bets as die faces; section headers carry the payouts.
+- After the roll every winning area lights up (大/小, total, singles, doubles, triples); result reads "12 大 · 赢 10.00" / "14 BIG · WIN 10.00"; losing chips leave the table.
+- One language per mode; long-press rules for every bet.
+- sw lv-v96. Tests 90/90.

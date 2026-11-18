@@ -714,22 +714,53 @@
   const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
   function dieEl(n) { const d = document.createElement('div'); d.className = 'die'; for (let i = 0; i < 9; i++) { const p = document.createElement('i'); if (n && PIPS[n].includes(i)) p.style.visibility = 'visible'; d.appendChild(p); } return d; }
   async function rollDice(wrap, vals) { wrap.innerHTML = ''; const ds = vals.map(() => { const d = dieEl(1 + Math.floor(Math.random() * 6)); d.classList.add('roll'); wrap.appendChild(d); return d; }); (sfx.dice || sfx.spin)(); await wait(900); wrap.innerHTML = ''; vals.forEach(v => wrap.appendChild(dieEl(v))); sfx.stop(); }
+  // 2026-11-18 Sic Bo refine (phone QA): regular 6-column board on solid cells, die faces for single bets, chips in the corner,
+  // every winning area lights up after the roll, result says 大/小 or triple, losing chips leave the table, one language
+  const SBL = () => (window.LVLang && LVLang.get()) || 'bi', SBT = (zh, en) => SBL() === 'zh' ? zh : SBL() === 'en' ? en : zh + ' ' + en;
+  { const st = document.createElement('style'); st.textContent =
+    '#felt .sb2{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;width:100%;max-width:560px}' +
+    '#felt .sb2 .spot{min-width:0!important;min-height:50px;padding:3px 2px;border-radius:10px;font-size:12px;letter-spacing:0;background:rgba(10,20,40,.82);border:1.5px solid rgba(255,255,255,.35);line-height:1.15}' +
+    '#felt .sb2 .spot small{font-size:10px;color:#ffd60a;opacity:.95}' +
+    '#felt .sb2 .w2{grid-column:span 2;min-height:60px;font-size:15px}#felt .sb2 [data-k=small]{background:rgba(29,78,216,.55);border-color:#7aa2ff}#felt .sb2 [data-k=big]{background:rgba(200,16,46,.55);border-color:#ff8a8a}#felt .sb2 [data-k=any3]{background:rgba(10,143,62,.5);border-color:#5ee59a}' +
+    '#felt .sb2 .sbt{grid-column:1/-1;display:grid;grid-template-columns:repeat(7,1fr);gap:5px}#felt .sb2 .sbt .spot{min-height:46px;font-size:15px}' +
+    '#felt .sb2 .sbh{grid-column:1/-1;justify-self:start;background:rgba(0,0,0,.55);border-radius:999px;padding:1px 10px;font:800 11px "Microsoft YaHei",Arial,sans-serif;color:#fde68a;text-align:left;margin:4px 0 -2px 2px;letter-spacing:1px}' +
+    '#felt .sb2 .pips{display:flex;gap:2px;justify-content:center}#felt .sb2 .pips .die{width:17px;height:17px;padding:2px;border-radius:4px;box-shadow:none;gap:0}#felt .sb2 .pips .die i{width:3.5px!important;height:3.5px!important}' +
+    '#felt .sb2 .spot .stk{left:auto;top:auto;right:2px;bottom:2px;transform:none;flex-direction:row;gap:2px;align-items:flex-end}#felt .sb2 .spot .pile{width:22px;height:calc(22px + (var(--n) - 1) * 2px)}#felt .sb2 .spot .pile .chip{width:22px;height:22px;bottom:calc(var(--i) * 2px)}#felt .sb2 .spot .stk b{display:none}#felt .sb2 .spot.has{color:#fff}' +
+    '#felt .sb2 .spot.hit{box-shadow:0 0 0 2px #ffd60a,0 0 16px rgba(255,214,10,.6);border-color:#ffd60a}' +
+    '#felt:has(.sb2) .dice{min-height:72px;align-items:center}#felt:has(.sb2) .die{width:60px;height:60px}' +
+    '#felt:has(.sb2) .res{min-height:32px;height:32px;line-height:32px;white-space:nowrap;font-size:min(22px,5.4vw)}' +
+    '@media(max-width:560px){#felt .sb2{gap:4px}#felt .sb2 .spot{min-height:46px;font-size:11px}#felt .sb2 .sbt{gap:4px}#felt:has(.sb2) .die{width:52px;height:52px}}';
+    document.head.appendChild(st); }
+  const pipsHTML = (n, k) => '<span class="pips">' + Array.from({ length: k }, () => dieEl(n).outerHTML).join('') + '</span>';
   REND.sicbo = {
     setup(f) {
-      let b = '<div class="sb-board">';
       const I = t => '<i class="sinf" data-tip="' + t + '">?</i>';
-      b += '<button class="spot w2" data-k="small">小 Small<small>4-10 · 1:1</small><span class="stk"></span>' + I('三颗骰子总点数 4–10 即赢，赔 1:1；出现围骰（三颗相同）则输。<br>Total 4–10 wins 1:1 — loses on any triple.') + '</button><button class="spot w3" data-k="any3">全围 Any triple<small>30:1</small><span class="stk"></span>' + I('三颗骰子点数相同（任意围骰）即赢，赔 30:1。<br>Any three of a kind — pays 30:1.') + '</button><button class="spot w2" data-k="big">大 Big<small>11-17 · 1:1</small><span class="stk"></span>' + I('三颗骰子总点数 11–17 即赢，赔 1:1；出现围骰则输。<br>Total 11–17 wins 1:1 — loses on any triple.') + '</button>';
-      for (let i = 1; i <= 6; i++) b += '<button class="spot" data-k="d' + i + '" title="对子 Double: at least two ' + i + 's · 10:1">对 ' + i + i + '<small>10:1</small><span class="stk"></span></button>'; b += '<span></span>';
-      for (let i = 1; i <= 6; i++) b += '<button class="spot" data-k="tr' + i + '" title="围骰 Specific triple: three ' + i + 's · 180:1">围 ' + i + i + i + '<small>180:1</small><span class="stk"></span></button>'; b += '<span></span>';
-      for (let i = 4; i <= 17; i++) b += '<button class="spot" data-k="t' + i + '" title="点数 Total ' + i + ' · ' + TE.SB_T[i] + ':1">' + i + '<small>' + TE.SB_T[i] + ':1</small><span class="stk"></span></button>';
-      for (let i = 1; i <= 6; i++) b += '<button class="spot" data-k="s' + i + '" title="单骰 Single ' + i + ': pays 1:1 per ' + i + ' shown (1 die 1:1, 2 dice 2:1, 3 dice 3:1)">单骰 ' + i + '<small>1:1 / 2:1 / 3:1</small><span class="stk"></span></button>';
-      b += '</div><div class="pt2">对子 Double 10:1 · 围骰 Triple 180:1 · 点数 Total 4–17 · 单骰 Single: 1 个 1:1、2 个 2:1、3 个 3:1 · 长按下注格看说明 · Long-press a bet for its rules</div>';
+      let b = '<div class="sb-board sb2">';
+      b += '<button class="spot w2" data-k="small">' + SBT('小', 'SMALL') + '<small>4–10 · 1:1</small><span class="stk"></span>' + I('三颗骰子总点数 4–10 即赢，赔 1:1；出现围骰（三颗相同）则输。<br>Total 4–10 wins 1:1 — loses on any triple.') + '</button>' +
+        '<button class="spot w2" data-k="any3">' + SBT('全围', 'ANY TRIPLE') + '<small>30:1</small><span class="stk"></span>' + I('三颗骰子点数相同（任意围骰）即赢，赔 30:1。<br>Any three of a kind — pays 30:1.') + '</button>' +
+        '<button class="spot w2" data-k="big">' + SBT('大', 'BIG') + '<small>11–17 · 1:1</small><span class="stk"></span>' + I('三颗骰子总点数 11–17 即赢，赔 1:1；出现围骰则输。<br>Total 11–17 wins 1:1 — loses on any triple.') + '</button>';
+      b += '<div class="sbh">' + SBT('对子 10:1', 'DOUBLE 10:1') + '</div>';
+      for (let i = 1; i <= 6; i++) b += '<button class="spot" data-k="d' + i + '">' + pipsHTML(i, 2) + '<small>10:1</small><span class="stk"></span>' + I('至少两颗骰子是 ' + i + ' 点即赢，赔 10:1。<br>At least two ' + i + 's — pays 10:1.') + '</button>';
+      b += '<div class="sbh">' + SBT('围骰 180:1', 'TRIPLE 180:1') + '</div>';
+      for (let i = 1; i <= 6; i++) b += '<button class="spot" data-k="tr' + i + '">' + pipsHTML(i, 3) + '<small>180:1</small><span class="stk"></span>' + I('三颗骰子都是 ' + i + ' 点即赢，赔 180:1。<br>Three ' + i + 's — pays 180:1.') + '</button>';
+      b += '<div class="sbh">' + SBT('点数', 'TOTAL') + '</div><div class="sbt">';
+      for (let i = 4; i <= 17; i++) b += '<button class="spot" data-k="t' + i + '">' + i + '<small>' + TE.SB_T[i] + ':1</small><span class="stk"></span>' + I('三颗骰子总点数正好是 ' + i + ' 即赢，赔 ' + TE.SB_T[i] + ':1。<br>Total of exactly ' + i + ' — pays ' + TE.SB_T[i] + ':1.') + '</button>';
+      b += '</div><div class="sbh">' + SBT('单骰 · 出现 1 颗 1:1 · 2 颗 2:1 · 3 颗 3:1', 'SINGLE · 1 die 1:1 · 2 dice 2:1 · 3 dice 3:1') + '</div>';
+      for (let i = 1; i <= 6; i++) b += '<button class="spot" data-k="s' + i + '">' + pipsHTML(i, 1) + '<span class="stk"></span>' + I('押 ' + i + ' 点：开出 1 颗 ' + i + ' 赔 1:1，2 颗赔 2:1，3 颗赔 3:1。<br>Pays 1:1 for each ' + i + ' shown (1 die 1:1, 2 dice 2:1, 3 dice 3:1).') + '</button>';
+      b += '</div><div class="pt2">' + SBT('长按下注格查看玩法', 'Long-press a bet for its rules') + '</div>';
       f.innerHTML = '<div class="dice" id="sbD"></div>' + resLine() + b;
-      f.querySelectorAll('.sb-board [data-k]').forEach(x => { x.onclick = e => { const ti = e.target.closest('.sinf'); if (ti) { e.stopPropagation(); spotTip(x.firstChild.textContent, ti.dataset.tip); return; } addBet(x.dataset.k); }; x.oncontextmenu = e => { e.preventDefault(); removeBet(x.dataset.k); }; });
+      f.querySelectorAll('.sb-board [data-k]').forEach(x => { x.onclick = e => { const ti = e.target.closest('.sinf'); if (ti) { e.stopPropagation(); spotTip(x.querySelector('small') ? x.textContent.replace(/\?$/, '').trim() : x.dataset.k, ti.dataset.tip); return; } addBet(x.dataset.k); }; x.oncontextmenu = e => { e.preventDefault(); removeBet(x.dataset.k); }; });
       [1, 2, 3].forEach(n => document.getElementById('sbD').appendChild(dieEl(n)));
     },
-    async render(v, r) { await rollDice(document.getElementById('sbD'), v.dice); markWins(v.wins); showRes('TOTAL ' + v.total + (v.triple ? ' · TRIPLE' : '') + (r.win > 0 ? ' · WIN ' + fmt(r.win) : ''), r.win); },
-    dealLabel: 'Roll'
+    async render(v, r) {
+      document.querySelectorAll('.sb2 .hit').forEach(e => e.classList.remove('hit'));
+      await rollDice(document.getElementById('sbD'), v.dice); markWins(v.wins);
+      const d = v.dice, tot = d[0] + d[1] + d[2], tri = d[0] === d[1] && d[1] === d[2], hit = k => { const e = document.querySelector('.sb2 [data-k="' + k + '"]'); if (e) e.classList.add('hit'); };
+      if (!tri) hit(tot <= 10 ? 'small' : 'big'); else { hit('any3'); hit('tr' + d[0]); }
+      if (tot >= 4 && tot <= 17) hit('t' + tot); [1, 2, 3, 4, 5, 6].forEach(n => { const c = d.filter(x => x === n).length; if (c) hit('s' + n); if (c >= 2) hit('d' + n); });
+      const what = tri ? SBT('围骰', 'TRIPLE') : tot <= 10 ? SBT('小', 'SMALL') : SBT('大', 'BIG');
+      showRes(tot + ' ' + what + (r.win > 0 ? ' · ' + SBT('赢 ', 'WIN ') + fmt(r.win) : ''), r.win); },
+    dealLabel: 'Roll', keepBets: false
   };
   REND.craps = {
     setup(f) { f.innerHTML = '<div class="lbl" id="crP">Come-out roll</div><div class="dice" id="crD"></div>' + resLine() + '<div class="spots" id="crS"></div><div class="pt2">Pass/Don’t Pass ride until the point is decided · Field 1:1 (2 pays 2:1, 12 pays 3:1) · Any 7 4:1 · Any Craps 7:1 · Yo 15:1</div>';

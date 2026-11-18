@@ -591,3 +591,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 68 (04:13) — Source sweep for untranslated UI text
 - Wrote a checker that pulls every English UI string out of the slot / feature / lobby / account code and runs it through the 中文 dictionary. ~110 strings had no translation; added them (feature banners MYSTERY! / WILD REELS! / PICK BONUS! / wheel names, out-of-coins dialog, ante/turbo toasts, autoplay stop reasons, account email/phone verification, password reset, delete-account, notifications, first-run tour, reality-check reminder, lobby search/empty states). Re-ran the feature buy flow, auth and dock panels: no errors. sw lv-v149. Tests 90/90.
+
+## Round 69 (04:19) — Same sweep over the 12 table modules
+- Every remaining raw English string in the table code is now either inside a language helper or in the dictionary (Table max, Exceeds balance or table max, Soft 17, insurance pays, Lucky Strike banner, Bet failed, Resuming your round …). sw lv-v150. Tests 90/90.

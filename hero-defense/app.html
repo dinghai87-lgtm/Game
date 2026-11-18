@@ -212,6 +212,10 @@ Object.assign(I18N.en,{"更多":"More","更多设置":"More Settings","英雄台
 Object.assign(I18N.ja,{"更多":"その他","更多设置":"その他の設定","英雄台词":"英雄のセリフ","终结慢镜头":"とどめのスロー演出","下雪特效":"雪のエフェクト","粒子特效":"パーティクル演出","震动":"振動"});
 Object.assign(I18N.ko,{"更多":"더보기","更多设置":"추가 설정","英雄台词":"영웅 대사","终结慢镜头":"마무리 슬로모션","下雪特效":"눈 효과","粒子特效":"파티클 효과","震动":"진동"});
 Object.assign(I18N.es,{"更多":"Más","更多设置":"Más ajustes","英雄台词":"Frases de héroes","终结慢镜头":"Cámara lenta final","下雪特效":"Efecto de nieve","粒子特效":"Partículas","震动":"Vibración"});
+Object.assign(I18N.en,{"打哥布林":"Whack-a-Goblin","点冒头的哥布林 +1，金色哥布林 +3，别打骷髅 -2":"Tap goblins +1, golden goblins +3 — don't hit skeletons (-2)","时间到！":"Time's up!","今日首玩奖励":"First play today","今日奖励已领，再玩只为刷纪录":"Today's reward claimed — play for a new record","再来一局":"Play again","返回":"Back","每日小游戏，首玩送钻石":"Daily mini-game — first play gives gems"});
+Object.assign(I18N.ja,{"打哥布林":"ゴブリンたたき","点冒头的哥布林 +1，金色哥布林 +3，别打骷髅 -2":"ゴブリン+1、金のゴブリン+3、ガイコツは-2","时间到！":"タイムアップ！","今日首玩奖励":"本日の初回報酬","今日奖励已领，再玩只为刷纪录":"本日の報酬は受取済み。記録更新を狙おう","再来一局":"もう一回","返回":"戻る","每日小游戏，首玩送钻石":"毎日のミニゲーム、初回はジェム"});
+Object.assign(I18N.ko,{"打哥布林":"고블린 때리기","点冒头的哥布林 +1，金色哥布林 +3，别打骷髅 -2":"고블린 +1, 황금 고블린 +3, 해골은 -2","时间到！":"시간 종료!","今日首玩奖励":"오늘 첫 플레이 보상","今日奖励已领，再玩只为刷纪录":"오늘 보상 수령 완료, 기록 갱신에 도전","再来一局":"한 판 더","返回":"돌아가기","每日小游戏，首玩送钻石":"매일 미니게임, 첫 플레이 젬 지급"});
+Object.assign(I18N.es,{"打哥布林":"Aplasta goblins","点冒头的哥布林 +1，金色哥布林 +3，别打骷髅 -2":"Goblins +1, goblins dorados +3, ¡no toques esqueletos (-2)!","时间到！":"¡Tiempo!","今日首玩奖励":"Primera partida de hoy","今日奖励已领，再玩只为刷纪录":"Premio de hoy cobrado: juega por el récord","再来一局":"Otra vez","返回":"Volver","每日小游戏，首玩送钻石":"Minijuego diario: la primera partida da gemas"});
 
 'use strict';
 // ====================== 基础 ======================
@@ -1734,8 +1738,8 @@ function loopBody(now){const rdt=Math.min(.05,(now-last)/1000);last=now;try{perf
   AUD.music(musicFor());
   if(scene==='battle'&&G){const alive=G.enemies.filter(e=>!e.dead).length;AUD.setIntensity(G.firstWave?.2:clamp(.3+alive/16+G.wave/(G.L.endless?40:G.L.waves)*.3,0,1))}
   ctx.clearRect(0,0,W,H);
-  const MENU=(OX||OY)&&['title','heroes','talents','endless','shop','tasks','pass','gacha','bag','pick','rebirth','g7','codex'].includes(scene);let _W=W,_H=H;
-  if(MENU){const k=Math.max(W/WW,H/WH)*1.04;const bgk=scene==='title'?'map3':'map'+({heroes:3,talents:2,shop:1,tasks:2,pass:4,gacha:3,bag:1,pick:3,endless:4,rebirth:2}[scene]||1);mirrorBg(bgk,scene==='title'?.35:.5);ctx.save();ctx.translate(OX,OY);HOX=OX;HOY=OY;W=WW;H=WH}
+  const MENU=(OX||OY)&&['title','heroes','talents','endless','shop','tasks','pass','gacha','bag','pick','rebirth','g7','codex','whack'].includes(scene);let _W=W,_H=H;
+  if(MENU){const k=Math.max(W/WW,H/WH)*1.04;const bgk=scene==='title'?'map3':'map'+({heroes:3,talents:2,shop:1,tasks:2,pass:4,gacha:3,bag:1,pick:3,endless:4,rebirth:2,whack:5}[scene]||1);mirrorBg(bgk,scene==='title'?.35:.5);ctx.save();ctx.translate(OX,OY);HOX=OX;HOY=OY;W=WW;H=WH}
   try{
   if(scene==='load')drawLoad();
   else if(scene==='title')drawTitle(rdt);
@@ -1751,6 +1755,7 @@ function loopBody(now){const rdt=Math.min(.05,(now-last)/1000);last=now;try{perf
   else if(scene==='rebirth')drawRebirth(rdt);
   else if(scene==='g7')drawG7(rdt);
   else if(scene==='codex')drawCodex(rdt);
+  else if(scene==='whack')drawWhack(rdt);
   else if(scene==='battle'&&G){if(!paused&&!G.over){for(let i=0;i<speed;i++){update(rdt);for(const a of G.allies)if(a.hero&&a.anim==='atk'&&a.at>.6)a.anim='idle'}}drawBattle(rdt);try{drawCard();drawRogue()}catch(e){console.error(e)}}
   }finally{if(MENU){ctx.restore();W=_W;H=_H;HOX=0;HOY=0}}
   drawPOP();adTick(rdt);drawAD();
@@ -3254,6 +3259,29 @@ const optOn=(k,inv)=>inv?!SAVE[k]:SAVE[k]!==false;
 function drawMore(){ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(0,0,W,H);hit(0,0,W,H,()=>{morePop=false});const w=460,h=110+FX_OPT.length*62,x=W/2-w/2,y=H/2-h/2;panel(x,y,w,h,TR('更多设置'));hit(x,y,w,h,()=>{});
   FX_OPT.forEach(([k,n,inv],i)=>{const yy=y+90+i*62,on=optOn(k,inv);fitTxt(TR(n),x+50,yy,19,220,'#fff','left',3);button(on?TR('开'):TR('关'),x+w-170,yy-22,120,44,()=>{if(inv)SAVE[k]=!SAVE[k];else SAVE[k]=SAVE[k]===false?true:false;save();AUD.sfx('click')},{style:on?'green':'gray',size:17})})}
 
+// ====================== 每日小游戏「打哥布林」（植物大战僵尸的小游戏合集，如「打僵尸」）：30 秒点冒头的哥布林 ======================
+ONB_F.whack=4;
+let WK=null;
+function whackSave(){const d=dayNum();if(!SAVE.whack||SAVE.whack.d!==d)SAVE.whack={d,best:SAVE.whack&&SAVE.whack.best||0,paid:0};return SAVE.whack}
+function whackStart(){WK={t:0,score:0,holes:Array.from({length:9},()=>null),spawn:.6,end:30,over:false,hits:[]};scene='whack';AUD.sfx('open');track('whack_start',{})}
+function whackTick(dt){const K=WK;if(!K||K.over)return;K.t+=dt;if(K.t>=K.end){K.over=true;const S=whackSave();S.best=Math.max(S.best,K.score);let g=0;if(!S.paid){S.paid=1;g=Math.min(60,Math.max(5,K.score*2));SAVE.yb+=g}K.gems=g;save();track('whack_end',{s:K.score});AUD.sfx(K.score>=15?'win':'click');return}
+  for(let i=0;i<9;i++){const h=K.holes[i];if(h){h.t+=dt;if(h.t>h.life)K.holes[i]=null}}
+  K.spawn-=dt;if(K.spawn<=0){const free=K.holes.map((h,i)=>h?-1:i).filter(i=>i>=0);if(free.length){const i=free[Math.floor(Math.random()*free.length)];const r=Math.random();const k=r<.12?'gold':r<.3?'skel':'gob';K.holes[i]={k,t:0,life:Math.max(.55,1.3-K.t*.022)}}K.spawn=Math.max(.28,.75-K.t*.014)*(.7+Math.random()*.6)}
+  for(const f of K.hits)f.t+=dt;K.hits=K.hits.filter(f=>f.t<.7)}
+function whackHit(i,x,y){const K=WK;const h=K.holes[i];if(!h||K.over)return;const v=h.k==='gold'?3:h.k==='skel'?-2:1;K.score=Math.max(0,K.score+v);K.holes[i]=null;K.hits.push({x,y,t:0,s:(v>0?'+':'')+v,c:v>0?'#ffe27a':'#ff6b6b'});AUD.sfx(v>0?'coin':'deny');try{buzz(v>0?'light':'heavy')}catch(_){}}
+function drawWhack(dt){hits=[];whackTick(dt);const K=WK;bgMenu(5,.25);
+  ibtn('ui_Icon_Arrow_Left',46,46,66,()=>{scene='levels';WK=null});gtxt(TR('打哥布林'),W/2,52,42,'#fff6d0','#5ec46b',7);
+  if(!K)return;const left=Math.max(0,K.end-K.t);plate(W/2-220,92,440,44);txt('⏱ '+Math.ceil(left)+'s     ⭐ '+K.score,W/2,114,22,'#ffe27a','center',3);
+  const gw=600,gh=420,gx=W/2-gw/2,gy=160;for(let i=0;i<9;i++){const cx=gx+100+(i%3)*200,cy=gy+80+Math.floor(i/3)*130;ctx.save();ctx.fillStyle='rgba(30,15,5,.85)';ctx.beginPath();ctx.ellipse(cx,cy+28,70,22,0,0,7);ctx.fill();ctx.restore();
+    const h=K.holes[i];if(h){const up=Math.min(1,h.t*6,(h.life-h.t)*6);ctx.save();ctx.beginPath();ctx.rect(cx-90,cy-120,180,148);ctx.clip();const set=h.k==='skel'?'e_skel':'e_goblin';drawSprite(set,'walk',h.t*2,cx,cy+28+(1-up)*90,1.25,false,1,true,h.k==='gold'?'sepia(1) saturate(4) hue-rotate(5deg) brightness(1.25)':null);ctx.restore();if(h.k==='gold')txt('✦',cx+40,cy-50,22,'#ffd84a','center',3)}
+    ctx.save();ctx.strokeStyle='rgba(90,60,30,.9)';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(cx,cy+28,70,22,0,0,Math.PI);ctx.stroke();ctx.restore();hit(cx-80,cy-90,160,140,()=>whackHit(i,cx,cy-40))}
+  for(const f of K.hits)txt(f.s,f.x,f.y-f.t*60,30,f.c,'center',4);
+  fitTxt(TR('点冒头的哥布林 +1，金色哥布林 +3，别打骷髅 -2'),W/2,H-30,16,W-80,'#fff','center',3);
+  if(K.over){ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,0,W,H);const w=460,h=300,x=W/2-w/2,y=H/2-h/2;panel(x,y,w,h,TR('时间到！'));txt('⭐ '+K.score,W/2,y+110,48,'#ffe27a','center',5);txt(TR('今日最佳')+' '+whackSave().best,W/2,y+160,18,'#e9d3a8','center',3);
+    txt(K.gems?TR('今日首玩奖励')+'  💎 +'+K.gems:TR('今日奖励已领，再玩只为刷纪录'),W/2,y+192,16,K.gems?'#9ef0ff':'#b9a27a','center',3);
+    button(TR('再来一局'),x+40,y+h-80,180,56,whackStart,{style:'green',size:18});button(TR('返回'),x+w-220,y+h-80,180,56,()=>{scene='levels';WK=null},{style:'gray',size:18})}}
+(function(){const tl=todoList;todoList=function(){const L=tl();try{if(feat('whack')&&!whackSave().paid)L.push(['🔨',TR('打哥布林'),TR('每日小游戏，首玩送钻石'),()=>{todoPop=false;whackStart()}])}catch(_){}return L}})();
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -3296,7 +3324,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794981279';
+const BUILD_VER='1794981506';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

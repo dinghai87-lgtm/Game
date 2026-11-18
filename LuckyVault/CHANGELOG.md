@@ -409,3 +409,8 @@ Platform release: everything on the "do all of these" list except the public dep
 - Contact-sheet review of every slot's top symbols against its name. Fixed Frozen Peaks (viking helmet/axe -> ice shard, blue crystal) + cover.
 - Remaining mismatches parked for paid/painted assets: Egypt group (Nile Queen, Pharaoh Gold, Sun God Ra, Egypt Riches use generic jewellery), Buffalo Stampede/Thunder (viking loot, no buffalo), Zeus (generic treasure). Free Egypt pack found is cartoon-outline style -> skipped per style rule.
 - sw lv-v81. Tests 90/90.
+
+## Round 26 (19:35) — Sign-in dialog fix + in-game check of new tiles
+- Age/Terms checkbox text wrapped into scattered flex pieces on phone; now one flowing paragraph.
+- Logged-in phone run of Storm Chaser: new tile symbols, WILD ribbon and line wins render correctly.
+- sw lv-v82. Tests 90/90.

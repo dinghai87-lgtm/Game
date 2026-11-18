@@ -594,3 +594,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 69 (04:19) — Same sweep over the 12 table modules
 - Every remaining raw English string in the table code is now either inside a language helper or in the dictionary (Table max, Exceeds balance or table max, Soft 17, insurance pays, Lucky Strike banner, Bet failed, Resuming your round …). sw lv-v150. Tests 90/90.
+
+## Round 70 (04:26) — Small Android phones (360×740)
+- Lobby, a slot, baccarat, Three Card Poker, Sic Bo, video poker checked at 360 px wide: all fit. Sic Bo's triple-dice faces overflowed their boxes — smaller faces under 380 px. sw lv-v151. Tests 90/90.

@@ -740,6 +740,7 @@
     '#felt .sb2 .spot.hit{box-shadow:0 0 0 2px #ffd60a,0 0 16px rgba(255,214,10,.6);border-color:#ffd60a}' +
     '#felt:has(.sb2) .dice{min-height:72px;align-items:center}#felt:has(.sb2) .die{width:60px;height:60px}' +
     '#felt:has(.sb2) .res{min-height:32px;height:32px;line-height:32px;white-space:nowrap;font-size:min(22px,5.4vw)}' +
+    '@media(max-width:380px){#felt .sb2 .pips .die{width:14px!important;height:14px!important;padding:1px!important}#felt .sb2 .pips{gap:1px}}' +
     '@media(max-width:560px){#felt .sb2{gap:4px}#felt .sb2 .spot{min-height:46px;font-size:11px}#felt .sb2 .sbt{gap:4px}#felt:has(.sb2) .die{width:52px;height:52px}}';
     document.head.appendChild(st); }
   const pipsHTML = (n, k) => '<span class="pips">' + Array.from({ length: k }, () => dieEl(n).outerHTML).join('') + '</span>';

@@ -3228,6 +3228,16 @@ function instaUse(i,t){const l=instaBest(t);if(!l)return;const S=instaSave(),k=i
 // 英雄殿/待办里看库存：在待办清单加一行
 (function(){const tl=todoList;todoList=function(){const L=tl();try{const S=instaSave();const n=Object.values(S).reduce((a,b)=>a+b,0);if(n)L.push(['⚡',TR('速建令'),TR('库存 {n} 张，建塔时可直接用').replace('{n}',n),()=>{todoPop=false}])}catch(_){}return L}})();
 
+// ====================== 终结慢镜头（动作游戏常见的「最后一击」演出）：BOSS 倒下或最后一个敌人死亡时，慢放 + 闪白 ======================
+(function(){
+  const kl=killEnemy;killEnemy=function(e){const was=!e.dead;kl(e);try{if(!was||!G||G.over)return;const last=G.wave>=G.L.waves&&!G.L.endless&&!(G.spawnQ&&G.spawnQ.length)&&!G.enemies.some(x=>!x.dead&&x!==e);
+    if(e.D.boss||last){G.slowmo=e.D.boss?1.4:1.0;G.slowFx={x:e.x,y:e.y,t:0,boss:!!e.D.boss};G.shake=Math.max(G.shake||0,e.D.boss?.5:.25);try{buzz('heavy')}catch(_){}if(e.D.boss)try{kfx('kp_flare',e.x,e.y-50,{c:'#fff3b0',s0:1,s1:4,life:.8})}catch(_){}}}catch(_){}};
+  const up=update;update=function(dt){if(G&&G.slowmo>0){G.slowmo-=dt;if(G.slowFx)G.slowFx.t+=dt;return up(dt*.25)}return up(dt)};
+  const be=battleExtra;battleExtra=function(t){be(t);try{const F=G&&G.slowFx;if(!F||scene!=='battle')return;if(F.t>1.6){G.slowFx=null;return}const a=Math.max(0,.55-F.t*1.2);if(a>0){ctx.save();ctx.fillStyle=`rgba(255,250,230,${a})`;ctx.fillRect(0,0,W,H);ctx.restore()}
+    const r=40+F.t*420;ctx.save();ctx.strokeStyle=`rgba(255,216,74,${Math.max(0,.8-F.t*.6)})`;ctx.lineWidth=6;ctx.beginPath();ctx.arc(F.x,F.y-30,r,0,7);ctx.stroke();ctx.restore()}catch(_){}};
+  if(window.__api)Object.assign(window.__api,{update,killEnemy});
+})();
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -3270,7 +3280,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794981011';
+const BUILD_VER='1794981141';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

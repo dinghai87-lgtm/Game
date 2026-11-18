@@ -2789,7 +2789,7 @@ const BR_LIM=90;const brPct=()=>{const b=G&&G.brBoss;if(!b)return 0;if(b.dead)re
   const eb=endBattle;endBattle=function(win){const L=G&&G.L;if(!L||L.chal!=='boss'||G.over)return eb(win);const b=G.brBoss;if(!b||!b.dead)win=false;const pct=brPct();eb(win);
     const S=brSave();S.best=Math.max(S.best,pct);let got=0;for(const T of BR_TIER)if(pct>=T.p&&!S.cl[T.p]){S.cl[T.p]=1;got+=T.r}if(got)SAVE.yb+=got;save();track('braid',{pct,b:L.boss});G.over.brPct=pct;G.over.brGot=got;
     setTimeout(()=>{try{showToast('👹 '+TR('讨伐进度')+' '+pct+'%'+(got?'  +'+got+' '+SHOP_CFG.cur:''))}catch(_){}},600)};
-  const be=battleExtra;battleExtra=function(t){be(t);try{if(scene==='battle'&&G.L.chal==='boss'&&!G.over){const b=G.brBoss;const s=b?TR('讨伐进度')+' '+brPct()+'%   ⏱ '+Math.max(0,Math.ceil(BR_LIM-(G.brT||0)))+'s':TR('首领在最后一波登场，先攒好防线');{const yy=b?192:150;ctx.font=`900 ${b?17:15}px ${FONT}`;const pw=Math.min(540,ctx.measureText(s).width+36);ctx.fillStyle='rgba(20,8,4,.82)';rr(W/2-pw/2,yy-15,pw,30,15);ctx.fill();fitTxt(s,W/2,yy,b?17:15,520,b?'#ffd0a0':'#e9d3a8','center',3)}}}catch(e){}};
+  const be=battleExtra;battleExtra=function(t){be(t);try{if(scene==='battle'&&G.L.chal==='boss'&&!G.over){const b=G.brBoss;const s=b?TR('讨伐进度')+' '+brPct()+'%   ⏱ '+Math.max(0,Math.ceil(BR_LIM-(G.brT||0)))+'s':TR('首领在最后一波登场，先攒好防线');{const yy=b?232:150;ctx.font=`900 ${b?17:15}px ${FONT}`;const pw=Math.min(540,ctx.measureText(s).width+36);ctx.fillStyle='rgba(20,8,4,.82)';rr(W/2-pw/2,yy-15,pw,30,15);ctx.fill();fitTxt(s,W/2,yy,b?17:15,520,b?'#ffd0a0':'#e9d3a8','center',3)}}}catch(e){}};
   if(window.__api)Object.assign(window.__api,{startLevel,spawnEnemy,update,endBattle});
 })();
 function drawBraid(x,y,w){if(!feat('braid')){txt(TR('通关第 9 关后开放'),x+w/2,y+220,22,'#e9d3a8','center',3);return}const S=brSave(),L=braidLevel(),D=ENEMIES[L.boss];
@@ -3129,7 +3129,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794979358';
+const BUILD_VER='1794979389';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

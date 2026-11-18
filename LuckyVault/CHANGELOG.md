@@ -497,3 +497,7 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 ## Round 41 (00:30) — Scratch cards refined (Lucky Cash / Gold Rush / Diamond Dazzle)
 - Bigger symbols; prize key as a chip grid with fixed height so the ticket keeps its size before/after buying; winning three pulse; foil text, buttons and results in one language (刮开这里 / 全部刮开 / 买票 / 中奖 · 1.00).
 - sw lv-v110. Tests 90/90.
+
+## Round 42 (00:50) — Money Wheel refined
+- Bet spots in the wheel's segment colours (1 gold · 2 blue · 5 purple · 10 pink · 20 green · Joker · Logo), numbers row of five + Joker/Logo row; chips in the corner; last-results strip under the wheel; clear result banner (开出 5 · 赢 30.00 / 1 · NO WIN); losing chips cleared; rules on long-press.
+- sw lv-v112. Tests 90/90.

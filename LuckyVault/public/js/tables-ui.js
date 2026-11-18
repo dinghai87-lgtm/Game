@@ -1066,13 +1066,34 @@
   REND.hcf = { setup(f) { pokerSetup(f, [['ante', 'Ante', 'Raise 1-3× by flush size', 'big']], 'Seven cards each · the longest flush wins (then highest cards) · raise 1× (2-4 card flush), 2× (5-card), 3× (6-7 card) · dealer qualifies with a 3-card 9-high flush'); },
     actLabel(a, v) { return a === 'raise' && v ? 'Raise ' + v.mult + '×' : null; },
     render: (v, r) => pokerRender(v, r, 'Raise or fold?') };
+  // Let It Ride refine: zoned (2 community + your 3), three bet circles, pull/ride buttons in one language, simple tip, translated result
+  const HNZ = { 'High Card': '高牌', Pair: '对子', 'Two Pair': '两对', 'Three of a Kind': '三条', Straight: '顺子', Flush: '同花', 'Full House': '葫芦', 'Four of a Kind': '四条', 'Straight Flush': '同花顺', 'Royal Flush': '皇家同花顺' };
+  function lrTip(P, st) { const r = P.map(RV), su = P.map(c => c[c.length - 1]); const cnt = {}; r.forEach(x => cnt[x] = (cnt[x] || 0) + 1);
+    if (Object.entries(cnt).some(([k, n]) => n >= 2 && (+k >= 10 || n >= 3))) return 1; if (Object.values(cnt).filter(n => n === 2).length === 2) return 1;
+    const fs = Object.values(su.reduce((a, x) => (a[x] = (a[x] || 0) + 1, a), {})).some(n => n === P.length); const u = [...new Set(r)].sort((a, b) => a - b);
+    if (st === 0) return fs && u.length === 3 && u[2] - u[0] <= 4 && u[0] >= 3 ? 1 : 0; return fs ? 1 : 0; }
   REND.letitride = {
-    setup(f) { f.innerHTML = '<div class="area"><div class="lbl">Community cards</div><div class="cards" id="lrB"></div></div>' + resLine() + '<div class="area"><div class="cards" id="lrP"></div><div class="lbl" id="lrL">Your hand</div></div><div class="lrbets" id="lrU"></div><div class="spots" id="lrS"></div><div class="pt2">Three equal bets · after your 3 cards and after the first community card you may pull bet 1 then bet 2 back · pays on tens or better: pair 1:1 · two pair 2:1 · trips 3:1 · straight 5:1 · flush 8:1 · full house 11:1 · quads 50:1 · straight flush 200:1 · royal 1000:1</div>';
-      document.getElementById('lrS').appendChild(spotBtn('main', 'Bet ×3', 'One unit on each circle', 'big')); },
-    async render(v, r) { const B = document.getElementById('lrB'), P = document.getElementById('lrP'); B.innerHTML = ''; P.innerHTML = ''; v.B.forEach((c, i) => B.appendChild(cardEl(c, i))); v.P.forEach((c, i) => P.appendChild(cardEl(c, i))); (sfx.card || sfx.click)(); await wait(300);
-      const u = TT.bets.main || 0; document.getElementById('lrU').innerHTML = ['1', '2', '$'].map((n, i) => '<span class="' + (v.up[i] ? 'on' : 'off') + '">' + n + '<b>' + (v.up[i] ? fmt(u) : 'pulled') + '</b></span>').join('');
-      document.getElementById('lrL').innerHTML = 'Your hand' + (v.hn ? ' <b>' + v.hn + '</b>' : '');
-      showRes(v.done ? v.out + (r.win > 0 ? ' · RETURN ' + fmt(r.win) : '') : (v.st === 0 ? 'Pull bet 1 back, or let it ride?' : 'Pull bet 2 back, or let it ride?'), r.win); } };
+    setup(f) {
+      f.innerHTML = '<div class="tcpz tcpb"><div class="lbl">' + PKT('公共牌', 'COMMUNITY CARDS') + '</div><div class="cards" id="lrB">' + slotsH(2) + '</div></div>' + resLine() + '<div class="tcph" id="lrH"></div><div class="tcpz" id="tcpP"><div class="cards" id="lrP">' + slotsH(3) + '</div><div class="lbl" id="lrL">' + PKT('你的手牌', 'YOUR HAND') + '</div></div><div class="lrbets" id="lrU"></div><div class="spots" id="lrS"></div><div class="pt2">' + PKT('押三份相同的注 · 看完 3 张手牌和第一张公共牌后，可分别收回第 1、2 份 · 10 对以上才赔：对子 1:1、两对 2:1、三条 3:1、顺子 5:1、同花 8:1、葫芦 11:1、四条 50:1、同花顺 200:1、皇家 1000:1', 'Three equal bets · after your 3 cards and after the first community card you may pull bet 1 then bet 2 back · pays on tens or better: pair 1:1 · two pair 2:1 · trips 3:1 · straight 5:1 · flush 8:1 · full house 11:1 · quads 50:1 · SF 200:1 · royal 1000:1') + '</div>';
+      document.getElementById('lrS').appendChild(spotBtn('main', PKT('投注 ×3', 'BET ×3'), PKT('每个圈押一份', 'One unit on each circle'), 'big', '你押的金额会放在 1、2、$ 三个圈上（共 3 份）。看牌后可以收回第 1 份、再收回第 2 份，或者继续让它留着（Let it ride）。最后 5 张牌（3 张手牌 + 2 张公共牌）按牌型赔付，10 对以上才算中奖。<br>Your stake goes on circles 1, 2 and $ (3 units). After looking you may pull bet 1, then bet 2, or let them ride. The final five cards pay on tens or better.'));
+      document.getElementById('lrU').innerHTML = ['1', '2', '$'].map(n => '<span class="off">' + n + '<b>—</b></span>').join('');
+      if (!document.getElementById('lrCss')) { const st = document.createElement('style'); st.id = 'lrCss'; st.textContent = '#lrS{width:100%;max-width:360px;display:grid}#lrS .spot{min-height:60px;font-size:16px}#lrS .spot .stk{left:auto;top:auto;right:4px;bottom:4px;transform:none;flex-direction:row;gap:2px;align-items:flex-end}#lrS .spot .pile{width:28px;height:calc(28px + (var(--n) - 1) * 3px)}#lrS .spot .pile .chip{width:28px;height:28px;bottom:calc(var(--i) * 3px)}#lrS .spot.has{color:#fff}#lrS .spot.has small{visibility:hidden}.lrbets span{width:56px;height:56px}'; document.head.appendChild(st); }
+    },
+    async render(v, r) {
+      const B = document.getElementById('lrB'), P = document.getElementById('lrP'), H = document.getElementById('lrH'), Z = document.getElementById('tcpP'); Z.classList.remove('win', 'lose');
+      await putCards(P, v.P, true, P.querySelectorAll('.pcard').length); const nb = v.B.filter(c => c !== '??').length; await putCards(B, v.B, true, Math.max(0, nb - 1));
+      const u = TT.bets.main || 0; document.getElementById('lrU').innerHTML = ['1', '2', '$'].map((n, i) => '<span class="' + (v.up[i] ? 'on' : 'off') + '">' + n + '<b>' + (v.up[i] ? fmt(u) : PKT('已收回', 'pulled')) + '</b></span>').join('');
+      document.getElementById('lrL').innerHTML = PKT('你的手牌', 'YOUR HAND') + (v.hn ? ' <b>' + PKT(HNZ[v.hn] || v.hn, v.hn) + '</b>' : '');
+      if (!v.done) { const cards = v.P.concat(v.B.filter(c => c !== '??')); const ride = lrTip(cards, v.st);
+        H.innerHTML = PKT('建议：', 'Tip: ') + (ride ? PKT('继续押着', 'let it ride') : PKT('收回这一注', 'pull it back'));
+        showRes(v.st === 0 ? PKT('收回第 1 注，还是继续押？', 'Pull bet 1 back, or let it ride?') : PKT('收回第 2 注，还是继续押？', 'Pull bet 2 back, or let it ride?'), 0); return; }
+      H.innerHTML = ''; Z.classList.add(v.x ? 'win' : 'lose');
+      const m = String(v.out || '').match(/^(.*) pays (\d+):1$/);
+      showRes((m ? PKT((HNZ[m[1]] || m[1]) + ' 赔 ' + m[2] + ':1', m[1] + ' pays ' + m[2] + ':1') : PKT('没有中奖牌型（需要 10 对以上）', 'No paying hand (need tens or better)')) + (r.win > 0 ? ' · ' + PKT('返还 ', 'RETURN ') + fmt(r.win) : ''), r.win);
+    },
+    actLabel: (a) => a === 'pull' ? PKT('收回这一注', 'PULL BACK') : a === 'ride' ? PKT('继续押', 'LET IT RIDE') : null,
+    keepBets: false
+  };
   REND.mstud = {
     setup(f) { f.innerHTML = '<div class="area"><div class="lbl">Community cards</div><div class="cards" id="msB"></div></div>' + resLine() + '<div class="area"><div class="cards" id="msP"></div><div class="lbl" id="msL">Your hand</div></div><div class="lrbets" id="msU"></div><div class="spots" id="msS"></div><div class="pt2">Bet 1× or 3× the ante on each of three streets (or fold) · pays on every bet: pair 6-10 push · JJ+ 1:1 · two pair 2:1 · trips 3:1 · straight 4:1 · flush 6:1 · full house 10:1 · quads 40:1 · straight flush 100:1 · royal 500:1</div>';
       document.getElementById('msS').appendChild(spotBtn('ante', 'Ante', 'Then 1× or 3× per street', 'big')); },

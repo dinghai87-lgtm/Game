@@ -518,4 +518,10 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 - Played Thunder Temple's buy-feature start to finish in 中文 mode with an automatic text scan (every visible English string logged across 6 slots): buy prompt (购买免费旋转？/ 花 100.00 购买 / 取消), feature intro texts (sticky wilds, collector, choose, multiplier bombs, growing multiplier, ×N), RETRIGGER, + FREE SPINS, FEATURE WIN, Tap to continue, Tumble/Respin win, Collected — all translated. Remaining English in 中文 mode is only game titles (by design).
 - sw lv-v119. Tests 90/90.
 
-## Round 47 (
+## Round 47 (## Round 47 (
+## Round 47 (01:06) — Ultimate Texas Hold'em refined
+- Zoned table (dealer 2 / board 5 / you 2), stage stepper 翻牌前 → 翻牌 → 河牌, buttons with amounts (押 4 倍 20.00 / 押 3 倍 15.00 / 过牌 …), simple strategy tip per stage, Trips spot with rules, results translated.
+- sw lv-v120. Tests 90/90. (Round times 39–46 above were estimates; real clock times from here on.)
+
+## Round 48 (01:11) — Let It Ride refined
+- Zoned layout (2 community slots, your 3 slots), three bet circles show 5.00 / 已收回, buttons 收回这一注 / 继续押, per-street tip, hand names and payout result translated (没有中奖牌型（需要 10 对以上）/ 两对 赔 2:1 · 返还 …). sw lv-v121. Tests 90/90.

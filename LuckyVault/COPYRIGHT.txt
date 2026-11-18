@@ -22,3 +22,5 @@ distribution or commercial use without written permission.
 - 部分老虎机图案、存钱猪/礼包图标：CraftPix.net 会员素材 — 商业授权
 Some sound and art assets come from third parties and are used under their own licences; they remain
 the property of their authors (e.g. Kenney sound packs, CC0 1.0).
+
+- Announcer voice clips (vo_*.mp3): Kenney "Voiceover Pack" — CC0 1.0 (kenney.nl)

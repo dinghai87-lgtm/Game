@@ -364,3 +364,7 @@ Platform release: everything on the "do all of these" list except the public dep
 - Rewards panel fully translated to Chinese (achievements, missions, counters).
 - Full-site Chinese pass: store, account, leaderboard, album, VIP, wheel texts translated; ALL-CAPS table titles translated.
 - Royal Crown Classic gets its own symbols (crown, trophy, key, clover + painted fruit).
+
+## Round 13 (17:58) — Announcer voice-overs
+- Benchmark: competitor apps call out BIG WIN / LEVEL UP with a voice.
+- Added 5 Kenney CC0 voice clips: big win, grand jackpot, level up, mission complete, baccarat/DT tie. sw lv-v69. Tests 90/90.

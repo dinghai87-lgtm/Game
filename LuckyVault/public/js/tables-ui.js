@@ -473,6 +473,7 @@
       if (v.B[2]) await third(false);
       document.getElementById('pLbl').innerHTML = '闲 Player <b>' + v.pt + '</b>'; document.getElementById('bLbl').innerHTML = '庄 Banker <b>' + v.bt + '</b>';
       TT.hist.push(v.win); setShoe(r.shoe); this.paintHist(); markWins(v.wins);
+      if (v.win === 'tie') { try { setTimeout(() => sfx.voTie && sfx.voTie(), 300) } catch (e) {} }
       showRes((v.win === 'tie' ? 'TIE' : v.win.toUpperCase() + ' WINS') + (r.win > 0 ? ' · WIN ' + fmt(r.win) : ''), r.win);
     }
   };

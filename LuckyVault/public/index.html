@@ -133,7 +133,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .cbtn:disabled{opacity:.35;cursor:default}
 .betbox{display:flex;align-items:center;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.12);border-radius:12px;height:46px}
 .betbox button{background:none;border:0;width:36px;height:100%;font-size:22px;font-weight:900}
-.betbox button:disabled{opacity:.3}.betbox button.lockd{opacity:.55;position:relative}.betbox button.lockd::after{content:'🔒';position:absolute;font-size:10px;right:2px;top:2px}
+.betbox button:disabled{opacity:.3}#winfeed{display:flex;align-items:center;gap:8px;margin:8px 14px 0;padding:6px 10px;border-radius:12px;background:linear-gradient(90deg,#2b0f4a,#3d1166 40%,#2b0f4a);box-shadow:0 0 0 1px #d4a01766 inset;overflow:hidden}#winfeed .wfi{flex:0 0 auto;font-size:18px}#winfeed .wft{flex:1;overflow:hidden;white-space:nowrap;-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}#winfeed .wfm{display:inline-block;animation:wfscroll 40s linear infinite}#winfeed .wfe{margin-right:36px;font-size:13px;color:#e9e3ff;cursor:pointer}#winfeed .wfe i{font-style:normal;color:#ffd60a;font-weight:800}#winfeed .wfw{color:#3ef08a}#winfeed small{color:#b9a8e6}@keyframes wfscroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}@media (prefers-reduced-motion:reduce){#winfeed .wfm{animation:none}}.betbox button.lockd{opacity:.55;position:relative}.betbox button.lockd::after{content:'🔒';position:absolute;font-size:10px;right:2px;top:2px}
 .betbox div{min-width:62px;text-align:center;line-height:1.05}
 .betbox small{display:block;font-size:9px;color:var(--mute);font-weight:800;letter-spacing:1px}
 .betbox b{font-size:15px;font-variant-numeric:tabular-nums}
@@ -407,6 +407,7 @@ button:focus-visible,input:focus-visible,.tile:focus-visible{outline:3px solid #
 </div>
 
 <main id="lobby">
+  <div id="winfeed" style="display:none"><span class="wfi">🏆</span><div class="wft"><div class="wfm" id="wfm"></div></div></div>
   <div class="heros" id="heros">
     <div class="hero h1"><div><small>HOLD &amp; WIN JACKPOTS</small><h1>Grand Jackpot<br><span>1,000× your bet</span></h1><p>Collect 6 coins to lock and respin. Fill the screen for the Grand.</p><button class="cta" data-go="jackpot">Play jackpots</button></div><div class="big emo">🪙</div></div>
     <div class="hero h2"><div><small>TABLE GAMES</small><h1>Blackjack, Roulette<br><span>&amp; Baccarat</span></h1><p>Real casino rules, real house edges. 13 tables open 24/7.</p><button class="cta" data-go="blackjack">Take a seat</button></div><div class="big emo">🃏</div></div>
@@ -967,7 +968,13 @@ const SECS=[['Popular now',g=>g.tag==='hot','hot'],['The Vegas Strip · new tabl
 function filt(t,list){if(t==='vegas')return list.filter(g=>!g.slot||g.cat==='classic').sort((a,b)=>((b.id>=300)-(a.id>=300))||((!b.slot)-(!a.slot)));if(t==='slots')return list.filter(g=>g.slot);if(t==='feature')return list.filter(g=>g.slot&&g.id>=100);if(t==='jackpot'||t==='classic'||t==='videopoker'||t==='poker'||t==='instant')return list.filter(g=>g.cat===t);
  if(t==='blackjack'||t==='roulette')return list.filter(g=>g.cat===t);if(t==='baccarat')return list.filter(g=>g.cat==='baccarat'||g.cat==='dice');if(t==='hot'||t==='new')return list.filter(g=>g.tag===t);
  if(t==='fav')return list.filter(g=>S.fav.includes(g.id));if(t==='recent')return S.recent.map(i=>GAMES[i]).filter(g=>g&&vis(g));return list}
-function renderLobby(){const all=GAMES.filter(vis);renderTabs();$('#gcount').textContent=all.length;$('#heros').style.display=tab==='lobby'&&!q?'':'none';
+async function pollWins(){try{const base=(window.LV_CONFIG&&LV_CONFIG.server)||'';if(API.mode!=='server')return;const r=await fetch(base+'/api/wins').then(r=>r.json());const w=(r.wins||[]);const box=$('#winfeed');if(!w.length){box.style.display='none';return}
+ const zh=window.LVLang&&LVLang.get()!=='en';const html=w.map(x=>'<span class="wfe" data-g="'+x.gid+'">🎉 <b>'+esc2(x.n)+'</b> '+(zh?'在':'won')+' <i>'+esc2(zh&&LVLang.zhOf?(LVLang.zhOf(x.g)||x.g):x.g)+'</i> '+(zh?'赢得':'')+' <b class="wfw">'+x.w.toLocaleString('en-US')+'</b> <small>('+x.x+'x)</small></span>').join('');
+ const m=$('#wfm');if(m.dataset.h!==html){m.dataset.h=html;m.innerHTML=html+html;m.style.animationDuration=Math.max(20,w.length*7)+'s'}box.style.display=$('#heros').style.display==='none'?'none':''}catch(e){}}
+function esc2(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c])}
+setInterval(pollWins,30000);setTimeout(pollWins,2500);
+document.addEventListener('click',e=>{const x=e.target.closest&&e.target.closest('.wfe');if(x&&GAMES[+x.dataset.g]){try{openGame(+x.dataset.g)}catch(q){}}});
+function renderLobby(){const all=GAMES.filter(vis);renderTabs();$('#gcount').textContent=all.length;$('#heros').style.display=tab==='lobby'&&!q?'':'none';{const wf=$('#winfeed');if(wf&&$('#wfm').innerHTML)wf.style.display=tab==='lobby'&&!q?'':'none'}
  if(tab==='lobby'&&!q){$('#secTitle').innerHTML='';$('#games').className='';
   $('#games').innerHTML=SECS.map(([t,f,k])=>{const l=all.filter(f);if(!l.length)return'';return'<div class="rowsec"><div class="rowhd"><h2>'+t+'<span>'+l.length+'</span></h2><button data-tab="'+k+'">See all ›</button></div><div class="row">'+l.map(tileHTML).join('')+'</div></div>'}).join('')+
    (S.recent.length?'<div class="rowsec"><div class="rowhd"><h2>Recently played</h2></div><div class="row">'+S.recent.map(i=>GAMES[i]).filter(Boolean).map(tileHTML).join('')+'</div></div>':'');setBal();return}

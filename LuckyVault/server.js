@@ -281,8 +281,14 @@ async function afterRound(u, g, r, info, t) {
     const ob = EN.onbStep(u, Object.assign({ slot: !!g.slot }, info)); if (ob.length) { r.onb = ob; for (const x of ob) await addTx(u, 'onboarding', x.reward, x.title, t); }
   }
   if (g.slot && H) await H.onSlotRound(u, g, r, t);
+  if (info.done !== false && r.win > 0) { const base = r.bet || r.cost || 0; if (base > 0 && r.win >= 2000 && r.win >= base * 20) bigWin(u, g, r.win, r.win / base); }
   r.bal = u.bal;
 }
+// 大奖播报 big-win feed for the lobby ticker (names masked; kept in memory, newest first)
+const WINS = [];
+function maskName(n) { n = String(n || 'Player'); return n.slice(0, 2) + '***'; }
+function bigWin(u, g, win, mult) { WINS.unshift({ n: maskName(u.name), gid: g.id, g: g.name, w: Math.round(win), x: Math.round(mult), t: now() }); if (WINS.length > 30) WINS.length = 30; }
+R['GET /api/wins'] = async () => [200, { wins: WINS.filter(w => now() - w.t < 6 * 3600e3).slice(0, 15) }];
 R['POST /api/spin'] = userRoute(async ({ uid, b }) => {
   const gid = +b.gid, g = GAMES[gid];
   if (!g || !g.slot || (GSTATE[gid] && !GSTATE[gid].enabled)) return [400, { err: 'game', msg: 'Game unavailable' }];

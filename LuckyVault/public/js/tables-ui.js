@@ -762,17 +762,42 @@
       showRes(tot + ' ' + what + (r.win > 0 ? ' · ' + SBT('赢 ', 'WIN ') + fmt(r.win) : ''), r.win); },
     dealLabel: 'Roll', keepBets: false
   };
+  { const st = document.createElement('style'); st.textContent =
+    '#felt .cr-pt{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;width:100%;max-width:520px}#felt .cr-pt span{position:relative;height:44px;border-radius:10px;background:rgba(10,20,40,.82);border:1.5px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font:900 20px Anton,Impact,sans-serif;color:#fff}' +
+    '#felt .cr-pt span.on{border-color:#ffd60a;box-shadow:0 0 0 2px #ffd60a,0 0 16px rgba(255,214,10,.5)}#felt .cr-pt span.on::after{content:"ON";position:absolute;top:-9px;right:-6px;background:#fff;color:#111;font:900 9px Arial;border-radius:999px;padding:3px 5px;box-shadow:0 2px 4px #0008}' +
+    '#felt .cr-st{display:inline-flex;align-items:center;gap:6px;background:#0009;border-radius:999px;padding:3px 12px;font:800 13px "Microsoft YaHei",Arial,sans-serif;color:#fff}#felt .cr-st b{color:#ffd60a}' +
+    '#felt .cr-rl{display:flex;gap:4px;justify-content:center;min-height:22px;flex-wrap:wrap}#felt .cr-rl i{font-style:normal;min-width:22px;height:22px;border-radius:50%;background:#1f2937;border:1px solid #fff5;color:#fff;font:900 11px Arial;display:inline-flex;align-items:center;justify-content:center}#felt .cr-rl i.s{background:#c8102e}#felt .cr-rl i:last-child{outline:2px solid #ffd60a;outline-offset:1px}' +
+    '#crS{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;width:100%;max-width:520px}#crS .spot{min-width:0!important;grid-column:span 3;min-height:56px;background:rgba(10,20,40,.82);border-color:rgba(255,255,255,.35);font-size:13px;letter-spacing:0}' +
+    '#crS .spot.big{grid-column:span 6;min-height:66px;font-size:16px}#crS [data-k=pass]{background:rgba(10,143,62,.55);border-color:#5ee59a}#crS [data-k=dontpass]{background:rgba(120,20,30,.6);border-color:#ff8a8a}' +
+    '#crS .spot .stk{left:auto;top:auto;right:3px;bottom:3px;transform:none;flex-direction:row;gap:2px;align-items:flex-end}#crS .spot .pile{width:26px;height:calc(26px + (var(--n) - 1) * 2px)}#crS .spot .pile .chip{width:26px;height:26px;bottom:calc(var(--i) * 2px)}#crS .spot .stk b{font-size:10px;padding:0 4px}#crS .spot.has{color:#fff}' +
+    '#felt:has(#crS) .dice{min-height:70px;align-items:center}#felt:has(#crS) .die{width:60px;height:60px}#felt:has(#crS) .res{min-height:32px;height:32px;line-height:32px;white-space:nowrap;font-size:min(22px,5.4vw)}' +
+    '#felt:has(#crS) .pt2,#felt:has(.sb2) .pt2{background:rgba(0,0,0,.55);border-radius:10px;padding:4px 10px;color:#e5e7eb}' +
+    '@media(max-width:560px){#crS .spot{font-size:12px}#felt:has(#crS) .die{width:54px;height:54px}}';
+    document.head.appendChild(st); }
   REND.craps = {
-    setup(f) { f.innerHTML = '<div class="lbl" id="crP">Come-out roll</div><div class="dice" id="crD"></div>' + resLine() + '<div class="spots" id="crS"></div><div class="pt2">Pass/Don’t Pass ride until the point is decided · Field 1:1 (2 pays 2:1, 12 pays 3:1) · Any 7 4:1 · Any Craps 7:1 · Yo 15:1</div>';
-      const s = document.getElementById('crS'); [['pass', 'Pass line', '1:1', 'big'], ['dontpass', 'Don’t pass', '1:1', 'big'], ['field', 'Field', '1:1 / 2:1 / 3:1'], ['any7', 'Any 7', '4:1'], ['anycraps', 'Any craps', '7:1'], ['yo', 'Yo (11)', '15:1']].forEach(x => s.appendChild(spotBtn(...x)));
-      [3, 4].forEach(n => document.getElementById('crD').appendChild(dieEl(n))); },
+    setup(f) {
+      f.innerHTML = '<div class="cr-st" id="crP"></div><div class="dice" id="crD"></div><div class="cr-rl" id="crR"></div>' + resLine() + '<div class="cr-pt" id="crPt">' + [4, 5, 6, 8, 9, 10].map(n => '<span data-p="' + n + '">' + n + '</span>').join('') + '</div><div class="spots" id="crS"></div><div class="pt2">' + SBT('先开局掷骰：7 或 11 过关线赢，2/3/12 输；其他点数成为「点」，之后先掷出点赢、先掷出 7 输 · 长按下注格看说明', 'Come-out: 7 or 11 wins Pass, 2/3/12 loses; any other number becomes the point — hit it again before a 7 to win · Long-press a bet for rules') + '</div>';
+      const s = document.getElementById('crS');
+      [['pass', SBT('过关线', 'PASS LINE'), '1:1', 'big', '开局掷出 7 或 11 赢，2、3、12 输；其他点数成为「点」，之后先掷出这个点赢，先掷出 7 输。赔 1:1。<br>Come-out 7/11 wins, 2/3/12 loses; otherwise the point must repeat before a 7. Pays 1:1.'],
+       ['dontpass', SBT('不过关线', 'DON’T PASS'), '1:1', 'big', '与过关线相反：开局 2、3 赢，12 和局，7、11 输；有点后先掷出 7 赢。赔 1:1。<br>Opposite of Pass: come-out 2/3 wins, 12 pushes, 7/11 loses; after a point, a 7 first wins. Pays 1:1.'],
+       ['field', SBT('场注', 'FIELD'), '1:1 · 2:1 · 3:1', '', '单次下注：下一把掷出 3、4、9、10、11 赔 1:1；2 赔 2:1；12 赔 3:1；其他点数输。<br>One roll: 3, 4, 9, 10, 11 pay 1:1; 2 pays 2:1; 12 pays 3:1; anything else loses.'],
+       ['any7', SBT('任意 7', 'ANY 7'), '4:1', '', '单次下注：下一把掷出 7 赔 4:1。<br>One roll: a 7 pays 4:1.'],
+       ['anycraps', SBT('任意垃圾点', 'ANY CRAPS'), '7:1', '', '单次下注：下一把掷出 2、3 或 12 赔 7:1。<br>One roll: 2, 3 or 12 pays 7:1.'],
+       ['yo', SBT('11 点 Yo', 'YO (11)'), '15:1', '', '单次下注：下一把掷出 11 赔 15:1。<br>One roll: an 11 pays 15:1.']].forEach(x => s.appendChild(spotBtn(...x)));
+      [3, 4].forEach(n => document.getElementById('crD').appendChild(dieEl(n))); this.paintPoint(0, []);
+    },
+    paintPoint(p, rolls) {
+      document.querySelectorAll('#crPt span').forEach(e => e.classList.toggle('on', +e.dataset.p === p));
+      const st = document.getElementById('crP'); if (st) st.innerHTML = p ? SBT('点数 ', 'POINT ') + '<b>' + p + '</b> · ' + SBT('再掷出 ' + p + ' 赢，掷出 7 输', 'hit ' + p + ' before 7') : SBT('开局掷骰', 'COME-OUT ROLL');
+      const r = document.getElementById('crR'); if (r) r.innerHTML = (rolls || []).slice(-10).map(d => { const t = d[0] + d[1]; return '<i class="' + (t === 7 ? 's' : '') + '">' + t + '</i>'; }).join('');
+    },
     async render(v, r) {
       const last = v.rolls[v.rolls.length - 1]; await rollDice(document.getElementById('crD'), last);
-      document.getElementById('crP').innerHTML = v.point ? 'Point is <b>' + v.point + '</b>' : 'Come-out roll';
-      markWins(v.wins); showRes('ROLLED ' + v.last + (v.done ? (r.win > 0 ? ' · WIN ' + fmt(r.win) : ' · ROUND OVER') : ''), r.win);
+      this.paintPoint(v.done ? 0 : v.point, v.rolls); markWins(v.wins);
+      showRes(SBT('掷出 ', 'ROLLED ') + v.last + (v.done ? (r.win > 0 ? ' · ' + SBT('赢 ', 'WIN ') + fmt(r.win) : ' · ' + SBT('本局结束', 'ROUND OVER')) : ''), r.win);
       if (!v.done) { TT.bets = Object.assign({}, v.bets); paintBets(); }
     },
-    dealLabel: 'Roll', keepBets: true
+    dealLabel: 'Roll', keepBets: false
   };
   // VIDEO POKER
   REND.videopoker = {

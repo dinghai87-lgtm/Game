@@ -448,3 +448,9 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 - After the roll every winning area lights up (大/小, total, singles, doubles, triples); result reads "12 大 · 赢 10.00" / "14 BIG · WIN 10.00"; losing chips leave the table.
 - One language per mode; long-press rules for every bet.
 - sw lv-v96. Tests 90/90.
+
+## Round 32 (22:10) — Craps refined
+- Dice and status moved onto the felt (COME-OUT ROLL / POINT 10 · hit 10 before 7); point strip 4 5 6 8 9 10 with an ON puck on the current point; roll history balls (7s in red).
+- Bets on solid cells: Pass (green) / Don't Pass (red) wide, Field / Any 7 / Any Craps / Yo four across; chips in the corner; rules box readable over the dice wallpaper.
+- Losing chips leave the table when the round ends; all text one language; long-press rules.
+- Tested a full point round (come-out 10 → 8 → 7 seven-out). sw lv-v98. Tests 90/90.

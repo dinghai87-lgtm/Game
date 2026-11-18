@@ -47,18 +47,23 @@ section{padding:90px 0;border-top:1px solid var(--line)}
 h2{font-size:clamp(28px,4vw,40px);margin:10px 0 14px}
 .sub{color:var(--mut);max-width:640px;margin:0 0 44px}
 /* game card */
-.game{display:grid;grid-template-columns:1.05fr 1fr;gap:44px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:40px;align-items:center}
-.game .logo{width:100%;max-width:420px;display:block;margin-bottom:18px}
-.tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+.game{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.banner{position:relative;aspect-ratio:2.5;max-height:470px;width:100%;background:#000}
+.banner img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.banner:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(17,17,19,.92) 0%,rgba(17,17,19,.55) 42%,rgba(17,17,19,0) 70%),linear-gradient(0deg,rgba(31,31,35,1) 0%,rgba(31,31,35,0) 30%)}
+.banner .ov{position:absolute;z-index:1;left:40px;top:50%;transform:translateY(-50%);max-width:46%}
+.banner .logo{width:100%;height:auto;max-width:300px;display:block;margin-bottom:22px}
+.gbody{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;padding:8px 40px 40px;align-items:start}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
 .tags span{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:4px 11px;color:var(--mut)}
-.game p{color:var(--mut);margin:0 0 24px}
-.feat{list-style:none;padding:0;margin:0 0 30px;display:grid;gap:10px}
+.game p{color:var(--mut);margin:0 0 20px}
+.feat{list-style:none;padding:0;margin:0;display:grid;gap:10px}
 .feat li{padding-left:26px;position:relative}
 .feat li:before{content:"";position:absolute;left:4px;top:9px;width:9px;height:9px;background:var(--gold);transform:rotate(45deg)}
-.note{font-size:13px;color:var(--mut);margin-top:14px}
+.note{font-size:13px;color:var(--mut);margin-top:12px}
 .shots{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.shots img{width:100%;border-radius:10px;border:1px solid var(--line);display:block;aspect-ratio:2.17;object-fit:cover;background:#000}
-.shots img.w{grid-column:1/3}
+.shots img{width:100%;border-radius:10px;border:1px solid var(--line);display:block;aspect-ratio:2.17;object-fit:cover;background:#000;cursor:zoom-in}
+.shots .cap{grid-column:1/3;font-size:13px;color:var(--mut)}
 /* about */
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .box{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:28px}
@@ -81,13 +86,19 @@ html[lang=zh] [data-zh]{display:revert!important}
  .hero .wrap{grid-template-columns:1fr}
  .emb{width:96px;order:-1;margin-bottom:-14px}
  nav ul li.hide{display:none}
- .game{grid-template-columns:1fr;padding:26px}
+ .gbody{grid-template-columns:1fr;padding:4px 22px 26px;gap:26px}
+ .banner{aspect-ratio:auto;max-height:none;padding-top:34%}
+ .banner img.bg{height:auto;aspect-ratio:2.17}
+ .banner .ov{position:relative;left:auto;top:auto;transform:none;max-width:none;padding:0 22px 8px}
+ .banner .logo{max-width:210px;margin-bottom:16px}
+ .banner:after{background:linear-gradient(180deg,rgba(31,31,35,0) 0%,rgba(31,31,35,.4) 25%,rgba(31,31,35,1) 44%)}
  .grid3,.contact{grid-template-columns:1fr}
  .hero{padding:72px 0 60px}
  section{padding:64px 0}
  .btn.sec{margin:12px 0 0}
 }
 @media(max-width:400px){h1{font-size:31px}.eyebrow{letter-spacing:.14em;font-size:12px}.wrap{padding:0 18px}.lead{font-size:17px}}
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;z-index:50;cursor:zoom-out;padding:20px}.lb.on{display:flex}.lb img{max-width:100%;max-height:100%;border-radius:10px}
 </style>
 </head>
 <body>
@@ -115,25 +126,32 @@ html[lang=zh] [data-zh]{display:revert!important}
  <h2 class="serif"><span data-en>Hero Defense</span><span data-zh>英雄塔防</span></h2>
  <p class="sub"><span data-en>Our flagship tower defense game. Free to play, right in your browser — no download needed.</span><span data-zh>我们的旗舰塔防游戏。免费游玩，打开浏览器就能玩，无需下载。</span></p>
  <div class="game">
-  <div>
-   <img class="logo" src="/img/ui_logo_full.webp" alt="Hero Defense" width="800" height="320">
-   <div class="tags"><span>Tower Defense</span><span data-en>Strategy</span><span data-zh>策略</span><span data-en>Free to play</span><span data-zh>免费</span><span>Web · iOS · Android</span></div>
-   <p><span data-en>Build towers, recruit heroes and hold the line against waves of monsters across a growing campaign of stages.</span><span data-zh>建造防御塔、招募英雄，在不断扩充的关卡中抵御一波又一波的怪物。</span></p>
-   <ul class="feat">
-    <li><span data-en>Heroes with talents, skins and pets</span><span data-zh>英雄天赋、皮肤与宠物</span></li>
-    <li><span data-en>Campaign, boss raids, odyssey and weekly challenges</span><span data-zh>主线关卡、Boss 讨伐、远征与每周挑战</span></li>
-    <li><span data-en>Play in English, 中文, 日本語, 한국어 and Español</span><span data-zh>支持中文、English、日本語、한국어、Español</span></li>
-   </ul>
-   <a class="btn pri" href="/hero-defense/"><span data-en>Play free now</span><span data-zh>立即免费开玩</span> →</a>
-   <div class="note"><span data-en>iOS and Android apps coming soon.</span><span data-zh>iOS 与 Android 版本即将上线。</span></div>
+  <div class="banner">
+   <img class="bg" data-en src="/img/en_1_battle.webp" alt="Hero Defense gameplay">
+   <img class="bg" data-zh src="/img/zh_1_battle.webp" alt="英雄塔防 游戏画面">
+   <div class="ov">
+    <img class="logo" src="/img/ui_logo_full.webp" alt="Hero Defense" width="800" height="320">
+    <a class="btn pri" href="/hero-defense/"><span data-en>Play free now</span><span data-zh>立即免费开玩</span> →</a>
+    <div class="note"><span data-en>iOS and Android apps coming soon.</span><span data-zh>iOS 与 Android 版本即将上线。</span></div>
+   </div>
   </div>
-  <div class="shots">
-   <img class="w" data-en src="/img/en_1_battle.webp" alt="Hero Defense battle" loading="lazy">
-   <img class="w" data-zh src="/img/zh_1_battle.webp" alt="英雄塔防 战斗" loading="lazy">
-   <img data-en src="/img/en_2_map.webp" alt="World map" loading="lazy">
-   <img data-zh src="/img/zh_2_map.webp" alt="世界地图" loading="lazy">
-   <img data-en src="/img/en_3_heroes.webp" alt="Heroes" loading="lazy">
-   <img data-zh src="/img/zh_3_heroes.webp" alt="英雄" loading="lazy">
+  <div class="gbody">
+   <div>
+    <div class="tags"><span>Tower Defense</span><span data-en>Strategy</span><span data-zh>策略</span><span data-en>Free to play</span><span data-zh>免费</span><span>Web · iOS · Android</span></div>
+    <p><span data-en>Build towers, recruit heroes and hold the line against waves of monsters across a growing campaign of stages.</span><span data-zh>建造防御塔、招募英雄，在不断扩充的关卡中抵御一波又一波的怪物。</span></p>
+    <ul class="feat">
+     <li><span data-en>Heroes with talents, skins and pets</span><span data-zh>英雄天赋、皮肤与宠物</span></li>
+     <li><span data-en>Campaign, boss raids, odyssey and weekly challenges</span><span data-zh>主线关卡、Boss 讨伐、远征与每周挑战</span></li>
+     <li><span data-en>Play in English, 中文, 日本語, 한국어 and Español</span><span data-zh>支持中文、English、日本語、한국어、Español</span></li>
+    </ul>
+   </div>
+   <div class="shots">
+    <img data-en src="/img/en_2_map.webp" alt="World map" loading="lazy">
+    <img data-zh src="/img/zh_2_map.webp" alt="世界地图" loading="lazy">
+    <img data-en src="/img/en_3_heroes.webp" alt="Heroes" loading="lazy">
+    <img data-zh src="/img/zh_3_heroes.webp" alt="英雄" loading="lazy">
+    <div class="cap"><span data-en>World map · Hero hall</span><span data-zh>世界地图 · 英雄殿</span></div>
+   </div>
   </div>
  </div>
 </div></section>
@@ -154,7 +172,7 @@ html[lang=zh] [data-zh]{display:revert!important}
  <h2 class="serif"><span data-en>Get in touch</span><span data-zh>与我们联系</span></h2>
  <p class="sub"><span data-en>Player support, business and partnership inquiries are all welcome.</span><span data-zh>玩家支持、商务与合作咨询，都欢迎来信。</span></p>
  <div class="contact">
-  <div class="box"><h3>Email</h3><p><a href="mailto:ding.hai87@gmail.com">ding.hai87@gmail.com</a></p></div>
+  <div class="box"><h3>Email</h3><p><a href="mailto:info@eleronzentechnology.com">info@eleronzentechnology.com</a></p></div>
   <div class="box"><h3><span data-en>Address</span><span data-zh>地址</span></h3><p>ELERONZEN TECHNOLOGY INC<br>2227 Prairie Center Pkwy, Num D<br>Brighton, CO 80601, USA</p></div>
  </div>
 </div></section>
@@ -174,5 +192,7 @@ html[lang=zh] [data-zh]{display:revert!important}
  b.onclick=function(){set(h.lang==='zh'?'en':'zh')};set(l);
 })();
 </script>
+<div class="lb" id="lb"><img alt=""></div>
+<script>(function(){var lb=document.getElementById('lb'),im=lb.querySelector('img');document.querySelectorAll('.shots img').forEach(function(i){i.onclick=function(){im.src=i.src.replace(/\/img\/(en|zh)_/,'/img/$1_');lb.classList.add('on')}});lb.onclick=function(){lb.classList.remove('on')}})();</script>
 </body>
 </html>

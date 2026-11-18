@@ -414,3 +414,8 @@ Platform release: everything on the "do all of these" list except the public dep
 - Age/Terms checkbox text wrapped into scattered flex pieces on phone; now one flowing paragraph.
 - Logged-in phone run of Storm Chaser: new tile symbols, WILD ribbon and line wins render correctly.
 - sw lv-v82. Tests 90/90.
+
+## Round 27 (19:55) — One language at a time
+- Many server/UI strings are written bilingually ("中文 · English", "音量 VOLUME"). In English mode they showed both; in 中文 mode too. i18n now picks one side unless 双语 is selected (missions, settings buttons, toasts, onboarding card, event banner). English mode no longer translates input placeholders to Chinese.
+- Mission title 'Play 1,000 coins' -> 'Bet 1,000 coins in total'.
+- sw lv-v83. Tests 90/90.

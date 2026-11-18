@@ -10,7 +10,7 @@ const MISSIONS = [
   { id: 'table', title: 'Play 10 table game rounds', target: 10, reward: 300 },
   { id: 'bonus', title: 'Trigger a bonus feature', target: 1, reward: 500 },
   { id: 'bigwin', title: 'Land a win of 10x your bet', target: 1, reward: 400 },
-  { id: 'wager', money: true, title: 'Play 1,000 coins', target: 1000, reward: 350 },
+  { id: 'wager', money: true, title: 'Bet 1,000 coins in total', target: 1000, reward: 350 },
   { id: 'bacc', title: '玩 20 局百家乐 / 龙虎 · Play 20 baccarat or dragon tiger hands', target: 20, reward: 350 },
   { id: 'shared', title: '在多人百家乐桌玩 5 局 · Play 5 hands at a shared baccarat table', target: 5, reward: 400 }
 ];

@@ -260,7 +260,7 @@ const LEVELS=[
  {name:TR('废弃矿洞'),map:2,paths:[0,1],waves:10,gold:340,pool:['bandit','skel','orc','ninja','bat'],diff:1.05},
  {name:TR('矿洞深处'),map:2,paths:[0,1,2],waves:12,gold:400,pool:['skel','orc','ninja','barb','shaman','bat','eye','ogre'],boss:'mino',diff:1.08},
  {name:TR('雪原古墓'),map:3,paths:[1,0],waves:12,gold:440,pool:['skel','orc','barb','ninja','wasp','skel3','shaman','eye'],diff:1.25},
- {name:TR('冰封王座'),map:3,paths:[0,1,2],waves:14,gold:480,pool:['skel','barb','ninja','skel3','wasp','ronin','samurai','shaman','eye','ogre'],boss:'golem',diff:1.2},
+ {name:TR('冰封王座'),map:3,paths:[0,1,2],waves:14,gold:480,pool:['skel','barb','ninja','skel3','wasp','ronin','samurai','shaman','eye','ogre'],boss:'golem',diff:1.12},
  {name:TR('迷雾沼泽'),map:4,paths:[0,2],waves:14,gold:560,pool:['bandit','skel','orc','ronin','wasp','skel3','samurai','shaman','sksam','demon','ogre'],diff:1.22},
  {name:TR('亡灵之境'),map:4,paths:[0,1,2],waves:16,gold:700,pool:['skel','orc','ninja','ronin','skel3','wasp','samurai','shaman','sksam','demon','ogre'],boss:'reaper',diff:1.12},
 ];
@@ -2092,7 +2092,7 @@ function drawFbBtn(){const x=140,y=SAVE.installHide||isStandalone()?84:124,w=120
 // ====================== 新手体验：功能逐关解锁 / 新功能卡片 / 英雄介绍 / 新敌人提示 ======================
 // prog() = 已通关的主线关卡数。没解锁的功能直接隐藏，解锁时弹卡片说明。老玩家（进度够）全部照旧。
 const prog=()=>maxCleared()+1;
-const ONB_F={hall:1,speed:1,auto:1,meteor:1,signin:1,reinf:2,shop:2,talents:2,tasks:2,fb:2,install:2,pops:2,gacha:3,bag:3,sk2:3,deal:3,event:3,gem:4,items:4,endless:4,team:3,rec:5,chal:5,pass:5,sk3:6,support:11,rebirth:24,cards:3,trap:6,hchal:8,merchant:5,weekly:6,tgt:4};
+const ONB_F={hall:1,speed:1,auto:1,meteor:1,signin:1,reinf:2,shop:2,talents:2,tasks:2,fb:2,install:2,pops:2,gacha:3,bag:3,sk2:3,deal:3,event:3,gem:4,items:4,endless:4,team:3,rec:5,chal:5,pass:5,sk3:6,support:11,rebirth:24,cards:3,trap:6,hchal:8,merchant:5,weekly:6,tgt:4,obs:2};
 const ONB_TW={arrow:0,barracks:0,magic:1,cannon:2,frost:3,poison:5,tesla:7,ballista:9,drum:11,eagle:11,wind:11,portal:11};
 const feat=k=>!!SAVE.rebirth||prog()>=(ONB_F[k]||0);
 // 塔的解锁只限制主线关卡；挑战、试炼、无尽沿用原规则
@@ -2102,7 +2102,7 @@ const ONB_CARD={hall:['英雄殿','查看每位英雄的技能，用碎片给英
   gacha:['召唤','用钻石召唤新英雄，集齐碎片解锁'],bag:['装备','战斗会掉落装备，在英雄殿里给英雄穿上'],sk2:['英雄第 2 个技能','每位英雄多了一个技能，亮起时点一下释放'],
   gem:['钻石技能','战斗右侧：花钻石放大招——金币雨、时间静止、天罚、全军复苏'],items:['道具','冰冻炸弹冻住全场，地雷埋在路上'],endless:['无尽模式','地图上的奖杯：敌人无穷无尽，看你能守多少波，还有每周排行榜'],
   chal:['每日挑战','在「任务」里：每天一关特殊规则，奖励更多'],pass:['通行证','打关卡攒经验，领取每一级的奖励'],sk3:['英雄第 3 个技能','英雄的终极技能已解锁'],
-  support:['辅助塔','战鼓、鹰眼、疾风等光环塔，让周围的塔更强'],rebirth:['转生','重置进度，换取永久的全塔伤害加成'],cards:['强化三选一','每隔几波暂停，从 3 张强化卡里选 1 张，本局有效'],trap:['地图机关','路上的机关可以点：熔岩、落石、雪崩、毒沼，冷却 40 秒'],tgt:['攻击目标','点一座塔，再点 🎯 可以切换它先打谁：首个 / 最强 / 最后 / 最近 / 优先飞行'],merchant:['流浪商人','关卡打到一半，商人会来卖好东西，用金币买'],weekly:['周赛','每周一张全服同图的赛季关，按成绩上排行榜（在「任务」里）'],hchal:['英雄挑战','三星通关后，同一关可以挑战「英雄」「钢铁」两种高难模式，首通送钻石']};
+  support:['辅助塔','战鼓、鹰眼、疾风等光环塔，让周围的塔更强'],rebirth:['转生','重置进度，换取永久的全塔伤害加成'],cards:['强化三选一','每隔几波暂停，从 3 张强化卡里选 1 张，本局有效'],trap:['地图机关','路上的机关可以点：熔岩、落石、雪崩、毒沼，冷却 40 秒'],obs:['清障与集火','点敌人或地图上的障碍物，所有塔会集中攻击它。打掉障碍物拿金币、腾出建塔位，偶尔还会掉落一座塔'],tgt:['攻击目标','点一座塔，再点 🎯 可以切换它先打谁：首个 / 最强 / 最后 / 最近 / 优先飞行'],merchant:['流浪商人','关卡打到一半，商人会来卖好东西，用金币买'],weekly:['周赛','每周一张全服同图的赛季关，按成绩上排行榜（在「任务」里）'],hchal:['英雄挑战','三星通关后，同一关可以挑战「英雄」「钢铁」两种高难模式，首通送钻石']};
 
 // 旧存档迁移：以前网页版是测试模式（全英雄免费），把玩家实际用过的英雄正式给他
 (function(){try{if(!SAVE.migOwn){SAVE.migOwn=1;for(const h in (SAVE.xp||{}))if(SAVE.xp[h]>0&&HEROES[h]&&!SAVE.owned.includes(h)&&!SHOP_CFG.freeHeroes.includes(h))SAVE.owned.push(h);
@@ -2510,6 +2510,45 @@ function drawEgg(){const E=G.egg;if(!E||G.over)return;const tm=G.time;if(E.pop){
   const eb=endBattle;endBattle=function(win){const m=G&&G.hmode;eb(win);if(m&&win)try{stAdd('hchal')}catch(_){}};
   if(window.__api)Object.assign(window.__api,{startLevel,endBattle});})();
 
+// ====================== 保卫萝卜式「清障」+「集火」 ======================
+// 点敌人 / 障碍物 → 所有够得着的塔集中攻击它。障碍物压在一些建塔位上，打掉给金币、腾出位置，偶尔掉落现成的塔；全部清掉有「全清」奖励。
+
+const OBS_KIND=[{k:'crate',n:'木箱',hp:150,g:60},{k:'barrel',n:'酒桶',hp:220,g:90},{k:'rock',n:'巨石',hp:350,g:140},{k:'chest',n:'宝箱',hp:500,g:200,drop:1}];
+function obsInit(){G.obs=[];G.focus=null;if(G.li<0&&G.L.chal!=='weekly'||G.L.endless||!feat('obs'))return;
+  const R=mulberry((G.li+1)*4409+G.map*13);const free=G.towers.map((t,i)=>i).filter(i=>!G.towers[i].type);const n=Math.min(Math.floor(G.towers.length*.25),free.length-4,1+Math.floor(R()*3));if(n<=0)return;
+  // 离出怪口越远的空位越容易被占（开局不影响防守）
+  const p0=G.paths[0].pts[0];free.sort((a,b)=>Math.hypot(G.towers[b].x-p0[0],G.towers[b].y-p0[1])*(.6+R()*.8)-Math.hypot(G.towers[a].x-p0[0],G.towers[a].y-p0[1])*(.6+R()*.8));
+  const near=(i,ex)=>G.towers.some((t,k)=>k!==i&&!ex.includes(k)&&Math.hypot(t.x-G.towers[i].x,(t.y-G.towers[i].y)*1.15)<170);const pick=[];for(const i of free){if(pick.length>=n)break;if(near(i,pick.concat([i])))pick.push(i)}
+  for(let j=0;j<pick.length;j++){const i=pick[j],tw=G.towers[i];const K=OBS_KIND[Math.min(OBS_KIND.length-1,Math.floor(R()*(j===0?4:3)))];const hm=Math.sqrt(G.L.diff||1)*(1+Math.max(0,G.li)*.03);
+    const o={isObs:1,pad:i,K,x:tw.x,y:tw.y-14,hp:K.hp*hm,max:K.hp*hm,dead:false,D:{name:TR(K.n),armor:0,mres:0,obs:1},d:0,spd:0,off:0,fly:false,untT:0,slow:0,stun:0,burn:0,hitT:0};
+    o.p=buildPath([[o.x,o.y],[o.x+1,o.y]]);tw.obs=o;G.obs.push(o)}
+  G.obsTotal=G.obs.length;if(G.obs.length&&!SAVE.obsTip){SAVE.obsTip=1;save();setTimeout(()=>{try{showToast(TR('点障碍物：塔会集中攻击它，打掉拿金币、腾出建塔位'))}catch(_){}},1500)}}
+function obsBreak(o){if(o.dead)return;o.dead=true;const tw=G.towers[o.pad];if(tw)tw.obs=null;G.obs=G.obs.filter(x=>x!==o);if(G.focus===o)G.focus=null;
+  const g=Math.round(o.K.g*(1+Math.max(0,G.wave)*.05));G.gold+=g;G.coins.push({x:o.x,y:o.y-30,t:0,v:g});G.fx.push({k:'boom',x:o.x,y:o.y,t:0,r:60,c:'#c9984b'});sfx('explode',o.x);try{buzz()}catch(_){}track('obs',{k:o.K.k});
+  if(o.K.drop||Math.random()<.15){const opts=TOWER_ORDER.slice(0,8).filter(t=>twOpen(t)&&t!=='barracks');const t=opts[Math.floor(Math.random()*opts.length)];if(t&&tw&&!tw.type){const gg=G.gold;G.gold=1e9;try{build(o.pad,t);if(o.K.drop)upgrade(o.pad)}catch(_){}G.gold=gg;floatText(TR('掉落了一座')+TOWERS[t].name+'！',o.x,o.y-70,'#7dff7a',1.6)}}
+  if(G.obsTotal&&!G.obs.length){G.allClear=1;floatText('✨ '+TR('全清！'),WW/2,200,'#ffd84a',1.8);G.gold+=100;sfx('star')}}
+function drawObs(){const t=G.time;for(const o of G.obs||[]){const x=o.x,y=o.y;ctx.save();ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(x,y+22,34,10,0,0,7);ctx.fill();
+    if(o.K.k==='rock'){ctx.fillStyle='#7d7468';ctx.beginPath();ctx.moveTo(x-34,y+20);ctx.lineTo(x-26,y-12);ctx.lineTo(x-4,y-26);ctx.lineTo(x+24,y-16);ctx.lineTo(x+34,y+20);ctx.closePath();ctx.fill();ctx.fillStyle='#968c7e';ctx.beginPath();ctx.moveTo(x-20,y-8);ctx.lineTo(x-4,y-22);ctx.lineTo(x+14,y-14);ctx.lineTo(x,y);ctx.closePath();ctx.fill()}
+    else if(o.K.k==='barrel'){ctx.fillStyle='#8a5328';rr(x-20,y-24,40,46,10);ctx.fill();ctx.fillStyle='#5a3416';ctx.fillRect(x-21,y-14,42,5);ctx.fillRect(x-21,y+8,42,5)}
+    else{const gold=o.K.k==='chest';ctx.fillStyle=gold?'#b8741f':'#a9743c';rr(x-28,y-22,56,44,6);ctx.fill();ctx.strokeStyle=gold?'#ffd84a':'#6b4420';ctx.lineWidth=4;ctx.strokeRect(x-26,y-20,52,40);ctx.beginPath();ctx.moveTo(x-26,y-20);ctx.lineTo(x+26,y+20);ctx.stroke();if(gold){ctx.fillStyle='#ffd84a';ctx.fillRect(x-5,y-6,10,12)}}
+    ctx.restore();if(o.hp<o.max)hpbar(x-26,y-38,52,5,o.hp/o.max,'#8a5a1a','#ffcc55');
+    if(o.hitT>0)o.hitT-=1/60;hit(x-36,y-36,72,66,()=>{G.focus=G.focus===o?null:o;AUD.sfx('click');G.sel=null},'obs')}
+  const f=G.focus;if(f){if(f.dead||(!f.isObs&&(f.gone||!G.enemies.includes(f))))G.focus=null;else{const bob=Math.sin(t*8)*5;const hy=f.isObs?f.y-56:f.y-(f.fly?100:70);ctx.save();ctx.fillStyle='#ff4a3a';ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(f.x,hy+14+bob);ctx.lineTo(f.x-10,hy+bob);ctx.lineTo(f.x+10,hy+bob);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()}}
+  // 点敌人设集火（选中英雄或法术时不抢点击）
+  if(!G.heroSel&&!G.spellMode&&G.sel==null&&feat('obs'))for(const e of G.enemies){if(e.dead||e.d<0)continue;const ey=e.y+(e.fly?-38:0);hit(e.x-22,ey-50,44,56,()=>{G.focus=G.focus===e?null:e;AUD.sfx('click')},'enemy')}}
+
+(function(){
+  const sl=startLevel;startLevel=function(li,e){sl(li,e);if(G)try{obsInit()}catch(err){console.error(err)}};
+  const dm=damage;damage=function(e,amt,type,src){if(e&&e.isObs){if(e.dead||amt<=0)return;e.hp-=amt;e.hitT=.08;if(e.hp<=0)obsBreak(e);return}return dm(e,amt,type,src)};
+  const tf=targetFor;targetFor=function(x,y,range,air,mode){const f=G.focus;if(f&&!f.dead&&(f.isObs||!(f.untT>0))&&(air||!f.fly)&&Math.hypot(f.x-x,(f.y-y)*1.15)<=range)return f;const r=tf(x,y,range,air,mode);if(r)return r;if(G.obs&&G.obs.length){let b=null,bd=1e9;for(const ob of G.obs){const d=Math.hypot(ob.x-x,(ob.y-y)*1.15);if(d<=range&&d<bd){bd=d;b=ob}}return b}return null};
+  const ex=explode;explode=function(x,y,r,dmg,type,burn){ex(x,y,r,dmg,type,burn);for(const o of (G.obs||[]).slice())if(!o.dead&&Math.hypot(o.x-x,(o.y-y)*1.2)<r+20)damage(o,dmg,type)};
+  const bd=build;build=function(i,t){if(G.towers[i]&&G.towers[i].obs){AUD.sfx('deny');showToast(TR('先打掉这个障碍物'));return}return bd(i,t)};
+  const be=battleExtra;battleExtra=function(t){be(t);try{drawObs()}catch(e){console.error(e)}};
+  const eb=endBattle;endBattle=function(win){const ac=G&&G.allClear;eb(win);if(win&&ac){SAVE.yb+=10;try{stAdd('allclear')}catch(_){}setTimeout(()=>{try{showToast('✨ '+TR('全清奖励')+' +10 '+SHOP_CFG.cur)}catch(_){}},800)}};
+  ACH.push({id:'allclear_1',k:'allclear',n:1,d:'全清障碍物通关 {n} 次',yb:20},{id:'allclear_10',k:'allclear',n:10,d:'全清障碍物通关 {n} 次',yb:80},{id:'allclear_30',k:'allclear',n:30,d:'全清障碍物通关 {n} 次',yb:200});
+  if(window.__api)Object.assign(window.__api,{startLevel,build,endBattle});
+})();
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -2552,7 +2591,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794972812';
+const BUILD_VER='1794973181';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

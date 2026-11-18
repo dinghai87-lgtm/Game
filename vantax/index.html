@@ -1,5 +1,493 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>VANTAX GAMES</title><link rel="icon" href="/favicon.png">
-<style>body{margin:0;background:#111;color:#eee;font:16px/1.6 system-ui,sans-serif;text-align:center;padding:60px 20px}a{color:#e0b048}</style></head>
-<body><h1>VANTAX GAMES</h1><p>Coming soon.</p><p><a href="/hero-defense/">Play Hero Defense</a></p></body></html>
+<html lang="zh" data-lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>万泰游戏 · VANTAX GAMES</title>
+<meta name="description" content="VANTAX GAMES (Wantai Game Development) official hub for games. Hero Defense and LuckyVault are available now. VANTAX POKER is coming soon.">
+<meta property="og:title" content="VANTAX GAMES">
+<meta property="og:description" content="Official hub for VANTAX GAMES. Play Hero Defense and LuckyVault now. VANTAX POKER is coming soon.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://vantaxgame.com/">
+<meta name="theme-color" content="#0a1016">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.png" sizes="48x48">
+<link rel="apple-touch-icon" href="/apple-touch-vantax.png">
+<link rel="canonical" href="https://vantaxgame.com/">
+<style>
+:root {
+  --bg: #0a1016;
+  --bg-2: #101820;
+  --surface: #16202b;
+  --ink: #f3f6f8;
+  --muted: #9aa8b5;
+  --line: rgba(94, 234, 212, .2);
+  --accent: #5eead4;
+  --accent-2: #99f6e4;
+  --accent-dim: rgba(94, 234, 212, .1);
+  --sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); scroll-behavior: smooth; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(900px 480px at 12% -10%, rgba(94, 234, 212, .09), transparent 60%),
+    radial-gradient(700px 420px at 100% 0%, rgba(56, 132, 180, .12), transparent 55%),
+    var(--bg);
+  color: var(--ink);
+  font: 17px/1.65 var(--sans);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+img, svg { max-width: 100%; display: block; }
+a { color: inherit; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 3px; }
+::selection { background: rgba(94, 234, 212, .28); color: #fff; }
+.wrap { width: min(1180px, calc(100% - 40px)); margin-inline: auto; }
+h1, h2, h3, p { text-wrap: pretty; }
+h1, h2, h3 { margin: 0; letter-spacing: -0.03em; line-height: 1.12; font-weight: 650; }
+h1 { font-size: clamp(40px, 7vw, 80px); }
+h2 { font-size: clamp(26px, 3.2vw, 40px); }
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(16px);
+  background: rgba(10, 16, 22, .84);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.bar {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: auto;
+  text-decoration: none;
+  min-width: 0;
+}
+.brand svg { width: 36px; height: 36px; flex: none; }
+.brand-text { display: flex; flex-direction: column; line-height: 1.1; min-width: 0; }
+.brand-en { font-weight: 700; letter-spacing: .08em; font-size: 13px; }
+.brand-sub { color: var(--muted); font-size: 12px; margin-top: 3px; }
+.lang {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px;
+  background: rgba(255,255,255,.03);
+}
+.lang button {
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.lang button[aria-pressed="true"] {
+  background: var(--accent-dim);
+  color: var(--accent-2);
+}
+
+.hero { padding: 88px 0 36px; }
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 18px;
+  color: var(--accent-2);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+}
+.eyebrow:before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: var(--accent);
+  flex: none;
+}
+html[lang="zh"] .eyebrow { letter-spacing: .12em; text-transform: none; font-size: 14px; }
+.hero-zh {
+  margin-top: 10px;
+  font-size: clamp(20px, 3vw, 30px);
+  font-weight: 560;
+  letter-spacing: 0.12em;
+  color: var(--accent-2);
+}
+.sub { color: var(--muted); max-width: 36em; margin: 22px 0 0; font-size: 18px; }
+
+section { padding: 28px 0 16px; }
+section.sites { padding-bottom: 72px; }
+.lead { color: var(--muted); margin: 12px 0 28px; }
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+@media (max-width: 1100px) {
+  .game-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.game-card {
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.015));
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,.22);
+  text-decoration: none;
+  color: inherit;
+  min-width: 0;
+  transition: border-color .2s ease, transform .2s ease;
+}
+a.game-card:hover {
+  border-color: rgba(94, 234, 212, .45);
+  transform: translateY(-2px);
+}
+.game-card.is-soon { cursor: default; }
+.shot {
+  aspect-ratio: 1600 / 736;
+  background: #0d151c;
+  overflow: hidden;
+}
+.shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.shot.fit-contain { background: #05070a; }
+.shot.fit-contain img { object-fit: contain; }
+.badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+.badges .status { margin: 0; }
+.age {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 196, 120, .4);
+  color: #ffd7a1;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+.note { margin: 10px 0 0; color: #d5dde4; font-size: 13px; line-height: 1.55; }
+.art {
+  aspect-ratio: 1600 / 736;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(160px 100px at 30% 30%, rgba(94,234,212,.16), transparent 70%),
+    var(--surface);
+}
+.body { padding: 22px 24px 26px; display: flex; flex-direction: column; flex: 1; }
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--accent-dim);
+  color: var(--accent-2);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  width: max-content;
+}
+.status i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(94,234,212,.15);
+  font-style: normal;
+}
+.status.soon {
+  background: rgba(255,255,255,.05);
+  color: #d5dde4;
+}
+.status.soon i {
+  background: #8b98a4;
+  box-shadow: none;
+}
+.logo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 8px;
+}
+.logo-row img.icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  flex: none;
+}
+.logo-full {
+  height: 42px;
+  width: auto;
+  max-width: min(260px, 70%);
+  object-fit: contain;
+}
+h3 { font-size: clamp(24px, 2.4vw, 30px); }
+.en-name {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+.desc { margin: 14px 0 0; color: var(--muted); }
+.cta {
+  margin-top: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent-2);
+  font-weight: 700;
+  font-size: 15px;
+}
+.cta:after { content: "→"; }
+
+footer {
+  border-top: 1px solid rgba(255,255,255,.06);
+  padding: 28px 0 40px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.foot {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 18px 32px;
+  flex-wrap: wrap;
+}
+.foot a { color: var(--accent-2); text-decoration: none; }
+.foot a:hover { text-decoration: underline; }
+.links { display: flex; gap: 16px; flex-wrap: wrap; margin-left: auto; }
+
+.lang-en, .lang-zh { display: none !important; }
+html[lang="en"] .lang-en, html[lang="zh"] .lang-zh { display: revert !important; }
+html[lang="en"] img.lang-en, html[lang="zh"] img.lang-zh { display: block !important; }
+
+@media (max-width: 860px) {
+  .game-grid { grid-template-columns: 1fr; }
+  .hero { padding-top: 56px; }
+  .links { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  a.game-card:hover { transform: none; }
+}
+
+</style>
+<script>
+
+(function () {
+  var l = null;
+  try { l = localStorage.getItem("vantax_lang"); } catch (e) {}
+  if (l !== "en" && l !== "zh") {
+    var nav = navigator.language || (navigator.languages && navigator.languages[0]) || "";
+    l = /^zh/i.test(nav) ? "zh" : "en";
+  }
+  document.documentElement.lang = l;
+  document.documentElement.setAttribute("data-lang", l);
+  if (l === "en") document.title = "VANTAX GAMES";
+})();
+
+</script>
+</head>
+<body>
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="/">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="36" height="36" aria-hidden="true">
+  <rect width="32" height="32" rx="8" fill="#12202c"/>
+  <rect x=".5" y=".5" width="31" height="31" rx="7.5" fill="none" stroke="rgba(94,234,212,.35)"/>
+  <path d="M7.5 8.2h5.15L16 20.4 19.35 8.2h5.15L16.7 24.2h-1.4L7.5 8.2z" fill="#5eead4"/>
+</svg>
+
+      <span class="brand-text">
+        <span class="brand-en">VANTAX GAMES</span>
+        <span class="brand-sub lang-zh">万泰游戏开发</span>
+        <span class="brand-sub lang-en">Wantai Game Development</span>
+      </span>
+    </a>
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="zh">中</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
+
+  </div>
+</header>
+
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow"><span class="lang-zh">万泰游戏</span><span class="lang-en">Wantai Game Development</span></p>
+      <h1>VANTAX GAMES</h1>
+      <p class="hero-zh lang-zh">万泰游戏开发</p>
+      <p class="sub">
+        <span class="lang-zh">所有游戏的集合站。我们制作轻松有趣的游戏，让日常娱乐更简单。</span>
+        <span class="lang-en">The official hub for our games. We make approachable games for everyday play and relaxed entertainment.</span>
+      </p>
+    </div>
+  </section>
+
+  <section class="games" id="games" aria-labelledby="games-title">
+    <div class="wrap">
+      <h2 id="games-title"><span class="lang-zh">游戏</span><span class="lang-en">Games</span></h2>
+      <p class="lead">
+        <span class="lang-zh">每款游戏都会在这里发布一份。已上线的可直接游玩，即将上架的作品会在准备好后开放。</span>
+        <span class="lang-en">Every game will be published here. Live titles can be played now; upcoming titles will open in their own section when they are ready.</span>
+      </p>
+
+      <!-- Add a new game by copying one of the cards below. Live titles use <a class="game-card">; upcoming titles use <article class="game-card is-soon"> and must not link to an empty path. -->
+      <div class="game-grid">
+        <a class="game-card" href="/hero-defense/">
+          <div class="shot">
+            <img class="lang-en" src="/img/en_1_battle.webp" width="1600" height="736" alt="Hero Defense gameplay">
+            <img class="lang-zh" src="/img/zh_1_battle.webp" width="1600" height="736" alt="英雄塔防游戏画面">
+          </div>
+          <div class="body">
+            <p class="status"><i></i><span class="lang-zh">已上线</span><span class="lang-en">Available now</span></p>
+            <div class="logo-row">
+              <img class="icon" src="/img/icon.webp" width="256" height="256" alt="">
+              <img class="logo-full" src="/img/ui_logo_full.webp" width="800" height="320" alt="Hero Defense">
+            </div>
+            <h3 class="lang-zh">英雄塔防</h3>
+            <p class="en-name lang-zh">Hero Defense</p>
+            <h3 class="lang-en">Hero Defense</h3>
+            <p class="desc">
+              <span class="lang-zh">免费塔防策略游戏，可在浏览器中直接游玩。</span>
+              <span class="lang-en">A free tower defense strategy game you can play in the browser.</span>
+            </p>
+            <span class="cta"><span class="lang-zh">开始游戏</span><span class="lang-en">Play now</span></span>
+          </div>
+        </a>
+
+
+        <a class="game-card" href="/luckyvault/">
+          <div class="shot fit-contain">
+            <img src="/img/luckyvault_hero.webp" width="800" height="600" alt="LuckyVault">
+          </div>
+          <div class="body">
+            <div class="badges">
+              <p class="status"><i></i><span class="lang-zh">已上线</span><span class="lang-en">Available now</span></p>
+              <span class="age">18+</span>
+            </div>
+            <div class="logo-row">
+              <img class="icon" src="/img/luckyvault_icon.png" width="256" height="256" alt="">
+              <h3>LuckyVault</h3>
+            </div>
+            <p class="desc">
+              <span class="lang-zh">社交娱乐场，含老虎机和桌面游戏，可在浏览器中直接游玩。</span>
+              <span class="lang-en">A social arcade with slots and table games you can play in the browser.</span>
+            </p>
+            <p class="note">
+              <span class="lang-zh">仅供娱乐 · For entertainment only。金币为虚拟道具，没有现金价值。</span>
+              <span class="lang-en">For entertainment only. Coins are virtual and have no cash value.</span>
+            </p>
+            <span class="cta"><span class="lang-zh">开始游戏</span><span class="lang-en">Play now</span></span>
+          </div>
+        </a>
+
+        <article class="game-card is-soon" aria-label="VANTAX POKER">
+          <div class="art" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="160" height="160" aria-hidden="true">
+  <g transform="translate(100 108)">
+    <g transform="rotate(-18) translate(-42 -58)">
+      <rect width="84" height="116" rx="12" fill="#1b2836" stroke="rgba(94,234,212,.28)"/>
+      <circle cx="22" cy="24" r="7" fill="none" stroke="#5eead4" stroke-width="1.6"/>
+      <path d="M18 24h8M22 20v8" stroke="#5eead4" stroke-width="1.6" stroke-linecap="round"/>
+    </g>
+    <g transform="rotate(16) translate(-42 -58)">
+      <rect width="84" height="116" rx="12" fill="#1b2836" stroke="rgba(94,234,212,.28)"/>
+      <rect x="16" y="18" width="12" height="12" rx="2" fill="none" stroke="#99f6e4" stroke-width="1.6"/>
+    </g>
+    <g transform="translate(-42 -66)">
+      <rect width="84" height="116" rx="12" fill="#203040" stroke="#5eead4"/>
+      <path d="M42 28c8 10 16 18 16 28 0 10-7 18-16 18s-16-8-16-18c0-10 8-18 16-28z" fill="none" stroke="#5eead4" stroke-width="1.8"/>
+      <text x="42" y="92" text-anchor="middle" font-size="13" fill="#99f6e4" font-family="Georgia, serif" letter-spacing="1">VP</text>
+    </g>
+  </g>
+</svg>
+</div>
+          <div class="body">
+            <p class="status soon"><i></i><span class="lang-zh">即将上架</span><span class="lang-en">Coming soon</span></p>
+            <h3 class="lang-zh">万泰扑克</h3>
+            <p class="en-name lang-zh">VANTAX POKER</p>
+            <h3 class="lang-en">VANTAX POKER</h3>
+            <p class="desc">
+              <span class="lang-zh">一款轻松的休闲卡牌游戏，适合与好友一起娱乐消遣。</span>
+              <span class="lang-en">A casual card game for entertainment, made for relaxed play with friends.</span>
+            </p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div>© 2026 Wantai Game Development / ELERONZEN TECHNOLOGY INC</div>
+    <div>
+      <span class="lang-zh">联系 </span><span class="lang-en">Contact </span>
+      <a href="mailto:info@eleronzentechnology.com">info@eleronzentechnology.com</a>
+    </div>
+    <div class="links">
+      <a href="/hero-defense/privacy.html"><span class="lang-zh">隐私政策</span><span class="lang-en">Privacy</span></a>
+      <a href="/hero-defense/terms.html"><span class="lang-zh">使用条款</span><span class="lang-en">Terms</span></a>
+    </div>
+  </div>
+</footer>
+
+<script>
+
+(function () {
+  var KEY = "vantax_lang";
+  var root = document.documentElement;
+  var titles = {
+    en: "VANTAX GAMES",
+    zh: "万泰游戏 · VANTAX GAMES"
+  };
+  function apply(lang) {
+    lang = lang === "zh" ? "zh" : "en";
+    root.lang = lang;
+    root.setAttribute("data-lang", lang);
+    document.title = titles[lang];
+    try { localStorage.setItem(KEY, lang); } catch (e) {}
+    var buttons = document.querySelectorAll(".lang button");
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].setAttribute("aria-pressed", buttons[i].getAttribute("data-lang") === lang ? "true" : "false");
+    }
+  }
+  var start = null;
+  try { start = localStorage.getItem(KEY); } catch (e) {}
+  if (start !== "en" && start !== "zh") {
+    var nav = navigator.language || (navigator.languages && navigator.languages[0]) || "";
+    start = /^zh/i.test(nav) ? "zh" : "en";
+  }
+  apply(start);
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest && e.target.closest(".lang button");
+    if (btn) apply(btn.getAttribute("data-lang"));
+  });
+})();
+
+</script>
+</body>
+</html>

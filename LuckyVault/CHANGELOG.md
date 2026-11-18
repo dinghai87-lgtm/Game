@@ -363,3 +363,4 @@ Platform release: everything on the "do all of these" list except the public dep
 - Lobby hero banners use real art (WILD badge + chips, blackjack dealer + cards, royal flush fan) instead of emoji; LOG IN no longer wraps on phones.
 - Rewards panel fully translated to Chinese (achievements, missions, counters).
 - Full-site Chinese pass: store, account, leaderboard, album, VIP, wheel texts translated; ALL-CAPS table titles translated.
+- Royal Crown Classic gets its own symbols (crown, trophy, key, clover + painted fruit).

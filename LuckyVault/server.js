@@ -55,6 +55,8 @@ const GLIST = GAMES.filter(Boolean);
 const theoRTP = g => g.slot ? E.MATH[g.mk].rtp : (typeof TABLE_RTP[g.kind] === 'object' ? TABLE_RTP[g.kind][g.v] : TABLE_RTP[g.kind]);
 const glabel = g => g.slot ? E.MATH[g.mk].label + ' · ' + E.MATH[g.mk].vol : LABEL[g.kind];
 const BETS = [0.2, 0.4, 0.6, 1, 2, 4, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000];
+// high-limit bets unlock with player level (XP = coins wagered): new players can't burn their stack on 5,000-coin spins
+const BET_LV = { 500: 3, 1000: 5, 2000: 8, 5000: 10 };
 const DAILY = [500, 750, 1000, 1250, 1500, 2000, 3000];
 
 const DEFAULT_SETTINGS = {
@@ -293,6 +295,7 @@ R['POST /api/spin'] = userRoute(async ({ uid, b }) => {
       if (!u || u.banned) { out = [403, { err: 'banned', msg: 'Account suspended' }]; return { skip: true }; }
       { const rb = rgBlock(u); if (rb && !u.fs) { out = [403, rb]; return { skip: true }; } }   // free spins already won may still be played
       const bet = typeof b.bet === 'number' ? b.bet : NaN; if (!(u.fs && (u.fs.left > 0 || u.fs.choose)) && (!BETS.includes(bet) || bet > SET.maxBet)) { out = [400, { err: 'bad_bet', msg: 'Max bet is ' + SET.maxBet }]; return { skip: true }; }
+      if (!(u.fs && (u.fs.left > 0 || u.fs.choose)) && BET_LV[bet] && E.levelOf(u.xp || 0) < BET_LV[bet]) { out = [400, { err: 'bet_level', msg: 'Reach level ' + BET_LV[bet] + ' to unlock this bet', need: BET_LV[bet] }]; return { skip: true }; }
       const r = E.round(u, gid, g.e, bet, !!b.buy, !!b.ante, { choice: b.choice }); if (r.err) { out = [400, r]; return { skip: true }; }
       if (r.chosen) { out = [200, r]; return; }
       await afterRound(u, g, r, roundInfo(g, r, { newRound: true }), t);

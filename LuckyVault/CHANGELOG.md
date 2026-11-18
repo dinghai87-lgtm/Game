@@ -356,3 +356,4 @@ Platform release: everything on the "do all of these" list except the public dep
 - Panda Fortune gets its own Asian symbol set (CraftPix monk skill icons, rounded gold-rim tiles).
 - New: Piggy Bank (dock) — 3% of every bet is saved, break it once a day at 200+ coins (cap 10,000); server-side, ledger type 'piggy'.
 - New: Weekly Pass (Rewards panel) — 1 point per 10 coins bet, 10 tiers (300→6,000 coins), resets Monday; server-side, ledger type 'pass'.
+- High-limit bets now unlock with level (500@L3, 1,000@L5, 2,000@L8, 5,000@L10), enforced server-side; locked + button shows 🔒.

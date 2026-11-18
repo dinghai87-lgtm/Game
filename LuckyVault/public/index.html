@@ -133,7 +133,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .cbtn:disabled{opacity:.35;cursor:default}
 .betbox{display:flex;align-items:center;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.12);border-radius:12px;height:46px}
 .betbox button{background:none;border:0;width:36px;height:100%;font-size:22px;font-weight:900}
-.betbox button:disabled{opacity:.3}
+.betbox button:disabled{opacity:.3}.betbox button.lockd{opacity:.55;position:relative}.betbox button.lockd::after{content:'🔒';position:absolute;font-size:10px;right:2px;top:2px}
 .betbox div{min-width:62px;text-align:center;line-height:1.05}
 .betbox small{display:block;font-size:9px;color:var(--mute);font-weight:800;letter-spacing:1px}
 .betbox b{font-size:15px;font-variant-numeric:tabular-nums}
@@ -502,7 +502,7 @@ const GAMES=[];SLOT_LIST.forEach(([id,t])=>{const hi=t[5].split(' '),lo=t[6]?t[6
 
 // ===================== STATE =====================
 const $=s=>document.querySelector(s);
-const BETS=[0.2,0.4,0.6,1,2,4,10,20,50,100,200,500,1000,2000,5000];
+const BETS=[0.2,0.4,0.6,1,2,4,10,20,50,100,200,500,1000,2000,5000];const BETLV={500:3,1000:5,2000:8,5000:10};function betNeed(i){return BETLV[BETS[i]]||0}function betOk(i){return E.levelOf(S.xp||0)>=betNeed(i)}
 const START=1000;
 let S={bal:START,bi:3,fav:[],recent:[],snd:true,turbo:false};
 try{const d=JSON.parse(localStorage.getItem('lv_state')||'null');if(d)Object.assign(S,d)}catch(e){}
@@ -645,7 +645,7 @@ function setWin(html){$('#winbar').innerHTML=html||''}
 function countWin(v,label){return new Promise(res=>{const d=S.turbo||T.quick?250:Math.min(1400,350+Math.log10(1+v/curBet())*500);const t0=performance.now();setWin('<span>'+label+'</span><b id="wcnt">0.00</b>');const b=$('#wcnt');
  let fin=false;const end=()=>{if(fin)return;fin=true;if(b)b.textContent=fmt(v);res()};setTimeout(end,d+400);
  (function tk(n){if(fin)return;const p=Math.min(1,(n-t0)/d);if(b)b.textContent=fmt(v*(1-Math.pow(1-p,2)));if(p<1)requestAnimationFrame(tk);else end()})(t0)})}
-function curBet(){return T.fs?T.fs.bet:BETS[S.bi]}
+function curBet(){while(S.bi>0&&!betOk(S.bi))S.bi--;return T.fs?T.fs.bet:BETS[S.bi]}
 
 function relayout(grid){const old=CELL;layout();grid=grid||T.grid;if(T.g&&T.view&&grid&&CELL!==old){T.view=E.MATH[T.g.mk||T.g.e].type==='reel'?new ReelView($('#board'),T.g):new DropView($('#board'),T.g);T.view.set(grid)}}
 function layout(){if(!T.g)return;const m=E.MATH[T.g.mk||T.g.e];const reel=m.type==='reel';
@@ -676,7 +676,7 @@ function closeGame(){if(T.busy||T.fs){toast('Please wait for the round to finish
  clearTimers();T.auto=0;$('#game').classList.remove('show');document.body.style.overflow='';T.g=null;T.view=null;renderLobby();return true}
 
 function updUI(){setBal();document.body.classList.toggle('spinning',!!(T.g&&T.busy));if(!T.g)return;const bet=curBet();$('#betV').textContent=fmt(bet);
- const lock=T.busy||!!T.fs||T.auto>0;$('#betDn').disabled=lock||S.bi===0;$('#betUp').disabled=lock||S.bi===BETS.length-1;
+ const lock=T.busy||!!T.fs||T.auto>0;$('#betDn').disabled=lock||S.bi===0;$('#betUp').disabled=lock||S.bi===BETS.length-1;$('#betUp').classList.toggle('lockd',S.bi<BETS.length-1&&!betOk(S.bi+1));
  const m=E.MATH[T.g.mk||T.g.e];if(m.buy){$('#buyCost').textContent=fmt(BETS[S.bi]*m.buy);$('#buyBtn').disabled=lock||(!!S.ante&&!!m.ante)}
  $('#anteBtn').style.display=m.ante?'':'none';$('#anteBtn').classList.toggle('on',!!S.ante&&!!m.ante);$('#anteBtn').disabled=T.busy||!!T.fs;
  if(m.ante&&S.ante&&!T.fs)$('#betV').textContent=fmt(r2(bet*m.ante));
@@ -706,7 +706,7 @@ function needLogin(){if(API.mode==='server'&&!API.user){openAuth();return true}r
 
 async function doSpin(buy){if(T.busy||!T.g)return;if(T.pend&&window.LVF)LVF.collect(true);const g=T.g,m=E.MATH[g.mk||g.e];
  T.busy=true;T.quick=false;updUI();clearHL();clearInterval(T.lineTimer);
- const ante=!buy&&!!S.ante&&!!m.ante;let r;try{r=await API.spin(g.id,BETS[S.bi],!!buy,ante)}catch(err){r={err:'net',msg:'Connection lost. Please retry.'}}
+ if(!T.fs)while(S.bi>0&&!betOk(S.bi))S.bi--;const ante=!buy&&!!S.ante&&!!m.ante;let r;try{r=await API.spin(g.id,BETS[S.bi],!!buy,ante)}catch(err){r={err:'net',msg:'Connection lost. Please retry.'}}
  if(r.err){T.busy=false;T.auto=0;updUI();if(r.err==='funds')outOfCredits();else toast(r.msg||r.err);return}
  sfx.spin();const inFS=r.inFS;
  S.bal=r2(r.bal-r.win);setBal();
@@ -804,7 +804,7 @@ function openInfo(){if(!T.g)return;const g=T.g,m=E.MATH[g.mk||g.e],bet=curBet();
 function quickStop(){if(!T.busy)return;T.quick=true;if(T.view&&T.view.slam)T.view.slam();Array.from(SKIP).forEach(f=>f())}
 $('#spin').onclick=()=>{sfx.unlock();if(T.auto>0){T.auto=0;T.stopReq=true;updUI();setTimeout(()=>T.stopReq=false,50);return}if(T.busy){quickStop();return}doSpin()};
 $('#betDn').onclick=()=>{if(S.bi>0){S.bi--;save();updUI();sfx.click()}};
-$('#betUp').onclick=()=>{if(S.bi<BETS.length-1){S.bi++;save();updUI();sfx.click()}};
+$('#betUp').onclick=()=>{if(S.bi<BETS.length-1){if(!betOk(S.bi+1)){toast('🔒 Reach level '+betNeed(S.bi+1)+' to unlock '+fmt(BETS[S.bi+1])+' bets');try{sfx.uiErr()}catch(e){}return}S.bi++;save();updUI();sfx.click()}};
 $('#anteBtn').onclick=()=>{if(T.busy||T.fs)return;S.ante=!S.ante;save();updUI();toast(S.ante?'Ante bet on: +25% bet, 2x chance of free spins':'Ante bet off')};
 $('#turboBtn').onclick=()=>{S.turbo=!S.turbo;save();updUI();toast(S.turbo?'Turbo on':'Turbo off')};
 $('#sndBtn').onclick=()=>{S.snd=!S.snd;save();updUI()};

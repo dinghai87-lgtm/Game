@@ -234,6 +234,10 @@ Object.assign(I18N.en,{"羁绊":"Bonds","英雄羁绊":"Hero Bonds","两位有�
 Object.assign(I18N.ja,{"羁绊":"絆","英雄羁绊":"英雄の絆","两位有羁绊的英雄一起出战：获得被动加成，战斗中还能放合击":"絆のある英雄2人で出撃：パッシブ効果に加え、戦闘中に合体技","已在队伍":"編成中"});
 Object.assign(I18N.ko,{"羁绊":"인연","英雄羁绊":"영웅 인연","两位有羁绊的英雄一起出战：获得被动加成，战斗中还能放合击":"인연 있는 영웅 둘이 함께 출전: 패시브 보너스와 전투 중 합격","已在队伍":"편성 중"});
 Object.assign(I18N.es,{"羁绊":"Vínculos","英雄羁绊":"Vínculos de héroes","两位有羁绊的英雄一起出战：获得被动加成，战斗中还能放合击":"Lleva dos héroes con vínculo: bonificación pasiva y Combo en batalla","已在队伍":"En el equipo"});
+Object.assign(I18N.en,{"再召唤 {n} 次必出整个英雄（保底）":"Guaranteed full hero within {n} more summons","英雄保底：连续 40 次没出整个英雄，第 40 次必出":"Hero pity: if 40 summons in a row give no full hero, the 40th is guaranteed"});
+Object.assign(I18N.ja,{"再召唤 {n} 次必出整个英雄（保底）":"あと{n}回で英雄確定（天井）","英雄保底：连续 40 次没出整个英雄，第 40 次必出":"英雄天井：40回連続で英雄が出なければ40回目で確定"});
+Object.assign(I18N.ko,{"再召唤 {n} 次必出整个英雄（保底）":"{n}회 더 소환 시 영웅 확정 (천장)","英雄保底：连续 40 次没出整个英雄，第 40 次必出":"영웅 천장: 40회 연속 영웅이 없으면 40회째 확정"});
+Object.assign(I18N.es,{"再召唤 {n} 次必出整个英雄（保底）":"Héroe garantizado en {n} invocaciones más","英雄保底：连续 40 次没出整个英雄，第 40 次必出":"Garantía: si en 40 invocaciones seguidas no sale un héroe, la 40ª lo garantiza"});
 
 'use strict';
 // ====================== 基础 ======================
@@ -1582,7 +1586,7 @@ let titleT=0,showSettings=false;
 function openLegal(k){if(typeof APP_FREE!=='undefined'&&APP_FREE&&window.Capacitor){window.open('https://dinghai87-lgtm.github.io/Game/hero-defense/'+k+'.html','_system');return}if(location.protocol.startsWith('http')){window.open(k+'.html','_blank');return}
   const T={privacy:[TR('隐私政策'),[TR('只收集游戏进度、随机设备 ID 和匿名游戏数据'),TR('支付由 Apple / Google / Stripe 处理，我们收不到卡号'),TR('不出售个人信息，可随时联系我们删除数据'),TR('完整内容见网页版 privacy.html')]],
     terms:[TR('用户协议'),[TR('钻石、英雄、装备为虚拟物品，不能兑换现金'),TR('禁止外挂、改存档和利用漏洞'),TR('召唤结果随机，概率见概率公示'),TR('完整内容见网页版 terms.html')]],
-    odds:[TR('召唤概率公示'),[TR('整个英雄 5% · 英雄碎片 67% · 装备 28%'),TR('装备：普通 60% · 精良 28% · 史诗 10% · 传说 2%'),TR('BOSS 掉落：普通 20% · 精良 45% · 史诗 27% · 传说 8%'),TR('十连保底：至少 1 件史诗以上装备或 1 位英雄')]]}[k];popup(T[0],T[1])}
+    odds:[TR('召唤概率公示'),[TR('整个英雄 5% · 英雄碎片 67% · 装备 28%'),TR('装备：普通 60% · 精良 28% · 史诗 10% · 传说 2%'),TR('BOSS 掉落：普通 20% · 精良 45% · 史诗 27% · 传说 8%'),TR('十连保底：至少 1 件史诗以上装备或 1 位英雄'),TR('英雄保底：连续 40 次没出整个英雄，第 40 次必出')]]}[k];popup(T[0],T[1])}
 function legalLinks(y){const L=[['privacy',TR('隐私政策')],['terms',TR('用户协议')],['odds',TR('概率公示')]];ctx.font=`700 13px ${FONT}`;let x=W-20;for(let i=L.length-1;i>=0;i--){const w=ctx.measureText(L[i][1]).width;x-=w;txt(L[i][1],x+w/2,y,13,'#9ef0ff','center',3);const k=L[i][0];hit(x-6,y-12,w+12,24,()=>openLegal(k));x-=22}}
 function copyright(c){txt(TR('© 2026 万泰游戏开发 版权所有'),W/2,H-14,13,c||'rgba(255,240,210,.75)','center',3);try{const v=BUILD_VER.startsWith('__')?'dev':new Date(+BUILD_VER*1000).toISOString().slice(5,16).replace('T',' ');txt(TR('版本 ')+v,14,H-14,11,'rgba(255,240,210,.55)','left',2);if(scene==='title')hit(0,H-34,160,34,()=>{try{verTap()}catch(_){}})}catch(_){}}
 function drawTitle(dt){hits=[];titleT+=dt;const t=titleT;img('map3',0,0,W,H);ctx.fillStyle='rgba(15,8,3,.35)';ctx.fillRect(0,0,W,H);
@@ -3329,6 +3333,13 @@ function drawSynBook(){ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,0,W,H);hit(
     const F=CMB_FX[s.n];if(F)fitTxt('⚔ '+TR('合击')+'：'+TR(F.d),cx+140,cy+76,13,cw-150,'#9ef0ff','left',2)});
   button(TR('关闭'),x+30+465+135,y+100+3*118+29,180,48,()=>{synPop=false},{style:'gray',size:17})}
 
+// ====================== 召唤保底（原神/明日方舟式的透明保底）：连续 40 次没出整个英雄，第 40 次必出，并在召唤页显示进度 ======================
+const PITY_N=40;
+(function(){const pl=pull;pull=function(){SAVE.pity=(SAVE.pity||0)+1;let r=pl.apply(this,arguments);if(r&&r.t==='hero'){SAVE.pity=0;return r}
+  if(SAVE.pity>=PITY_N){SAVE.pity=0;const id=Math.random()<.5?featHero():HERO_ORDER[Math.floor(Math.random()*HERO_ORDER.length)];addShards(id,30);track('pity',{id});r={t:'hero',id,n:30,pity:1}}return r};
+  const dg=drawGacha;drawGacha=function(dt){dg(dt);try{if(gachaRes)return;const left=PITY_N-(SAVE.pity||0);const s=TR('再召唤 {n} 次必出整个英雄（保底）').replace('{n}',left);ctx.font=`900 15px ${FONT}`;const w=ctx.measureText(s).width+40;ctx.fillStyle='rgba(60,20,90,.85)';rr(W/2-w/2,462,w,30,15);ctx.fill();fitTxt(s,W/2,477,15,w-20,'#e7c9ff','center',2);
+    hpbar(W/2-120,496,240,8,(SAVE.pity||0)/PITY_N,'#7a3cc0','#d6a8ff')}catch(e){}};if(window.__api)Object.assign(window.__api,{pull})})();
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -3371,7 +3382,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794982166';
+const BUILD_VER='1794982325';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

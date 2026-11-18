@@ -722,7 +722,7 @@ const LIMIT_PACK={sku:'limit',price:'$4.99',yb:0,bonus:0};
 
 // ---------- 怪物掉装备 / 自动穿戴 ----------
 const gearScore=g=>{const s=g.st;return (s.atk||0)*1+(s.hp||0)*.8+(s.armor||0)*1.6+(s.crit||0)*2+(s.cd||0)*1.5};
-function battleDrop(e){if(!G||(G.L.chal&&G.L.chal!=='event'))return;G.lootN=G.lootN||0;const cap=evOn('weekend')?20:14;if(G.lootN>=cap)return;
+function battleDrop(e){if(!G||(G.L.chal&&G.L.chal!=='event'))return;if(typeof feat==='function'&&!feat('bag'))return;G.lootN=G.lootN||0;const cap=evOn('weekend')?20:14;if(G.lootN>=cap)return;
   const base=e.D.boss?0:e.t==='ogre'?.25:e.D.lives>1?.2:.1;const ch=base*(evOn('weekend')?2:1);if(!e.D.boss&&Math.random()>ch)return;
   const g=rollGear(e.D.boss?'boss':'rand',Math.max(0,G.li));G.lootN++;G.loot=G.loot||[];G.loot.push({x:e.x,y:e.y-30,t:0,g});G.over_drops=G.over_drops||[];G.over_drops.push(g);
   floatText(TR('掉落')+' '+gearName(g),e.x,e.y-70,RAR[g.r].c,1.4);sfx('loot',e.x);growTip('gear');afterLoot(e.x,e.y);save()}
@@ -742,8 +742,8 @@ function heroUpList(){return HERO_ORDER.filter(h=>owns(h)&&(SAVE.shards[h]||0)>=
 function gearUpCount(){let n=0;const used=new Set();for(const h of HERO_ORDER.filter(owns))for(const sl of SLOTS){const cur=(SAVE.eq[h]||{})[sl.k];const cg=cur&&gearById(cur);const cs=cg?gearScore(cg):-1;
   const c=SAVE.gear.filter(g=>g.s===sl.k&&!isEquipped(g.id)&&!used.has(g.id)).sort((a,b)=>gearScore(b)-gearScore(a))[0];if(c&&gearScore(c)>cs){used.add(c.id);n++}}return n}
 function talentFree(){const free=totalStars()-spentStars();return TALENTS.some(t=>(SAVE.tal[t.k]||0)<t.max&&talentCost(t.k,(SAVE.tal[t.k]||0)+1)-talentCost(t.k,SAVE.tal[t.k]||0)<=free)?free:0}
-function upgradeTips(){const o=[];const hl=heroUpList();if(hl.length)o.push({k:'hero',n:hl.length,h:hl[0],label:TR('英雄可升星')+' ×'+hl.length});
-  const gn=gearUpCount();if(gn)o.push({k:'gear',n:gn,label:TR('有更好的装备')+' ×'+gn});const tf=talentFree();if(tf)o.push({k:'tal',n:tf,label:TR('天赋点可用')+' ×'+tf});return o}
+function upgradeTips(){const o=[];const hl=heroUpList();if(hl.length&&(typeof feat!=='function'||feat('hall')))o.push({k:'hero',n:hl.length,h:hl[0],label:TR('英雄可升星')+' ×'+hl.length});
+  const gn=(typeof feat!=='function'||feat('bag'))?gearUpCount():0;if(gn)o.push({k:'gear',n:gn,label:TR('有更好的装备')+' ×'+gn});const tf=talentFree();if(tf)o.push({k:'tal',n:tf,label:TR('天赋点可用')+' ×'+tf});return o}
 
 // ---------- 装备合成：同部位同品质同等级 两件合一件，等级+1，无上限 ----------
 function mergeTwo(a,b){let keep=a,food=b;if(isEquipped(b.id)&&!isEquipped(a.id)){keep=b;food=a}
@@ -1123,7 +1123,7 @@ function ns(k,x,y,w,h,c,s,filter){let i=IMG[k];if(!ok(k))return;s=s||.5;let off=
 function coinIcon(x,y,r){ctx.save();const g=ctx.createRadialGradient(x-r*.3,y-r*.3,1,x,y,r);g.addColorStop(0,'#fff5b0');g.addColorStop(.5,'#ffc93c');g.addColorStop(1,'#b86e00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();
   ctx.strokeStyle='#6b3d00';ctx.lineWidth=Math.max(1.5,r*.15);ctx.stroke();ctx.strokeStyle='rgba(107,61,0,.6)';ctx.lineWidth=Math.max(1,r*.1);ctx.beginPath();ctx.arc(x,y,r*.62,0,7);ctx.stroke();ctx.restore()}
 function heartIcon(x,y,s){imgC('ui_Icon_Heart',x,y,s,'sepia(1) saturate(6) hue-rotate(-45deg) brightness(.95)')}
-function ybPill(x,y){plate(x,y,190,48);imgC('gem',x+28,y+24,34);txt(SAVE.yb||0,x+100,y+25,22,'#9ef0ff','center',4);ibtn('ui_Icon_Plus',x+168,y+24,40,()=>{shopBack=scene;scene='shop';lvPop=null;AUD.sfx('open')})}
+function ybPill(x,y){plate(x,y,190,48);imgC('gem',x+28,y+24,34);txt(SAVE.yb||0,x+100,y+25,22,'#9ef0ff','center',4);if(typeof feat!=='function'||feat('shop'))ibtn('ui_Icon_Plus',x+168,y+24,40,()=>{shopBack=scene;scene='shop';lvPop=null;AUD.sfx('open')})}
 let shopBack='levels';
 function starIcon(x,y,s,on){imgC('ui_LevelComplete_Star_1',x,y,s,on?null:'grayscale(1) brightness(.45)')}
 
@@ -2286,7 +2286,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794968708';
+const BUILD_VER='1794969422';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

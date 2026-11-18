@@ -489,3 +489,7 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 - Suggested hold: after the deal the cards a basic strategy would keep get a gold edge, a hint line says how many to hold, and an AUTO HOLD / 按建议保留 button applies it in one tap (wild cards always kept in Deuces Wild / Joker Poker).
 - All buttons and results in one language (币值 / 投注 / 最大投注 / 换牌 / 发牌; result "三条 · 赢 15.00"), result line no longer upper-cases Chinese away.
 - Strategy helper unit-checked on 7 sample hands. sw lv-v108. Tests 90/90.
+
+## Round 40 (00:10) — Keno refined (Classic / Power / Four Card)
+- Number grid no longer jumps when you pick (paytable and header have fixed height); live counter while balls drop (开出 11/20 · 命中 1); paytable chips, buttons, rules and results in one language (命中 2 个 · 未中奖 / 2 HITS · NO WIN).
+- sw lv-v109. Tests 90/90.

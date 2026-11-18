@@ -1154,15 +1154,17 @@
       const sp = document.getElementById('whS'); [['1', '1', '1:1'], ['2', '2', '2:1'], ['5', '5', '5:1'], ['10', '10', '10:1'], ['20', '20', '20:1'], ['J', '★ Joker', '40:1'], ['L', '♛ Logo', '40:1']].forEach(x => sp.appendChild(spotBtn(...x))); this.rot = 0; },
     async render(v, r) { const svg = document.querySelector('.wh-wrap svg'); const n = TE.WHEEL.length; this.rot = this.rot - (this.rot % 360) + 360 * 6 + (360 - v.i / n * 360); svg.style.transform = 'rotate(' + this.rot + 'deg)'; sfx.spin(); await wait(5100); sfx.stop();
       markWins(v.wins); showRes((v.seg === 'J' ? 'JOKER' : v.seg === 'L' ? 'LOGO' : v.seg) + (r.win > 0 ? ' · WIN ' + fmt(r.win) : ''), r.win); }, dealLabel: 'Spin' };
-  // KENO
+  // KENO — 2026-11-19 refine: one language, fixed-height paytable (grid no longer jumps when you pick), live hit counter while balls drop
+  const KNL = () => (window.LVLang && LVLang.get()) || 'bi', KNT = (zh, en) => KNL() === 'zh' ? zh : KNL() === 'en' ? en : zh + ' ' + en;
+  { const st = document.createElement('style'); st.textContent = '#knP{min-height:58px;align-content:flex-start}#knL{min-height:26px}#felt:has(#knG) .res{min-height:30px;height:30px;line-height:30px;white-space:nowrap;font-size:min(22px,5vw)}#knL .kc{display:inline-flex;gap:8px;margin-left:8px}#knL .kc b{color:#ffd60a}'; document.head.appendChild(st); }
   REND.keno = {
     setup(f, g) { this.picks = this.picks || []; this.bet = this.bet || 1; this.power = g.tv === 'power'; this.four = g.tv === 'four';
       if (this.four) { this.cards = this.cards || [[], [], [], []]; this.cur = this.cur || 0; }
       let h = '<div class="kn-grid' + (this.four ? ' four' : '') + '" id="knG">'; for (let i = 1; i <= 80; i++) h += '<button data-n="' + i + '">' + i + '</button>'; h += '</div>';
-      const tabs = this.four ? '<div class="kn-tabs" id="knT">' + 'ABCD'.split('').map((L, i) => '<button data-c="' + i + '" class="kc' + i + '">CARD ' + L + ' <b></b></button>').join('') + '</div>' : '';
-      f.innerHTML = '<div class="lbl" id="knL"></div>' + tabs + resLine() + h + '<div class="kn-pay" id="knP"></div><div class="kn-res" id="knR"></div><div class="pt2">' + (this.four ? 'Four Card Keno · mark up to 10 numbers on each of 4 cards · one draw of 20 balls plays every card · each card costs one bet' : 'Pick 1-10 numbers · 20 balls are drawn') + (this.power ? ' · POWER: if the last ball drawn is one of your hits, your win is multiplied ×4' : '') + '</div>';
+      const tabs = this.four ? '<div class="kn-tabs" id="knT">' + 'ABCD'.split('').map((L, i) => '<button data-c="' + i + '" class="kc' + i + '">' + KNT('卡 ', 'CARD ') + L + ' <b></b></button>').join('') + '</div>' : '';
+      f.innerHTML = '<div class="lbl" id="knL"></div>' + tabs + resLine() + h + '<div class="kn-pay" id="knP"></div><div class="kn-res" id="knR"></div><div class="pt2">' + (this.four ? KNT('四卡基诺：4 张卡各选最多 10 个号，一次开 20 个球，每张卡算一注', 'Four Card Keno · mark up to 10 numbers on each of 4 cards · one draw of 20 balls plays every card · each card costs one bet') : KNT('选 1–10 个号码，开出 20 个球，命中越多赔越高', 'Pick 1-10 numbers · 20 balls are drawn')) + (this.power ? KNT(' · 超级：最后一个球是你命中的号码时奖金 ×4', ' · POWER: if the last ball drawn is one of your hits, your win is multiplied ×4') : '') + '</div>';
       if (this.four) f.querySelectorAll('#knT button').forEach(b => b.onclick = () => { this.cur = +b.dataset.c; this.paint(); sfx.click(); });
-      f.querySelectorAll('#knG button').forEach(b => b.onclick = () => { if (TT.phase !== 'bet' && TT.phase !== 'done' || TT.busy) return; const n = +b.dataset.n; const P = this.four ? this.cards[this.cur] : this.picks; const i = P.indexOf(n); if (i >= 0) P.splice(i, 1); else if (P.length < 10) P.push(n); else toast('Max 10 numbers'); this.clearDraw(); this.paint(); updCtrl(); sfx.click(); });
+      f.querySelectorAll('#knG button').forEach(b => b.onclick = () => { if (TT.phase !== 'bet' && TT.phase !== 'done' || TT.busy) return; const n = +b.dataset.n; const P = this.four ? this.cards[this.cur] : this.picks; const i = P.indexOf(n); if (i >= 0) P.splice(i, 1); else if (P.length < 10) P.push(n); else toast(KNT('最多选 10 个号码', 'Max 10 numbers')); this.clearDraw(); this.paint(); updCtrl(); sfx.click(); });
       this.paint(); },
     clearDraw() { document.querySelectorAll('#knG button').forEach(b => b.classList.remove('drawn', 'hit')); const R = document.getElementById('knR'); if (R) R.innerHTML = ''; },
     paint() {
@@ -1170,25 +1172,26 @@
         document.querySelectorAll('#knG button').forEach(b => { const n = +b.dataset.n; b.classList.toggle('pick', C[cur].includes(n)); b.dataset.cards = C.map((c, i) => c.includes(n) ? 'ABCD'[i] : '').join(''); b.className = b.className.replace(/\bkc\d\b/g, '').trim(); if (C[cur].includes(n)) b.classList.add('kc' + cur); });
         document.querySelectorAll('#knT button').forEach((b, i) => { b.classList.toggle('on', i === cur); b.querySelector('b').textContent = C[i].length + '/10'; });
         const act = C.filter(c => c.length); const T = TE.KENO.classic[C[cur].length] || {};
-        document.getElementById('knP').innerHTML = C[cur].length ? '<span class="kh">Card ' + 'ABCD'[cur] + '</span>' + Object.keys(T).sort((a, b) => b - a).map(h => '<span data-h="' + h + '">' + h + ' hits · ' + T[h] + 'x</span>').join('') : '<span>Mark numbers on card ' + 'ABCD'[cur] + '</span>';
-        document.getElementById('knL').innerHTML = '<b>' + act.length + '</b> card' + (act.length === 1 ? '' : 's') + ' in play · total bet <b>' + fmt(this.bet * act.length) + '</b>';
+        document.getElementById('knP').innerHTML = C[cur].length ? '<span class="kh">' + KNT('卡 ', 'Card ') + 'ABCD'[cur] + '</span>' + Object.keys(T).sort((a, b) => b - a).map(h => '<span data-h="' + h + '">' + KNT(h + ' 中 · ' + T[h] + ' 倍', h + ' hits · ' + T[h] + 'x') + '</span>').join('') : '<span>' + KNT('在卡 ' + 'ABCD'[cur] + ' 上选号', 'Mark numbers on card ' + 'ABCD'[cur]) + '</span>';
+        document.getElementById('knL').innerHTML = KNT('参与 <b>' + act.length + '</b> 张卡 · 总投注 <b>' + fmt(this.bet * act.length) + '</b>', '<b>' + act.length + '</b> card' + (act.length === 1 ? '' : 's') + ' in play · total bet <b>' + fmt(this.bet * act.length) + '</b>');
         const enc = []; act.forEach((c, i) => { if (i) enc.push(0); enc.push(...c); }); TT.extra = { picks: enc }; TT.bets = act.length ? { main: this.bet, cards: act.length } : {}; return; }
       document.querySelectorAll('#knG button').forEach(b => b.classList.toggle('pick', this.picks.includes(+b.dataset.n)));
-      const T = TE.KENO[this.power ? 'power' : 'classic'][this.picks.length] || {}; document.getElementById('knP').innerHTML = this.picks.length ? Object.keys(T).sort((a, b) => b - a).map(h => '<span data-h="' + h + '">' + h + ' hits · ' + T[h] + 'x</span>').join('') : '<span>Pick numbers to see the paytable</span>';
-      document.getElementById('knL').innerHTML = 'Picked <b>' + this.picks.length + '/10</b>'; TT.extra = { picks: this.picks.slice() }; TT.bets = this.picks.length ? { main: this.bet } : {}; },
+      const T = TE.KENO[this.power ? 'power' : 'classic'][this.picks.length] || {}; document.getElementById('knP').innerHTML = this.picks.length ? Object.keys(T).sort((a, b) => b - a).map(h => '<span data-h="' + h + '">' + KNT(h + ' 中 · ' + T[h] + ' 倍', h + ' hits · ' + T[h] + 'x') + '</span>').join('') : '<span>' + KNT('选号后显示赔付表', 'Pick numbers to see the paytable') + '</span>';
+      document.getElementById('knL').innerHTML = KNT('已选', 'Picked') + ' <b>' + this.picks.length + '/10</b>'; TT.extra = { picks: this.picks.slice() }; TT.bets = this.picks.length ? { main: this.bet } : {}; },
     controls(c) { const me = REND.keno; const bs = [1, 2, 5, 10, 20, 50]; const has = me.four ? me.cards.some(x => x.length) : me.picks.length;
-      c.innerHTML = '<div class="tsmall"><button class="tbtn" id="knQ">Quick pick' + (me.four ? ' all' : '') + '</button><button class="tbtn" id="knC">Clear</button></div><div class="tsmall"><button class="tbtn" id="knB">Bet ' + fmt(me.bet) + (me.four ? '/card' : '') + '</button></div><button class="tbtn go" id="knGo"' + (has && !TT.busy ? '' : ' disabled') + '>Play</button>';
+      c.innerHTML = '<div class="tsmall"><button class="tbtn" id="knQ">Quick pick' + (me.four ? ' all' : '') + '</button><button class="tbtn" id="knC">' + KNT('清除', 'Clear') + '</button></div><div class="tsmall"><button class="tbtn" id="knB">Bet ' + fmt(me.bet) + (me.four ? '/card' : '') + '</button></div><button class="tbtn go" id="knGo"' + (has && !TT.busy ? '' : ' disabled') + '>' + KNT('开奖', 'PLAY') + '</button>';
       const qp = k => { const a = []; while (a.length < k) { const n = 1 + Math.floor(Math.random() * 80); if (!a.includes(n)) a.push(n); } return a; };
       document.getElementById('knQ').onclick = () => { if (TT.busy) return; if (me.four) me.cards = [qp(6), qp(6), qp(6), qp(6)]; else me.picks = qp(8); me.clearDraw(); me.paint(); updCtrl(); };
       document.getElementById('knC').onclick = () => { if (TT.busy) return; if (me.four) me.cards[me.cur] = []; else me.picks = []; me.clearDraw(); me.paint(); updCtrl(); };
       document.getElementById('knB').onclick = () => { me.bet = bs[(bs.indexOf(me.bet) + 1) % bs.length]; me.paint(); updCtrl(); };
       document.getElementById('knGo').onclick = () => { me.paint(); deal(); }; },
     async render(v, r) { this.clearDraw(); const btn = n => document.querySelector('#knG button[data-n="' + n + '"]');
-      for (const n of v.draw) { const b = btn(n); b.classList.add(v.picks.includes(n) ? 'hit' : 'drawn'); if (v.picks.includes(n)) sfx.click(); await wait(TT.fast ? 30 : 110); }
+      const L0 = document.getElementById('knL'), base = L0 ? L0.innerHTML : ''; let k = 0, hh = 0;
+      for (const n of v.draw) { const b = btn(n); const isH = v.picks.includes(n); b.classList.add(isH ? 'hit' : 'drawn'); k++; if (isH) { hh++; sfx.click(); } if (L0 && !v.cards) L0.innerHTML = base + '<span class="kc">' + KNT('开出', 'Drawn') + ' <b>' + k + '/20</b> ' + KNT('命中', 'Hits') + ' <b>' + hh + '</b></span>'; await wait(TT.fast ? 30 : 110); }
       if (v.cards) { document.getElementById('knR').innerHTML = v.cards.map((c, i) => '<span class="kc' + i + (c.win > 0 ? ' w' : '') + '">' + 'ABCD'[i] + ' · ' + c.hits.length + '/' + c.picks.length + (c.win > 0 ? ' · ' + fmt(c.win) : '') + '</span>').join('');
-        showRes(r.win > 0 ? 'WIN ' + fmt(r.win) : 'NO WIN', r.win); return; }
+        showRes(r.win > 0 ? KNT('赢 ', 'WIN ') + fmt(r.win) : KNT('未中奖', 'NO WIN'), r.win); return; }
       document.querySelectorAll('#knP span').forEach(s => s.classList.toggle('on', +s.dataset.h === v.hits.length));
-      showRes(v.hits.length + (v.hits.length === 1 ? ' HIT' : ' HITS') + (v.power ? ' · POWER ×4!' : '') + (r.win > 0 ? ' · WIN ' + fmt(r.win) : ' · NO WIN'), r.win); },
+      showRes(KNT('命中 ' + v.hits.length + ' 个', v.hits.length + (v.hits.length === 1 ? ' HIT' : ' HITS')) + (v.power ? KNT(' · 超级 ×4！', ' · POWER ×4!') : '') + (r.win > 0 ? ' · ' + KNT('赢 ', 'WIN ') + fmt(r.win) : ' · ' + KNT('未中奖', 'NO WIN')), r.win); },
     keepBets: true
   };
   // SCRATCH

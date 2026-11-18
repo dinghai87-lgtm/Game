@@ -548,3 +548,8 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 55 (02:15) — Hold & Win feature run (Dragon Fortune Link)
 - Spun until Hold & Win triggered (40 spins) and captured every frame: respin counter, coin lock, big-win count-up, collect/gamble bar all fine. Fixed leftovers in 中文: 'ACHIEVEMENT +300' pop (only +100/+500/+1,000 were translated — now any amount), 'HOLD & WIN 36.00' win line → 金币奖, 'Line 3' → 第 3 线, mission/level pops by pattern. sw lv-v131. Tests 90/90.
+
+## Round 56 (02:21) — Desktop pass over the refined tables (1440×900)
+- Baccarat, Three Card Poker, Sic Bo, Roulette, Blackjack checked on a laptop-size screen: the new zoned layouts scale correctly. Fixed: the rule printed on the felt edge (DEALER PLAYS WITH QUEEN HIGH OR BETTER, BLACKJACK PAYS 3 TO 2 …) was English in 中文 mode — now follows the language setting for all 10 tables that have one.
+- Parked: on desktop roulette the felt artwork's cut-out sits slightly left of the number board (art alignment, cosmetic).
+- sw lv-v132. Tests 90/90.

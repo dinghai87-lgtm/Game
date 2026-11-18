@@ -40,7 +40,7 @@ body.ingame #hovDock{display:none}
 .wmult span b{color:#ffd60a;font-size:16px;margin-left:4px}
 .wtot{font:900 clamp(30px,6vw,52px) Anton,Impact,"Arial Black",sans-serif;color:#ffd60a;text-shadow:0 4px 0 #6b4300,0 0 20px #000}
 .albgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-@media(max-width:600px){#game .jpbar{flex-wrap:nowrap}#game .jpbar .jp,#game .jpbar .jp.grand{flex:1 1 0;min-width:0;padding:2px 3px}#game .jpbar .jp b{font-size:10px;letter-spacing:-.2px}#game .jpbar .jp small{font-size:7px}}
+@media(max-width:600px){#game .jpbar,#game.skinned .jpbar{flex-wrap:nowrap;width:calc(100% - 20px);max-width:420px;box-sizing:border-box;margin-left:auto;margin-right:auto}#game .jpbar .jp,#game .jpbar .jp.grand{flex:1 1 0;min-width:0;max-width:none;padding:3px 3px 4px}#game .jpbar .jp.grand{flex:1.25 1 0}#game .jpbar .jp b{font-size:clamp(12px,3.6vw,15px);letter-spacing:0}#game .jpbar .jp small{font-size:9px;letter-spacing:1px}}
 @media(max-width:600px){.albgrid{grid-template-columns:repeat(2,1fr)}}
 .albset{border-radius:16px;padding:8px;cursor:pointer;background:linear-gradient(160deg,var(--c2),var(--c1));box-shadow:0 0 0 2px rgba(255,255,255,.25),0 6px 14px rgba(0,0,0,.5);transition:transform .15s}
 .albset:hover{transform:translateY(-3px)}

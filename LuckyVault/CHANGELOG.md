@@ -505,3 +505,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 ## Round 43 (01:10) — Slot paytables showed blank / placeholder icons (all slots)
 - Found while reviewing Thunder Temple frame by frame: in every slot's Info / 赔付表 the symbol pictures were squashed to nothing by a CSS rule meant for the paytable rows (it also hit the nested cell divs), so players saw coloured bars or empty boxes instead of the real symbols. Rule scoped to the row boxes; the real art now shows for all slots (checked Lucky 777).
 - sw lv-v113. Tests 90/90.
+
+## Round 44 (01:20) — Jackpot bar on phones
+- In-game GRAND / MAJOR / MINOR / MINI pills were tiny on phones (GRAND 100,000 spilled out of its box). Bar now spans the screen width, values 12–15px and fit (GRAND slightly wider). sw lv-v114. Tests 90/90.

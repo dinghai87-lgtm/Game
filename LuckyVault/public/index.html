@@ -37,7 +37,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .hero{margin:14px;border-radius:16px;padding:22px 20px;background:linear-gradient(115deg,#1e3a8a 0%,#7c3aed 45%,#db2777 100%);position:relative;overflow:hidden;min-height:130px}
 .hero h1{font-size:26px;font-weight:900;line-height:1.1;max-width:60%}
 .hero p{margin-top:8px;opacity:.9;font-size:14px;max-width:60%}
-.hero .big{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:84px;filter:drop-shadow(0 10px 20px rgba(0,0,0,.4))}
+.hero .big{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:84px;filter:drop-shadow(0 10px 20px rgba(0,0,0,.4))}.hero .bigimg{height:150px;width:auto;right:6px;pointer-events:none}
 .hero .cta{margin-top:12px;display:inline-block;background:#fff;color:#111;border:0;border-radius:10px;padding:9px 16px;font-weight:900}
 .bar2{display:flex;gap:10px;align-items:center;padding:0 14px;margin:6px 0 12px;flex-wrap:wrap}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;flex:1;min-width:0}
@@ -50,7 +50,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .sec{padding:4px 14px 8px;font-weight:800;font-size:16px;display:flex;align-items:center;gap:8px}
 .sec span{color:var(--mute);font-weight:600;font-size:13px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding:0 14px 16px}
-@media(max-width:560px){.grid{grid-template-columns:repeat(3,1fr);gap:8px}.hero h1{font-size:20px;max-width:70%}.hero p{font-size:12px}.hero .big{font-size:60px}#search{width:100%}}
+@media(max-width:560px){.grid{grid-template-columns:repeat(3,1fr);gap:8px}.hero h1{font-size:20px;max-width:70%}.hero p{font-size:12px}#userBtn{white-space:nowrap}.hero .big{font-size:60px}.hero .bigimg{height:104px;opacity:.95}#search{width:100%}}
 .tile{aspect-ratio:3/4;border-radius:12px;position:relative;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 14px rgba(0,0,0,.35);isolation:isolate}
 .tile:hover{transform:translateY(-4px);box-shadow:0 10px 24px rgba(0,0,0,.5)}
 .tile::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 38%,rgba(255,255,255,.28),transparent 55%);z-index:-1}
@@ -409,9 +409,9 @@ button:focus-visible,input:focus-visible,.tile:focus-visible{outline:3px solid #
 <main id="lobby">
   <div id="winfeed" style="display:none"><span class="wfi">🏆</span><div class="wft"><div class="wfm" id="wfm"></div></div></div>
   <div class="heros" id="heros">
-    <div class="hero h1"><div><small>HOLD &amp; WIN JACKPOTS</small><h1>Grand Jackpot<br><span>1,000× your bet</span></h1><p>Collect 6 coins to lock and respin. Fill the screen for the Grand.</p><button class="cta" data-go="jackpot">Play jackpots</button></div><div class="big emo">🪙</div></div>
-    <div class="hero h2"><div><small>TABLE GAMES</small><h1>Blackjack, Roulette<br><span>&amp; Baccarat</span></h1><p>Real casino rules, real house edges. 13 tables open 24/7.</p><button class="cta" data-go="blackjack">Take a seat</button></div><div class="big emo">🃏</div></div>
-    <div class="hero h3"><div><small>VIDEO POKER</small><h1>Up to 99.5%<br><span>return</span></h1><p>Jacks or Better, Deuces Wild, Double Bonus and more.</p><button class="cta" data-go="videopoker">Play poker</button></div><div class="big emo">🂡</div></div>
+    <div class="hero h1"><div><small>HOLD &amp; WIN JACKPOTS</small><h1>Grand Jackpot<br><span>1,000× your bet</span></h1><p>Collect 6 coins to lock and respin. Fill the screen for the Grand.</p><button class="cta" data-go="jackpot">Play jackpots</button></div><img class="big bigimg" src="assets/lobby/hero1.webp" alt="" loading="lazy"></div>
+    <div class="hero h2"><div><small>TABLE GAMES</small><h1>Blackjack, Roulette<br><span>&amp; Baccarat</span></h1><p>Real casino rules, real house edges. 13 tables open 24/7.</p><button class="cta" data-go="blackjack">Take a seat</button></div><img class="big bigimg" src="assets/lobby/hero2.webp" alt="" loading="lazy"></div>
+    <div class="hero h3"><div><small>VIDEO POKER</small><h1>Up to 99.5%<br><span>return</span></h1><p>Jacks or Better, Deuces Wild, Double Bonus and more.</p><button class="cta" data-go="videopoker">Play poker</button></div><img class="big bigimg" src="assets/lobby/hero3.webp" alt="" loading="lazy"></div>
   </div>
   <div class="bar2">
     <div class="tabs" id="tabs"></div>

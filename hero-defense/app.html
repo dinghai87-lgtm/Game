@@ -189,6 +189,12 @@ Object.assign(I18N.ja,{"使用能量超载 {n} 次": "オーバーチャージ�
 Object.assign(I18N.ko,{"使用能量超载 {n} 次": "과부하 {n}회 사용", "完成远征 {n} 次": "원정 {n}회 완료", "收集宠物 {n} 只": "펫 {n}마리 수집", "获得关卡勋章 {n} 枚": "스테이지 훈장 {n}개 획득", "解开残局 {n} 道": "퍼즐 {n}개 해결", "讨伐击杀首领 {n} 次": "보스 토벌 {n}회 처치", "赢下好友挑战 {n} 次": "친구 도전 {n}회 승리", "释放羁绊合击 {n} 次": "인연 합격 {n}회 사용"});
 Object.assign(I18N.es,{"使用能量超载 {n} 次": "Sobrecarga torres {n} veces", "完成远征 {n} 次": "Completa {n} odiseas", "收集宠物 {n} 只": "Reúne {n} mascotas", "获得关卡勋章 {n} 枚": "Gana {n} medallas de fase", "解开残局 {n} 道": "Resuelve {n} puzles", "讨伐击杀首领 {n} 次": "Derrota al jefe del asalto {n} veces", "赢下好友挑战 {n} 次": "Gana {n} retos de amigos", "释放羁绊合击 {n} 次": "Lanza {n} combos de vínculo"});
 
+// 自制挑战
+Object.assign(I18N.en,{"不能带英雄": "No heroes", "先通关第 2 关再来": "Clear Stage 2 first", "分享这关": "Share this stage", "分享链接": "Share link", "可带英雄": "Heroes allowed", "可建的塔（点选）": "Allowed towers (tap)", "地图": "Map", "好友的自制挑战": "Friend's Custom Challenge", "开局金币": "Starting gold", "我在《英雄塔防》做了一关自制挑战，你能过吗？": "I made a custom stage in Hero Defense. Can you beat it?", "把这关发给朋友，看看他们能不能过": "Send this stage to friends and see if they can beat it", "无": "None", "波数": "Waves", "自制挑战": "Custom Challenge", "自制挑战通关！": "Custom challenge cleared!", "英雄": "Heroes", "试玩": "Test play"});
+Object.assign(I18N.ja,{"不能带英雄": "英雄なし", "先通关第 2 关再来": "まずステージ2をクリア", "分享这关": "このステージを共有", "分享链接": "リンクを共有", "可带英雄": "英雄あり", "可建的塔（点选）": "建設できる塔（タップ）", "地图": "マップ", "好友的自制挑战": "フレンドの自作チャレンジ", "开局金币": "初期ゴールド", "我在《英雄塔防》做了一关自制挑战，你能过吗？": "『英雄塔防』で自作ステージを作った。クリアできる？", "把这关发给朋友，看看他们能不能过": "友達に送ってクリアできるか試そう", "无": "なし", "波数": "ウェーブ数", "自制挑战": "自作チャレンジ", "自制挑战通关！": "自作チャレンジクリア！", "英雄": "英雄", "试玩": "試遊"});
+Object.assign(I18N.ko,{"不能带英雄": "영웅 없음", "先通关第 2 关再来": "먼저 2스테이지 클리어", "分享这关": "이 스테이지 공유", "分享链接": "링크 공유", "可带英雄": "영웅 가능", "可建的塔（点选）": "건설 가능한 탑 (탭)", "地图": "맵", "好友的自制挑战": "친구의 자작 도전", "开局金币": "시작 골드", "我在《英雄塔防》做了一关自制挑战，你能过吗？": "「영웅 타워 디펜스」에서 자작 스테이지를 만들었어. 깰 수 있어?", "把这关发给朋友，看看他们能不能过": "친구에게 보내서 깰 수 있는지 보세요", "无": "없음", "波数": "웨이브 수", "自制挑战": "자작 도전", "自制挑战通关！": "자작 도전 클리어!", "英雄": "영웅", "试玩": "테스트 플레이"});
+Object.assign(I18N.es,{"不能带英雄": "Sin héroes", "先通关第 2 关再来": "Supera primero la fase 2", "分享这关": "Compartir fase", "分享链接": "Compartir enlace", "可带英雄": "Héroes permitidos", "可建的塔（点选）": "Torres permitidas (toca)", "地图": "Mapa", "好友的自制挑战": "Reto personalizado de un amigo", "开局金币": "Oro inicial", "我在《英雄塔防》做了一关自制挑战，你能过吗？": "He creado una fase en Hero Defense. ¿Puedes superarla?", "把这关发给朋友，看看他们能不能过": "Envíala a tus amigos y mira si la superan", "无": "Ninguno", "波数": "Oleadas", "自制挑战": "Reto personalizado", "自制挑战通关！": "¡Reto personalizado superado!", "英雄": "Héroes", "试玩": "Probar"});
+
 'use strict';
 // ====================== 基础 ======================
 let W=1280,H=720,OX=0,OY=0,HOX=0,HOY=0;const WW=1280,WH=720;
@@ -645,7 +651,7 @@ function endBattle(win){G.over={win,t:0};const L=G.L;track('level_end',{li:G.li,
   if(win)dailyAdd('wins');passAdd(win?50:15);G.over.drops=(G.over_drops||[]).slice();G.over.canRevive=!win;G.over.adOk=!APP_FREE&&!win&&!L.endless&&!G.revived;
   if(win&&!L.endless){const boss=!!L.boss;if(boss||Math.random()<(evOn('weekend')?.7:.35)){const g=rollGear(boss?'boss':'rand',Math.max(0,G.li));G.over.drops.push(g)}}if(win&&L.boss&&!L.endless&&G.li>=0){SAVE.bossFirst=SAVE.bossFirst||{};if(!SAVE.bossFirst[G.li]){SAVE.bossFirst[G.li]=1;const g=rollGear(Math.random()<.3?3:2,Math.max(0,G.li));G.over.drops.push(g);const tm=SAVE.team.filter(owns);for(const h of tm)addShards(h,10);SAVE.yb+=100;save();
     setTimeout(()=>{try{popup(TR('首通 BOSS 奖励'),[gearName(g),TR('每位出战英雄碎片 +10'),'+100 '+SHOP_CFG.cur]);AUD.sfx('starup')}catch(_){}},900)}}try{afterLoot()}catch(_){}try{onBattleEnd(win)}catch(err){console.warn(err)}
-  if(L.chal&&L.chal!=='event'&&L.chal!=='trial'&&L.chal!=='weekly'&&L.chal!=='puzzle'&&L.chal!=='boss'&&L.chal!=='ody'){const t=today();const first=!(SAVE.chal[t]&&SAVE.chal[t].win);SAVE.chal[t]={win:win||(SAVE.chal[t]&&SAVE.chal[t].win),best:Math.max((SAVE.chal[t]&&SAVE.chal[t].best)||0,G.wave-(win?0:1))};netBoard(G.wave-(win?0:1));if(win&&first){dailyAdd('chal');G.over.chalR=grant({yb:100,gear:'boss'})}}
+  if(L.chal&&L.chal!=='event'&&L.chal!=='trial'&&L.chal!=='weekly'&&L.chal!=='puzzle'&&L.chal!=='boss'&&L.chal!=='ody'&&L.chal!=='custom'){const t=today();const first=!(SAVE.chal[t]&&SAVE.chal[t].win);SAVE.chal[t]={win:win||(SAVE.chal[t]&&SAVE.chal[t].win),best:Math.max((SAVE.chal[t]&&SAVE.chal[t].best)||0,G.wave-(win?0:1))};netBoard(G.wave-(win?0:1));if(win&&first){dailyAdd('chal');G.over.chalR=grant({yb:100,gear:'boss'})}}
   let stars=0;if(win&&!L.endless&&!L.chal){stars=G.lives>=G.maxLives-2?3:G.lives>=G.maxLives/2?2:1;SAVE.stars[G.li]=Math.max(SAVE.stars[G.li]||0,stars)}
   G.over.stars=stars;const bonus=Math.round((win?120:30)*Math.sqrt(L.diff||1));G.over.lvUp=[];let tot=0;
   for(const a of G.allies)if(a.hero){heroXP(a,bonus);tot=Math.max(tot,a.xpGot);if(a.lvl>a.lvl0)G.over.lvUp.push(a.hero)}G.over.xp=tot;
@@ -2530,7 +2536,7 @@ function shareReport(){try{const o=G.over,L=G.L;const cw=1080,ch=1350,c=document
   const up=update;update=function(dt){if(G&&G.shop)return;up(dt)};
   const eb=endBattle;endBattle=function(win){const L=G&&G.L;eb(win);if(!L)return;buzz(win?'ok':'heavy');
     if(L.endless)g7().c.endless=Math.max(g7().c.endless||0,G.wave);
-    if(win&&L.chal&&!['trial','event','weekly','puzzle','boss','ody'].includes(L.chal))g7add('chal');
+    if(win&&L.chal&&!['trial','event','weekly','puzzle','boss','ody','custom'].includes(L.chal))g7add('chal');
     if(L.chal==='weekly'){try{wkSubmit(wkScore(win),win)}catch(e){console.error(e)}}};
   const dc=drawCard;drawCard=function(){const C=G&&G.card;if(C&&C.k==='diff'&&!POP){ctx.fillStyle='rgba(0,0,0,.62)';ctx.fillRect(0,0,W,H);hit(0,0,W,H,()=>{},'card');
       const w=900,h=360,x=W/2-w/2,y=H/2-h/2;panel(x,y,w,h,TR('选择难度'));txt(TR('随时可以在「设置」里修改'),W/2,y+80,16,'#e9d3a8','center',3);
@@ -2677,7 +2683,7 @@ const PUZ=[
 let puzSel=0;
 function puzzleLevel(){const P=PUZ[puzSel]||PUZ[0];return {name:TR('残局')+' '+(puzSel+1),map:P.map,paths:PATHS[P.map].map((_,i)=>i),waves:P.waves,gold:Math.round(P.gold*1.6/10)*10,pool:P.pool.slice(),boss:P.boss||null,diff:P.diff*.75,chal:'puzzle',allow:P.allow.slice(),goldX:.0001,seed:7000+puzSel*31,puz:puzSel}}
 function drawPuzzle(x,y,w){if(!feat('puzzle')){txt(TR('通关第 5 关后开放'),x+w/2,y+220,22,'#e9d3a8','center',3);return}SAVE.puz=SAVE.puz||{};
-  txt(TR('固定金币、固定的塔，没有英雄和法术，杀敌不给钱——只靠布局取胜'),x+w/2,y+26,15,'#e9d3a8','center',3);
+  fitTxt(TR('固定金币、固定的塔，没有英雄和法术，杀敌不给钱——只靠布局取胜'),x+(w-180)/2,y+26,15,w-220,'#e9d3a8','center',3);
   PUZ.forEach((P,i)=>{const cx=x+30+(i%3)*292,cy=y+48+Math.floor(i/3)*146,done=SAVE.puz[i],open=i===0||SAVE.puz[i-1];ctx.fillStyle=done?'rgba(60,110,40,.55)':'rgba(15,8,3,.55)';rr(cx,cy,278,134,14);ctx.fill();
     ctx.save();rr(cx+8,cy+8,110,62,8);ctx.clip();img('map'+P.map,cx+8,cy+8,110,62);ctx.restore();gtxt(TR('残局')+' '+(i+1),cx+196,cy+24,22,'#fff6d0',done?'#5ec46b':'#ffb320',4);
     txt('💰 '+Math.round(P.gold*1.6/10)*10+'  ·  '+P.waves+' '+TR('波')+(P.boss?' · BOSS':''),cx+196,cy+54,13,'#ffe27a','center',2);
@@ -3108,6 +3114,49 @@ function achSync(){SAVE.st=SAVE.st||{};const S=SAVE.st;try{S.medal=Object.values
   if(window.__api)Object.assign(window.__api,{endBattle});
 })();
 
+// ====================== 自制挑战（BTD6「玩家自制挑战」：自己定地图/波数/金币/可用塔，生成链接分享给朋友） ======================
+const CC_BOSS=['none','mino','golem','ent','rockg','boneknight','yeti','reaper'];
+const CC_TW=['arrow','magic','cannon','barracks','frost','poison','tesla','ballista'];
+let ccPop=false,ccPlay=null;
+function ccDraft(){SAVE.ccDraft=SAVE.ccDraft||{m:1,w:10,g:800,d:1.2,b:0,h:1,a:[0,1,2,3]};return SAVE.ccDraft}
+function ccLevel(c){c=c||ccPlay||ccDraft();const norm=Object.keys(ENEMIES).filter(k=>!ENEMIES[k].boss&&k!=='ogre'&&k!=='chest');const R=mulberry(c.m*977+c.w*31+Math.round(c.d*100));const pool=[];const nn=norm.slice();while(pool.length<Math.min(10,4+Math.floor(c.d*3)))pool.push(nn.splice(Math.floor(R()*nn.length),1)[0]);
+  const allow=(c.a||[]).map(i=>CC_TW[i]).filter(Boolean);return {name:TR('自制挑战')+(c.n?' · '+c.n:''),map:c.m,paths:PATHS[c.m].map((_,i)=>i),waves:c.w,gold:c.g,pool,boss:CC_BOSS[c.b]==='none'?null:CC_BOSS[c.b],diff:c.d,chal:'custom',allow:allow.length?allow:null,seed:c.m*977+c.w*31,noHero:!c.h,cc:c}}
+function ccDesc(c){return [TR(MAP_NAMES[c.m]||'')+' · '+c.w+' '+TR('波')+' · 💰'+c.g+' · '+TR('难度')+' '+c.d.toFixed(1),(CC_BOSS[c.b]==='none'?TR('无 BOSS'):'BOSS：'+ENEMIES[CC_BOSS[c.b]].name)+' · '+(c.h?TR('可带英雄'):TR('不能带英雄')),TR('可建：')+(c.a||[]).map(i=>TOWERS[CC_TW[i]].name).join(' ')]}
+function ccShare(c){try{c=Object.assign({},c||ccDraft(),{n:(typeof sbName==='function'?sbName():'')});const url=location.origin+location.pathname+'?cc='+chEncode(c);const t=TR('我在《英雄塔防》做了一关自制挑战，你能过吗？');track('cc_share',{});
+  if(navigator.share)navigator.share({title:'Hero Defense',text:t,url}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(t+' '+url).then(()=>showToast(TR('挑战链接已复制，发给朋友吧！'))).catch(()=>prompt(TR('复制下面的链接发给朋友：'),url));else prompt(TR('复制下面的链接发给朋友：'),url)}catch(e){console.error(e)}}
+function ccStart(c){ccPlay=c;ccPop=false;POP=null;lvPop=null;if(c.h){levelSel=-8;pickStart(-8)}else{startLevel(-8,0);scene='battle'}}
+(function(){try{const q=new URLSearchParams(location.search);const s=q.get('cc');if(!s)return;const o=chDecode(s);if(o&&o.m>=1&&o.m<=12&&o.w>=4&&o.w<=30){localStorage.setItem('hero_cc',JSON.stringify(Object.assign(o,{fresh:1})));try{track('cc_open',{})}catch(_){}}q.delete('cc');const r=q.toString();history.replaceState(null,'',location.pathname+(r?'?'+r:''))}catch(e){}})();
+function ccGot(){try{return JSON.parse(localStorage.getItem('hero_cc')||'null')}catch(e){return null}}
+function ccGotPop(){const o=ccGot();if(!o)return;const L=ccDesc(o);popup('🛠 '+TR('好友的自制挑战')+(o.n?' · '+o.n:''),L,prog()>=3?[{label:TR('开始挑战'),style:'red',fn:()=>ccStart(o)},{label:TR('稍后'),style:'gray'}]:[{label:TR('先通关第 2 关再来'),style:'green'}])}
+(function(){
+  const gl=getLevel;getLevel=function(i){if(i===-8)return ccLevel();return gl(i)};
+  const sl=startLevel;startLevel=function(li,e){sl(li,e);if(!G||G.L.chal!=='custom')return;if(G.L.noHero)G.allies=G.allies.filter(a=>!a.hero);G.card=null;G.banner={s:TR('自制挑战'),t:0}};
+  const eb=endBattle;endBattle=function(win){const first=G&&!G.over,L=G&&G.L;eb(win);try{if(!first||!L||L.chal!=='custom')return;const fromFriend=ccGot();if(win){stAdd('ccwin');if(fromFriend&&JSON.stringify(Object.assign({},fromFriend,{fresh:0}))===JSON.stringify(Object.assign({},L.cc,{fresh:0}))){localStorage.removeItem('hero_cc')}
+    setTimeout(()=>popup('🛠 '+TR('自制挑战通关！'),[TR('把这关发给朋友，看看他们能不能过')],[{label:TR('分享这关'),style:'gold',fn:()=>ccShare(L.cc)},{label:TR('确定'),style:'green'}]),1200)}}catch(e){}};
+  const ml=metaLevels;metaLevels=function(){ml.apply(this,arguments);try{const o=ccGot();if(o&&o.fresh&&!POP&&!lvPop&&!(typeof chGet==='function'&&chGet()&&chGet().fresh)){o.fresh=0;localStorage.setItem('hero_cc',JSON.stringify(o));ccGotPop()}
+    if(o){const x=140,y=(SAVE.installHide||isStandalone())?206:246,w=200,h=34;ctx.fillStyle='rgba(30,60,110,.9)';rr(x,y,w,h,12);ctx.fill();ctx.strokeStyle='#9ec8ff';ctx.lineWidth=1.5;rr(x,y,w,h,12);ctx.stroke();fitTxt('🛠 '+TR('好友的自制挑战'),x+w/2,y+h/2+.5,13,w-12,'#e0f0ff','center',2);hit(x,y,w,h,ccGotPop)}}catch(e){}};
+  const dp=drawPOP;drawPOP=function(){try{if(ccPop&&scene==='tasks')drawCC()}catch(e){console.error(e)}dp()};
+  const dt=drawTasks;drawTasks=function(d){dt(d);try{if(tasksTab===6&&feat('puzzle')){const x=W/2-460,y=150,w=920;button('🛠 '+TR('自制挑战'),x+w-178,y+6,160,36,()=>{ccPop=true;AUD.sfx('open')},{style:'blue',size:15})}}catch(e){}};
+  if(window.__api)Object.assign(window.__api,{startLevel,endBattle});
+})();
+function drawCC(){const c=ccDraft();ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,0,W,H);hit(0,0,W,H,()=>{ccPop=false});const w=760,h=560,x=W/2-w/2,y=H/2-h/2;ns('ui_Window_Background',x,y,w,h,150,.4);hit(x,y,w,h,()=>{});
+  gtxt('🛠 '+TR('自制挑战'),W/2,y+40,30,'#fff6d0','#5ec4ff',5);
+  ctx.save();rr(x+40,y+74,250,140,10);ctx.clip();img('map'+c.m,x+40,y+74,250,140);ctx.restore();
+  const row=(i,label,val,dec,inc)=>{const yy=y+92+i*44;fitTxt(label,x+320,yy,17,110,'#e9d3a8','left',3);button('◀',x+440,yy-18,44,36,dec,{style:'gray',size:16});fitTxt(val,x+560,yy,17,140,'#fff','center',3);button('▶',x+640,yy-18,44,36,inc,{style:'gray',size:16})};
+  const cyc=(v,n,d)=>(v+d+n)%n;
+  row(0,TR('地图'),TR(MAP_NAMES[c.m]||''),()=>{c.m=1+cyc(c.m-1,12,-1);save()},()=>{c.m=1+cyc(c.m-1,12,1);save()});
+  row(1,TR('波数'),c.w+' '+TR('波'),()=>{c.w=Math.max(6,c.w-2);save()},()=>{c.w=Math.min(20,c.w+2);save()});
+  row(2,TR('开局金币'),'💰 '+c.g,()=>{c.g=Math.max(300,c.g-100);save()},()=>{c.g=Math.min(2000,c.g+100);save()});
+  row(3,TR('难度'),c.d.toFixed(1),()=>{c.d=Math.max(.8,Math.round((c.d-.1)*10)/10);save()},()=>{c.d=Math.min(2.5,Math.round((c.d+.1)*10)/10);save()});
+  row(4,'BOSS',CC_BOSS[c.b]==='none'?TR('无'):ENEMIES[CC_BOSS[c.b]].name,()=>{c.b=cyc(c.b,CC_BOSS.length,-1);save()},()=>{c.b=cyc(c.b,CC_BOSS.length,1);save()});
+  {const yy=y+92+5*44;fitTxt(TR('英雄'),x+320,yy,17,110,'#e9d3a8','left',3);button(c.h?TR('可带英雄'):TR('不能带英雄'),x+440,yy-18,244,36,()=>{c.h=c.h?0:1;save()},{style:c.h?'green':'red',size:15})}
+  fitTxt(TR('可建的塔（点选）'),x+60,y+374,16,300,'#e9d3a8','left',3);
+  CC_TW.forEach((t,i)=>{const on=c.a.includes(i),cx=x+86+i*84,cy=y+426;ctx.save();ctx.fillStyle=on?'rgba(60,110,40,.75)':'rgba(15,8,3,.6)';rr(cx-36,cy-34,72,72,12);ctx.fill();ctx.restore();imgW(TOWERS[t].imgs[0],cx,cy+22,48,on?twTint(TOWERS[t]):'grayscale(1) brightness(.6)');
+    hit(cx-36,cy-34,72,72,()=>{if(on){if(c.a.length>1)c.a=c.a.filter(k=>k!==i)}else c.a.push(i);save();AUD.sfx('click')})});
+  button(TR('试玩'),x+80,y+h-72,180,52,()=>ccStart(Object.assign({},c)),{style:'green',size:18,icon:'ui_Icon_Swords'});
+  button(TR('分享链接'),x+w/2-90,y+h-72,180,52,()=>ccShare(),{style:'gold',size:18});
+  button(TR('关闭'),x+w-260,y+h-72,180,52,()=>{ccPop=false},{style:'gray',size:18})}
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -3150,7 +3199,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794980269';
+const BUILD_VER='1794980497';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

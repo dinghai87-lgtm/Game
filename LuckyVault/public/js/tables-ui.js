@@ -1031,9 +1031,36 @@
   };
 
   // ---- VEGAS POKER TABLES (v5.7) ----
-  REND.uth = { setup(f) { pokerSetup(f, [['ante', 'Ante', 'Blind = Ante (auto)', 'big'], ['trips', 'Trips', 'Trips 3:1 → Royal 50:1']], 'Bet 3× or 4× before the flop, 2× after the flop, 1× on the river (or fold) · Dealer qualifies with a pair · Blind pays on a straight or better: 1:1 → royal 500:1', true); },
-    prepBets(b) { if (!b.ante) return 'Ante is required'; b.blind = b.ante; },
-    render: (v, r) => pokerRender(v, r, v.stage === 'pre' ? 'Bet 4×/3× the ante, or check' : v.stage === 'flop' ? 'Flop: bet 2× or check' : 'River: bet 1× or fold') };
+  // UTH refine: zoned table, stage stepper (翻牌前 → 翻牌 → 河牌), bet buttons show amounts, simple strategy tip, translated results
+  function uthTip(v) { const P = v.P.map(RV), pair = P[0] === P[1], hi = Math.max(...P), lo = Math.min(...P);
+    if (v.stage === 'pre') return (pair && hi >= 3) || hi === 14 || (hi === 13 && lo >= 5) || (hi === 12 && lo >= 8) || (hi === 11 && lo >= 10) ? 'bet4' : 'check';
+    if (v.stage === 'flop') return v.ph && v.ph !== 'High Card' ? 'bet2' : 'check'; return v.ph && v.ph !== 'High Card' ? 'bet1' : 'bet1?'; }
+  REND.uth = {
+    setup(f) { pkZones(f, { d: 2, b: 5, p: 2, note: PKT('翻牌前可押 3 倍或 4 倍，翻牌后 2 倍，河牌 1 倍（或弃牌）· 庄家一对以上合格 · 盲注：顺子以上才赔 1:1 → 皇家 500:1 · 长按下注格看说明', 'Bet 3×/4× before the flop, 2× after the flop, 1× on the river (or fold) · Dealer qualifies with a pair · Blind pays on a straight or better · Long-press a bet for rules'),
+      spots: [['ante', PKT('底注', 'ANTE'), PKT('盲注 = 底注（自动）', 'Blind = Ante (auto)'), 'big', '押底注时会自动再押一份同额盲注。之后只能加注一次：翻牌前 3 或 4 倍、翻牌后 2 倍、河牌 1 倍，也可以一直过牌到河牌再决定。最后与庄家比最好的五张牌。<br>The Blind is placed automatically with the Ante. You raise once: 3× or 4× before the flop, 2× after it, or 1× on the river — then compare best five cards with the dealer.'],
+        ['trips', PKT('三条奖', 'TRIPS'), PKT('三条 3:1 → 皇家 50:1', 'Trips 3:1 → Royal 50:1'), '', '只看你自己最后的牌型，与庄家无关：三条 3:1、顺子 4:1、同花 7:1、葫芦 8:1、四条 30:1、同花顺 40:1、皇家同花顺 50:1。<br>Pays on your own final hand: trips 3:1 up to royal flush 50:1.']] });
+      const H = document.getElementById('tcpH'); H.insertAdjacentHTML('beforebegin', '<div class="uthst" id="uthSt">' + [PKT('翻牌前', 'PRE-FLOP'), PKT('翻牌', 'FLOP'), PKT('河牌', 'RIVER')].map((t, i) => '<span data-i="' + i + '">' + t + '</span>').join('') + '</div>');
+      if (!document.getElementById('uthCss')) { const st = document.createElement('style'); st.id = 'uthCss'; st.textContent = '#felt .uthst{display:flex;gap:4px;justify-content:center}#felt .uthst span{padding:2px 10px;border-radius:999px;background:rgba(0,0,0,.45);color:#94a3b8;font:800 11px "Microsoft YaHei",Arial,sans-serif;border:1px solid rgba(255,255,255,.15)}#felt .uthst span.on{background:#ffd60a;color:#111;border-color:#ffd60a}#felt .uthst span.done{color:#e5e7eb}'; document.head.appendChild(st); }
+      this.stage(-1); },
+    prepBets(b) { if (!b.ante) return PKT('请先押底注', 'Ante is required'); b.blind = b.ante; },
+    stage(n) { document.querySelectorAll('#uthSt span').forEach(e => { const i = +e.dataset.i; e.classList.toggle('on', i === n); e.classList.toggle('done', i < n); }); },
+    async render(v, r) {
+      const H = document.getElementById('tcpH');
+      ['tcpD', 'tcpP'].forEach(id => document.getElementById(id).classList.remove('win', 'lose'));
+      await putCards(document.getElementById('pC'), v.P, true, document.getElementById('pC').querySelectorAll('.pcard').length === 2 ? 2 : 0);
+      await putCards(document.getElementById('dC'), v.D, v.done, v.done ? 0 : 2);
+      const nb = v.B.filter(c => c !== '??').length; await putCards(document.getElementById('bdC'), v.B, true, Math.max(0, nb === 5 && !v.done ? 3 : nb === 3 ? 0 : nb - 2));
+      document.getElementById('pL').innerHTML = PKT('你的手牌', 'YOUR HAND') + (v.ph ? ' <b>' + hn3(v.ph) + '</b>' : ''); document.getElementById('dL').innerHTML = PKT('庄家', 'DEALER') + (v.dh ? ' <b>' + hn3(v.dh) + '</b>' : '');
+      if (!v.done) { this.stage(v.stage === 'pre' ? 0 : v.stage === 'flop' ? 1 : 2); const t = uthTip(v);
+        H.innerHTML = PKT('建议：', 'Tip: ') + ({ bet4: PKT('押 4 倍', 'bet 4×'), check: PKT('过牌', 'check'), bet2: PKT('押 2 倍', 'bet 2×'), bet1: PKT('押 1 倍', 'bet 1×'), 'bet1?': PKT('牌小可以弃牌', 'fold a weak hand') }[t]);
+        showRes(v.stage === 'pre' ? PKT('押 4 倍 / 3 倍，还是过牌？', 'Bet 4× / 3×, or check?') : v.stage === 'flop' ? PKT('翻牌：押 2 倍还是过牌？', 'Flop: bet 2× or check?') : PKT('河牌：押 1 倍还是弃牌？', 'River: bet 1× or fold?'), 0); return; }
+      this.stage(3);
+      const o = String(v.out || ''); const base = o.replace(/ · .*$/, ''); const OUT = PK_OUT[base] || [base, base];
+      v.out = base; pkResult(v, r, /does not qualify|ante pushes/.test(o) ? [PKT('庄家不合格，底注退回', 'Dealer does not qualify — ante pushes')] : []);
+    },
+    actLabel: (a) => { const A = TT.bets.ante || 0; return { bet4: PKT('押 4 倍 ', 'BET 4× ') + fmt(A * 4), bet3: PKT('押 3 倍 ', 'BET 3× ') + fmt(A * 3), bet2: PKT('押 2 倍 ', 'BET 2× ') + fmt(A * 2), bet1: PKT('押 1 倍 ', 'BET 1× ') + fmt(A), check: PKT('过牌', 'CHECK'), fold: PKT('弃牌', 'FOLD') }[a] || null; },
+    keepBets: false
+  };
   REND.fourcard = { setup(f) { pokerSetup(f, [['ante', 'Ante', 'Play 1-3×', 'big'], ['acesup', 'Aces Up', 'Aces → quads 50:1']], 'Best 4 cards from your 5 vs the dealer’s best 4 from 6 · ties go to you · Play up to 3× with a pair of aces or better · Ante bonus: trips 2:1, straight flush 20:1, quads 25:1'); },
     render: (v, r) => pokerRender(v, r, 'Play or fold?') };
   REND.hcf = { setup(f) { pokerSetup(f, [['ante', 'Ante', 'Raise 1-3× by flush size', 'big']], 'Seven cards each · the longest flush wins (then highest cards) · raise 1× (2-4 card flush), 2× (5-card), 3× (6-7 card) · dealer qualifies with a 3-card 9-high flush'); },

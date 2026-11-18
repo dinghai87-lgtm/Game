@@ -517,3 +517,5 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 ## Round 46 (02:10) — Slot feature flow fully in Chinese
 - Played Thunder Temple's buy-feature start to finish in 中文 mode with an automatic text scan (every visible English string logged across 6 slots): buy prompt (购买免费旋转？/ 花 100.00 购买 / 取消), feature intro texts (sticky wilds, collector, choose, multiplier bombs, growing multiplier, ×N), RETRIGGER, + FREE SPINS, FEATURE WIN, Tap to continue, Tumble/Respin win, Collected — all translated. Remaining English in 中文 mode is only game titles (by design).
 - sw lv-v119. Tests 90/90.
+
+## Round 47 (

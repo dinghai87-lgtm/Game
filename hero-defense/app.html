@@ -243,6 +243,10 @@ Object.assign(I18N.ja,{"点空投箱子拿补给！":"補給箱をタップ！",
 Object.assign(I18N.ko,{"点空投箱子拿补给！":"보급 상자를 탭하세요!","捡起空投补给 {n} 个":"보급 상자 {n}개 줍기"});
 Object.assign(I18N.es,{"点空投箱子拿补给！":"¡Toca el suministro!","捡起空投补给 {n} 个":"Recoge {n} suministros"});
 Object.assign(I18N.en,{"撤销建造":"Undo build","全额退":"Full refund"});Object.assign(I18N.ja,{"撤销建造":"建設取消","全额退":"全額返金"});Object.assign(I18N.ko,{"撤销建造":"건설 취소","全额退":"전액 환불"});Object.assign(I18N.es,{"撤销建造":"Deshacer","全额退":"Reembolso total"});
+Object.assign(I18N.en,{"熟练度":"Mastery","伤害":"DMG","任意塔熟练度升级 {n} 次":"Raise tower mastery {n} times"});
+Object.assign(I18N.ja,{"熟练度":"熟練度","伤害":"ダメージ","任意塔熟练度升级 {n} 次":"塔の熟練度を{n}回上げる"});
+Object.assign(I18N.ko,{"熟练度":"숙련도","伤害":"피해","任意塔熟练度升级 {n} 次":"탑 숙련도 {n}회 상승"});
+Object.assign(I18N.es,{"熟练度":"Maestría","伤害":"Daño","任意塔熟练度升级 {n} 次":"Sube la maestría de torres {n} veces"});
 
 'use strict';
 // ====================== 基础 ======================
@@ -1767,7 +1771,7 @@ function loopBody(now){const rdt=Math.min(.05,(now-last)/1000);last=now;try{perf
   if(scene==='battle'&&G){const alive=G.enemies.filter(e=>!e.dead).length;AUD.setIntensity(G.firstWave?.2:clamp(.3+alive/16+G.wave/(G.L.endless?40:G.L.waves)*.3,0,1))}
   ctx.clearRect(0,0,W,H);
   const MENU=(OX||OY)&&['title','heroes','talents','endless','shop','tasks','pass','gacha','bag','pick','rebirth','g7','codex','whack'].includes(scene);let _W=W,_H=H;
-  if(MENU){const k=Math.max(W/WW,H/WH)*1.04;const bgk=scene==='title'?'map3':'map'+({heroes:3,talents:2,shop:1,tasks:2,pass:4,gacha:3,bag:1,pick:3,endless:4,rebirth:2,whack:5}[scene]||1);mirrorBg(bgk,scene==='title'?.35:.5);ctx.save();ctx.translate(OX,OY);HOX=OX;HOY=OY;W=WW;H=WH}
+  if(MENU){const k=Math.max(W/WW,H/WH)*1.04;const bgk=scene==='title'?'map3':'map'+({heroes:3,talents:2,shop:1,tasks:2,pass:4,gacha:3,bag:1,pick:3,endless:4,rebirth:2,whack:5,codex:2,g7:2}[scene]||1);mirrorBg(bgk,scene==='title'?.35:.5);ctx.save();ctx.translate(OX,OY);HOX=OX;HOY=OY;W=WW;H=WH}
   try{
   if(scene==='load')drawLoad();
   else if(scene==='title')drawTitle(rdt);
@@ -2647,7 +2651,7 @@ function drawCodex(dt){hits=[];titleT+=dt;bgMenu(2,.6);sceneHeader(TR('图鉴'),
       ctx.fillStyle=codexSel===k?'rgba(255,210,100,.25)':'rgba(0,0,0,.3)';rr(cx,cy,140,140,12);ctx.fill();imgW(T.imgs[Math.min(2,T.imgs.length-1)],cx+70,cy+100,76,open?twTint(T):'grayscale(1) brightness(.5)');fitTxt(T.name,cx+70,cy+124,14,130,open?'#ffe27a':'#999','center',2);
       if(!open)txt('🔒 '+TR('第 ')+(ONB_TW[k]+1)+TR(' 关'),cx+70,cy+16,11,'#bbb','center',2);hit(cx,cy,140,140,()=>{codexSel=k;AUD.sfx('click')})});
     const T=TOWERS[codexSel],px=x+640,pw=w-660;ctx.fillStyle='rgba(15,8,3,.6)';rr(px,y+20,pw,h-40,16);ctx.fill();imgW(T.imgs[Math.min(2,T.imgs.length-1)],px+pw/2,y+190,130,twTint(T));gtxt(T.name,px+pw/2,y+230,30,'#fff6d0','#ffb320',5);
-    let yy=y+268;const line=(s,c)=>{yy+=wrapTxt(s,px+pw/2,yy,15,pw-50,c||'#fff3d0')*21+8};line(T.desc);line(TR('精通（4 级）：')+T.l4,'#ffe27a');
+    let yy=y+268;const line=(s,c)=>{yy+=wrapTxt(s,px+pw/2,yy,15,pw-50,c||'#fff3d0')*21+8};line(T.desc);try{if(typeof mastLine==='function')line(mastLine(codexSel),'#b6ffb0')}catch(_){}line(TR('精通（4 级）：')+T.l4,'#ffe27a');
     if(BRANCH[codexSel])line(TR('进阶（10 级）：')+BRANCH[codexSel].map(b=>TR(b[0])+'（'+TR(b[1])+'）').join(' / '),'#d6a8ff');
     const cb=COMBOS.filter(c=>c.a===codexSel||c.b===codexSel);if(cb.length)line(TR('组合：')+cb.map(c=>TR(c.n)+'（'+TOWERS[c.a===codexSel?c.b:c.a].name+'）').join(' / '),'#9ef0ff');
     txt(TR('建造 ')+T.cost[0]+(T.air===false?'  ·  '+TR('打不到飞行'):T.air?'  ·  '+TR('能打飞行'):''),px+pw/2,y+h-50,15,'#ffd84a','center',3)}}
@@ -2881,7 +2885,7 @@ const _dsm10=drawSelMenu;drawSelMenu=function(){const i=G.sel;if(G.preI!==i)G.pr
     try{if(T.dmg||T.support){const st=towerStats({type:t,lvl:1,br:null});const r=st.range;ctx.save();ctx.fillStyle='rgba(123,224,123,.10)';ctx.beginPath();ctx.ellipse(tw.x,tw.y,r,r/1.15,0,0,7);ctx.fill();ctx.strokeStyle='rgba(123,224,123,.8)';ctx.lineWidth=2;ctx.setLineDash([10,8]);ctx.stroke();ctx.restore()}}catch(_){}
     ctx.save();ctx.strokeStyle='#7be07b';ctx.lineWidth=4;ctx.beginPath();ctx.arc(x,y,36,0,7);ctx.stroke();ctx.restore();imgC('ui_Icon_Accept',x+24,y-24,26);
     const pw=320,ph=74,px=clamp(ccx-pw/2,10,W-pw-10),py=Math.min(H-ph-8,ccy+R+50);ctx.save();ctx.fillStyle='rgba(12,6,2,.9)';rr(px,py,pw,ph,12);ctx.fill();ctx.strokeStyle='#7be07b';ctx.lineWidth=2;ctx.stroke();ctx.restore();
-    fitTxt(T.name+'  ·  '+twLine(t,1),px+pw/2,py+18,15,pw-20,'#ffe27a','center',2);fitTxt(T.desc,px+pw/2,py+40,13,pw-20,'#fff','center',2);fitTxt(TR('再点一次建造（同种塔建过 3 次后点一下直接建）'),px+pw/2,py+60,12,pw-20,'#7be07b','center',2);return}
+    fitTxt(T.name+'  ·  '+twLine(t,1),px+pw/2,py+18,15,pw-20,'#ffe27a','center',2);fitTxt(T.desc+(typeof mastLv==='function'&&mastLv(t)?'  '+'★'.repeat(mastLv(t)):''),px+pw/2,py+40,13,pw-20,'#fff','center',2);fitTxt(TR('再点一次建造（同种塔建过 3 次后点一下直接建）'),px+pw/2,py+60,12,pw-20,'#7be07b','center',2);return}
   // 已建：升级预览
   if(G.preI===i)G.preTw=null;const T=TOWERS[tw.type];if(T.support)return;const cx=tw.x,cy=tw.y-20;const top=cy-84<110;const ux=top?cx-82:cx,uy=top?cy+14:cy-84;
   let s='';try{if(T.dmg){const a=towerStats(tw),b=towerStats(Object.assign({},tw,{lvl:tw.lvl+1}));s='⚔ '+avgD(a)+'→'+avgD(b);if(Math.round(b.range)>Math.round(a.range))s+='  ◎ +'+Math.round(b.range-a.range)}else{const a=soldierStats(tw.lvl,tw.br),b=soldierStats(tw.lvl+1,tw.br);s='❤ '+Math.round(a.hp)+'→'+Math.round(b.hp)}}catch(e){return}
@@ -3374,6 +3378,19 @@ const UNDO_T=6;
   if(window.__api)Object.assign(window.__api,{build,upgrade,sell});
 })();
 
+// ====================== 塔的熟练度（BTD6「猴子经验」）：每种塔用得越多越熟练，永久小幅加伤害 ======================
+const MAST_N=[200,1000,4000,12000,30000];
+function mastXP(t){return ((SAVE.mast||{})[t])||0}
+function mastLv(t){const x=mastXP(t);let l=0;for(const n of MAST_N)if(x>=n)l++;return l}
+(function(){
+  const kl=killEnemy;killEnemy=function(e){const was=!e.dead;const src=G&&G.curSrc;kl(e);try{if(!was||!src||!src.startsWith('t:'))return;const t=src.slice(2);if(!TOWERS[t])return;SAVE.mast=SAVE.mast||{};const l0=mastLv(t);SAVE.mast[t]=(SAVE.mast[t]||0)+(e.D.boss?50:e.aff?3:1);
+    const l1=mastLv(t);if(l1>l0){showToast('🎖 '+TOWERS[t].name+' '+TR('熟练度')+' '+'★'.repeat(l1)+'  ('+TR('伤害')+' +'+l1*3+'%)');try{stAdd('mast')}catch(_){}}}catch(_){}};
+  const ts=towerStats;towerStats=function(tw){const s=ts(tw);if(!s||!tw||!tw.type)return s;const l=mastLv(tw.type);if(!l||!s.dmg)return s;const o=Object.assign({},s);o.dmg=o.dmg.map(v=>v*(1+.03*l));if(o.pdps)o.pdps*=1+.03*l;return o};
+  if(window.__api)Object.assign(window.__api,{killEnemy});
+})();
+function mastLine(t){const l=mastLv(t),x=mastXP(t),nx=MAST_N[l];return TR('熟练度')+' '+('★'.repeat(l)+'☆'.repeat(5-l))+'  '+(nx?x+' / '+nx:'MAX')+'  ·  '+TR('伤害')+' +'+l*3+'%'}
+ACH.push({id:'mast_1',k:'mast',n:1,d:'任意塔熟练度升级 {n} 次',yb:20},{id:'mast_10',k:'mast',n:10,d:'任意塔熟练度升级 {n} 次',yb:100});
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -3416,7 +3433,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794982890';
+const BUILD_VER='1794983091';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

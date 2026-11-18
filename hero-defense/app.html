@@ -261,6 +261,7 @@ Object.assign(I18N.en,{"继续上一局？":"Resume last battle?","继续第 {n}
 Object.assign(I18N.ja,{"继续上一局？":"前回の戦闘を再開？","继续第 {n} 波":"ウェーブ{n}から再開","放弃":"破棄"});
 Object.assign(I18N.ko,{"继续上一局？":"지난 전투를 이어할까요?","继续第 {n} 波":"웨이브 {n}부터 계속","放弃":"포기"});
 Object.assign(I18N.es,{"继续上一局？":"¿Continuar la última batalla?","继续第 {n} 波":"Continuando oleada {n}","放弃":"Descartar"});
+Object.assign(I18N.en,{"玩法指南":"Game Guide","通关第 {n} 关后开放":"Unlocks after Stage {n}"});Object.assign(I18N.ja,{"玩法指南":"遊び方ガイド","通关第 {n} 关后开放":"ステージ{n}クリアで解放"});Object.assign(I18N.ko,{"玩法指南":"게임 가이드","通关第 {n} 关后开放":"{n}스테이지 클리어 후 해금"});Object.assign(I18N.es,{"玩法指南":"Guía del juego","通关第 {n} 关后开放":"Se abre tras la fase {n}"});
 
 'use strict';
 // ====================== 基础 ======================
@@ -3300,7 +3301,7 @@ let morePop=false;
 const FX_OPT=[['barkOff','英雄台词',true],['slowOff','终结慢镜头',true],['snowOff','下雪特效',true],['kfxOff','粒子特效',true],['vib','震动',false]];
 const optOn=(k,inv)=>inv?!SAVE[k]:SAVE[k]!==false;
 (function(){
-  const ds=drawSettings;drawSettings=function(){ds.apply(this,arguments);try{const x=W/2-260,y=H/2-300,w=520;button(TR('更多')+' ▸',x+w-150,y+52,120,38,()=>{morePop=true;AUD.sfx('open')},{style:'blue',size:15});if(morePop)drawMore()}catch(e){console.error(e)}};
+  const ds=drawSettings;drawSettings=function(){ds.apply(this,arguments);try{const x=W/2-260,y=H/2-300,w=520;button(TR('更多')+' ▸',x+w-150,y+52,120,38,()=>{morePop=true;AUD.sfx('open')},{style:'blue',size:15});button('📘',x+30,y+52,50,38,()=>{showSettings=false;guidePop=true;guidePage=0},{style:'blue',size:16});if(morePop)drawMore()}catch(e){console.error(e)}};
   const kf=kfx;kfx=function(){if(SAVE.kfxOff)return;return kf.apply(this,arguments)};
   const up=update;update=function(dt){if(SAVE.slowOff&&G&&G.slowmo>0){G.slowmo=0;G.slowFx=null}return up(dt)};
 })();
@@ -3456,6 +3457,22 @@ let resumeData=null,resumeAsked=false;
   if(window.__api)Object.assign(window.__api,{update,endBattle,startLevel});
 })();
 
+// ====================== 玩法指南：把所有功能按开放顺序列出来（已开放的写清在哪，没开放的写第几关开放） ======================
+let guidePop=false,guidePage=0;
+function guideList(){const L=[];for(const k in ONB_CARD){const lv=ONB_F[k]!=null?ONB_F[k]:0;L.push({k,lv,n:ONB_CARD[k][0],d:ONB_CARD[k][1]})}return L.sort((a,b)=>a.lv-b.lv)}
+function drawGuide(){const L=guideList(),per=8,pages=Math.ceil(L.length/per);guidePage=Math.min(guidePage,pages-1);ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,0,W,H);hit(0,0,W,H,()=>{guidePop=false});
+  const w=1000,h=600,x=W/2-w/2,y=H/2-h/2;ns('ui_Window_Background',x,y,w,h,150,.4);hit(x,y,w,h,()=>{});gtxt('📘 '+TR('玩法指南'),W/2,y+40,30,'#fff6d0','#5ec4ff',5);
+  const p=prog();L.slice(guidePage*per,guidePage*per+per).forEach((it,i)=>{const col=i%2,row=Math.floor(i/2),cx=x+30+col*475,cy=y+80+row*112,cw=460,ch=102,open=p>=it.lv;
+    ctx.save();ctx.fillStyle=open?'rgba(30,50,20,.7)':'rgba(15,8,3,.6)';rr(cx,cy,cw,ch,12);ctx.fill();ctx.restore();
+    fitTxt((open?'✅ ':'🔒 ')+TR(it.n),cx+18,cy+22,18,cw-30,open?'#ffe27a':'#aaa','left',3);if(!open)fitTxt(TR('通关第 {n} 关后开放').replace('{n}',Math.max(1,it.lv-1)),cx+cw-14,cy+22,12,160,'#bbb','right',2);
+    const lines=[];{ctx.font=`700 13px ${FONT}`;const s=TR(it.d);const cjk=/[　-鿿가-힯]/.test(s);const parts=cjk?(s.match(/[A-Za-z0-9+\-%.×~]+|[\s\S]/gu)||[]):s.split(' ');let cur='';for(const q of parts){const nx=cur?(cjk?cur+q:cur+' '+q):q;if(ctx.measureText(nx).width>cw-36&&cur){lines.push(cur);cur=q}else cur=nx}if(cur)lines.push(cur)}
+    lines.slice(0,3).forEach((l,j)=>txt(l,cx+18,cy+48+j*18,13,open?'#fff':'#999','left',0,0,700))});
+  if(guidePage>0)ibtn('ui_Icon_Arrow_Left',x+60,y+h-40,44,()=>guidePage--);if(guidePage<pages-1)ibtn('ui_Icon_Arrow_Right',x+w-60,y+h-40,44,()=>guidePage++);txt((guidePage+1)+' / '+pages,W/2,y+h-40,16,'#e9d3a8','center',3)}
+(function(){
+  const dp=drawPOP;drawPOP=function(){try{if(guidePop)drawGuide()}catch(e){console.error(e)}dp()};
+  const dt=drawTodo;drawTodo=function(L){dt(L);try{const w=640,rows=Math.max(1,L.length),h=Math.min(H-40,130+rows*62),x=W/2-w/2,y=H/2-h/2;button('📘 '+TR('玩法指南'),x+w-180,y+18,160,40,()=>{todoPop=false;guidePop=true;guidePage=0},{style:'blue',size:14})}catch(e){}};
+})();
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -3498,7 +3515,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794983971';
+const BUILD_VER='1794984118';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

@@ -216,6 +216,10 @@ Object.assign(I18N.en,{"打哥布林":"Whack-a-Goblin","点冒头的哥布林 +1
 Object.assign(I18N.ja,{"打哥布林":"ゴブリンたたき","点冒头的哥布林 +1，金色哥布林 +3，别打骷髅 -2":"ゴブリン+1、金のゴブリン+3、ガイコツは-2","时间到！":"タイムアップ！","今日首玩奖励":"本日の初回報酬","今日奖励已领，再玩只为刷纪录":"本日の報酬は受取済み。記録更新を狙おう","再来一局":"もう一回","返回":"戻る","每日小游戏，首玩送钻石":"毎日のミニゲーム、初回はジェム"});
 Object.assign(I18N.ko,{"打哥布林":"고블린 때리기","点冒头的哥布林 +1，金色哥布林 +3，别打骷髅 -2":"고블린 +1, 황금 고블린 +3, 해골은 -2","时间到！":"시간 종료!","今日首玩奖励":"오늘 첫 플레이 보상","今日奖励已领，再玩只为刷纪录":"오늘 보상 수령 완료, 기록 갱신에 도전","再来一局":"한 판 더","返回":"돌아가기","每日小游戏，首玩送钻石":"매일 미니게임, 첫 플레이 젬 지급"});
 Object.assign(I18N.es,{"打哥布林":"Aplasta goblins","点冒头的哥布林 +1，金色哥布林 +3，别打骷髅 -2":"Goblins +1, goblins dorados +3, ¡no toques esqueletos (-2)!","时间到！":"¡Tiempo!","今日首玩奖励":"Primera partida de hoy","今日奖励已领，再玩只为刷纪录":"Premio de hoy cobrado: juega por el récord","再来一局":"Otra vez","返回":"Volver","每日小游戏，首玩送钻石":"Minijuego diario: la primera partida da gemas"});
+Object.assign(I18N.en,{"难度：困难（奖励 ×2）":"Difficulty: Hard (rewards ×2)","难度：普通":"Difficulty: Normal","困难远征":"Hard Odyssey"});
+Object.assign(I18N.ja,{"难度：困难（奖励 ×2）":"難易度：ハード（報酬×2）","难度：普通":"難易度：ノーマル","困难远征":"ハード遠征"});
+Object.assign(I18N.ko,{"难度：困难（奖励 ×2）":"난이도: 어려움 (보상 ×2)","难度：普通":"난이도: 보통","困难远征":"어려운 원정"});
+Object.assign(I18N.es,{"难度：困难（奖励 ×2）":"Dificultad: difícil (premios ×2)","难度：普通":"Dificultad: normal","困难远征":"Odisea difícil"});
 
 'use strict';
 // ====================== 基础 ======================
@@ -2889,13 +2893,13 @@ function odySave(){const wk=weekNo();if(!SAVE.ody||SAVE.ody.wk!==wk)SAVE.ody={wk
 function odyPlan(){const wk=weekNo();const R=mulberry(wk*9157+41);const maps=[];while(maps.length<ODY_N){const m=1+Math.floor(R()*12);if(!maps.includes(m))maps.push(m)}
   const norm=Object.keys(ENEMIES).filter(k=>!ENEMIES[k].boss&&k!=='ogre'&&k!=='chest');const affs=TRIAL_AFF.filter(a=>a.k!=='limit'&&a.k!=='poor');const bosses=['mino','golem','ent','rockg','boneknight','yeti','reaper'];
   return maps.map((map,i)=>{const pool=[];const nn=norm.slice();while(pool.length<6)pool.push(nn.splice(Math.floor(R()*nn.length),1)[0]);const a=affs[Math.floor(R()*affs.length)];return {map,pool,aff:a,boss:bosses[Math.floor(R()*bosses.length)],waves:8+i,diff:1.25+.2*i}})}
-function odyLevel(){const S=odySave(),P=odyPlan()[Math.min(S.isl,ODY_N-1)];const L={name:TR('远征')+' '+(Math.min(S.isl,ODY_N-1)+1)+'/'+ODY_N+' · '+TR(MAP_NAMES[P.map]||''),map:P.map,paths:PATHS[P.map].map((_,i)=>i),waves:P.waves,gold:560,pool:P.pool.slice(),boss:P.boss,diff:P.diff,chal:'ody',seed:weekNo()*9157+S.isl*17,affs:[P.aff]};P.aff.f(L,mulberry(S.isl+3));return L}
+function odyLevel(){const S=odySave(),P=odyPlan()[Math.min(S.isl,ODY_N-1)];const L={name:TR('远征')+' '+(Math.min(S.isl,ODY_N-1)+1)+'/'+ODY_N+' · '+TR(MAP_NAMES[P.map]||''),map:P.map,paths:PATHS[P.map].map((_,i)=>i),waves:P.waves,gold:560,pool:P.pool.slice(),boss:P.boss,diff:P.diff+(S.hard?.35:0),chal:'ody',seed:weekNo()*9157+S.isl*17,affs:[P.aff]};P.aff.f(L,mulberry(S.isl+3));return L}
 (function(){
   const gl=getLevel;getLevel=function(i){if(i===-7)return odyLevel();return gl(i)};
   const sl=startLevel;startLevel=function(li,e){sl(li,e);if(!G||G.L.chal!=='ody')return;const S=odySave();G.lives=S.lives;G.buf=JSON.parse(JSON.stringify(S.buf||{}));G.odyIsl=S.isl;G.banner={s:TR('远征')+' '+(S.isl+1)+'/'+ODY_N,t:0}};
   const eb=endBattle;endBattle=function(win){const L=G&&G.L;const first=G&&!G.over;eb(win);if(!first||!L||L.chal!=='ody')return;const S=odySave();if(!win||S.isl!==G.odyIsl)return;
-    let got=0;if(!S.rw[S.isl]){S.rw[S.isl]=1;got+=ODY_RW[S.isl]}S.lives=Math.max(1,G.lives);S.buf=JSON.parse(JSON.stringify(G.buf||{}));S.isl++;
-    if(S.isl>=ODY_N&&!S.fin){S.fin=1;got+=ODY_FIN;try{g7add&&g7add('chal')}catch(_){}}SAVE.yb+=got;save();track('odyssey',{isl:S.isl,lives:S.lives});
+    let got=0;const mul=S.hard?2:1;if(!S.rw[S.isl]){S.rw[S.isl]=1;got+=ODY_RW[S.isl]*mul}S.lives=Math.max(1,G.lives);S.buf=JSON.parse(JSON.stringify(G.buf||{}));S.isl++;
+    if(S.isl>=ODY_N&&!S.fin){S.fin=1;got+=ODY_FIN*mul;try{g7add&&g7add('chal')}catch(_){}}SAVE.yb+=got;save();track('odyssey',{isl:S.isl,lives:S.lives});
     setTimeout(()=>{try{showToast('🧭 '+(S.isl>=ODY_N?TR('远征完成！'):TR('前往下一座岛'))+(got?'  +'+got+' '+SHOP_CFG.cur:''))}catch(_){}},700)};
   if(window.__api)Object.assign(window.__api,{startLevel,endBattle});
 })();
@@ -2904,12 +2908,13 @@ function drawOdy(x,y,w){if(!feat('ody')){txt(TR('通关第 11 关后开放'),x+w
   P.forEach((I,i)=>{const cx=x+40+i*290,cy=y+52,cw=260,done=i<S.isl,cur=i===S.isl;ctx.save();ctx.fillStyle=done?'rgba(60,110,40,.55)':cur?'rgba(120,70,10,.6)':'rgba(15,8,3,.55)';rr(cx,cy,cw,260,14);ctx.fill();if(cur){ctx.strokeStyle='#ffd84a';ctx.lineWidth=3;ctx.stroke()}ctx.restore();
     ctx.save();rr(cx+12,cy+12,cw-24,120,10);ctx.clip();img('map'+I.map,cx+12,cy+12,cw-24,120);if(i>S.isl){ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(cx+12,cy+12,cw-24,120)}ctx.restore();
     gtxt(TR('第 {n} 岛').replace('{n}',i+1),cx+cw/2,cy+156,22,'#fff6d0',done?'#5ec46b':'#ffb320',4);fitTxt(TR(MAP_NAMES[I.map]||'')+' · '+I.waves+' '+TR('波')+' · BOSS',cx+cw/2,cy+184,13,cw-20,'#ffe27a','center',2);
-    fitTxt('⚠ '+TR(I.aff.n)+'：'+TR(I.aff.d),cx+cw/2,cy+208,12,cw-20,'#ffb0a0','center',2);txt('💎 +'+ODY_RW[i],cx+cw/2,cy+236,15,'#9ef0ff','center',2);if(done)imgC('ui_Icon_Accept',cx+cw-22,cy+22,30);
+    fitTxt('⚠ '+TR(I.aff.n)+'：'+TR(I.aff.d),cx+cw/2,cy+208,12,cw-20,'#ffb0a0','center',2);txt('💎 +'+ODY_RW[i]*(S.hard?2:1),cx+cw/2,cy+236,15,'#9ef0ff','center',2);if(done)imgC('ui_Icon_Accept',cx+cw-22,cy+22,30);
     if(i<ODY_N-1){txt('➜',cx+cw+15,cy+130,26,'#ffd84a','center',3)}});
   const bx=x+w/2;heartIcon(x+70,y+352,24);txt(TR('剩余生命')+' '+S.lives,x+90,y+353,18,'#fff','left',3);const nb=Object.values(S.buf||{}).reduce((a,b)=>a+b,0);txt('🃏 '+TR('已带卡牌')+' '+nb,x+300,y+353,18,'#fff','left',3);
   if(S.isl<ODY_N)button(TR('出发')+' · '+TR('第 {n} 岛').replace('{n}',S.isl+1),x+w-330,y+326,290,58,()=>{levelSel=-7;pickStart(-7)},{style:'red',size:20,icon:'ui_Icon_Swords'});
   else txt('🏆 '+TR('本周远征已完成')+'  +'+ODY_FIN+' '+SHOP_CFG.cur,x+w-190,y+353,18,'#7be07b','center',3);
-  txt(TR('全部通关额外')+' +'+ODY_FIN+' '+SHOP_CFG.cur,bx,y+420,14,'#b9a27a','center',2)}
+  txt(TR('全部通关额外')+' +'+ODY_FIN*(S.hard?2:1)+' '+SHOP_CFG.cur,bx,y+420,14,'#b9a27a','center',2);
+  if(S.isl===0)button(S.hard?TR('难度：困难（奖励 ×2）'):TR('难度：普通'),x+40,y+402,260,40,()=>{S.hard=S.hard?0:1;S.lives=S.hard?10:20;save();AUD.sfx('click')},{style:S.hard?'red':'gray',size:14});else if(S.hard)txt('🔥 '+TR('困难远征'),x+170,y+420,15,'#ff8a6a','center',3)}
 (function(){const dt0=drawTasks;drawTasks=function(dt){dt0(dt);if(tasksTab===8)drawOdy(W/2-460,150,920)}})();
 
 // ====================== 英雄台词气泡（王国保卫战：每个英雄有口头禅，开战/放大招时冒一句，让角色有性格） ======================
@@ -3324,7 +3329,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794981506';
+const BUILD_VER='1794981686';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

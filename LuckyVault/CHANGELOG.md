@@ -436,3 +436,9 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 - ? badges removed on every table (rules = long-press a bet); rule popups show one language.
 - Blackjack: dealer and player zones with dashed card slots, fixed heights; control bar height locked so nothing jumps between bet and play; side-bet spots stay visible (dimmed) during the hand; chips in spot corners; winning hand glows, losing hand dims; rules line shortened and translated; Insurance/No insurance and hand results translated.
 - sw lv-v92. Tests 90/90.
+
+## Round 30 (21:30) — Roulette refined (EU / FR / US)
+- Wheel larger on phone; right-hand panel shows LAST NUMBERS (latest ringed) and the result ("23 红" / "26 BLACK").
+- Chips on the board shrink to a corner dot so the number stays readable; winning number gets a gold frame; losing chips leave the table (Rebet restores).
+- Outside bets and rules line in one language, larger text; old long rules line replaced with a short payout summary.
+- sw lv-v94. Tests 90/90.

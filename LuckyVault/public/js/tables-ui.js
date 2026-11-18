@@ -412,6 +412,21 @@
       const am = i / n * 2 * Math.PI - Math.PI / 2; s += '<text x="' + (88 * Math.cos(am)).toFixed(2) + '" y="' + (88 * Math.sin(am)).toFixed(2) + '" fill="#fff" font-size="8" font-weight="700" text-anchor="middle" dominant-baseline="middle" transform="rotate(' + (i / n * 360) + ' ' + (88 * Math.cos(am)).toFixed(2) + ' ' + (88 * Math.sin(am)).toFixed(2) + ')">' + x + '</text>'; });
     return s + '<circle r="62" fill="#3a2000" stroke="#d4a017" stroke-width="3"/></svg>'; }
   function floatLuck() { const w = document.querySelector('.rl-wrap'); if (!w) return; const d = document.createElement('div'); d.className = 'lkfloat'; d.textContent = '⚡ LUCKY STRIKE ⚡'; w.appendChild(d); setTimeout(() => d.remove(), 1600); }
+  // 2026-11-18 roulette refine (phone QA): bigger wheel, result + last-numbers panel, chips no longer hide the number, winning number marked, one language
+  const RLL = () => (window.LVLang && LVLang.get()) || 'bi', RLT = (zh, en) => RLL() === 'zh' ? zh : RLL() === 'en' ? en : zh + ' ' + en;
+  { const st = document.createElement('style'); st.textContent =
+    '#felt .rl-wrap{width:100%;max-width:640px;flex-wrap:nowrap;gap:12px}' +
+    '#felt .rl-wrap>.area{flex:1;min-width:0;align-self:stretch;justify-content:center;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:8px}' +
+    '#felt .rl-wrap .rlh-t{font:800 11px "Microsoft YaHei",Arial,sans-serif;color:#cbd5e1;letter-spacing:1px}' +
+    '#felt .rl-wrap .hist{gap:4px;max-width:none}#felt .rl-wrap .hist span{min-width:22px;height:22px;font-size:10px}#felt .rl-wrap .hist span:last-child{outline:2px solid #ffd60a;outline-offset:1px}' +
+    '#felt .rl-wrap .hist em{font:600 11px "Microsoft YaHei",Arial,sans-serif;color:#94a3b8;font-style:normal}#felt .rl-wrap{padding:0 6px;box-sizing:border-box}' +
+    '.rl-board [data-k=low],.rl-board [data-k=even],.rl-board [data-k=red],.rl-board [data-k=black],.rl-board [data-k=odd],.rl-board [data-k=high],.rl-board [data-k^=d]{font-size:13px!important;letter-spacing:0}' +
+    '#felt .rl-wrap .res{min-height:30px;font-size:min(22px,5.4vw);white-space:nowrap}' +
+    '.rl-board .stk{inset:auto 1px 1px auto;align-items:flex-end;justify-content:flex-end}.rl-board .stk .chip.mini{width:16px!important;height:16px!important;font-size:0!important}.rl-board .stk b{display:none}' +
+    '.rl-board .hs .stk{inset:0;align-items:center;justify-content:center}.rl-board .hs .stk .chip.mini{width:14px!important;height:14px!important}' +
+    '.rl-board button.hitn{box-shadow:0 0 0 3px #ffd60a,0 0 18px #ffd60a!important;z-index:3;animation:wglow .6s ease-in-out infinite alternate}' +
+    '@media(max-width:560px){#felt .rl-wheel{width:min(200px,52vw)}#felt .rl-wrap{gap:8px}}';
+    document.head.appendChild(st); }
   REND.roulette = {
     rot: 0,
     setup(f, g) {
@@ -425,24 +440,26 @@
           if (n % 3 === 1) hs += '<i class="hs hb" data-k="st' + n + '"><span class="stk"></span></i>';
           if (n % 3 === 1 && col < 11) hs += '<i class="hs hbc" data-k="sl' + n + '"><span class="stk"></span></i>';
           b += '<button class="' + (TE.REDS.includes(n) ? 'r' : 'k') + '" style="grid-row:' + (row + 1) + ';grid-column:' + (col + 2) + '" data-k="n' + n + '">' + n + '<span class="stk"></span>' + hs + '</button>'; } b += '<button style="grid-row:' + (row + 1) + ';grid-column:14" data-k="c' + (3 - row) + '">2:1<span class="stk"></span></button>'; }
-      ['第一打 1st 12', '第二打 2nd 12', '第三打 3rd 12'].forEach((t, i) => b += '<button style="grid-row:4;grid-column:' + (2 + i * 4) + '/span 4" data-k="d' + (i + 1) + '">' + t + '<span class="stk"></span></button>');
-      [['low', '小 1-18'], ['even', '双 EVEN'], ['red', '红 RED'], ['black', '黑 BLACK'], ['odd', '单 ODD'], ['high', '大 19-36']].forEach(([k, t], i) => b += '<button class="' + (k === 'red' ? 'r' : k === 'black' ? 'k' : '') + '" style="grid-row:5;grid-column:' + (2 + i * 2) + '/span 2" data-k="' + k + '">' + t + '<span class="stk"></span></button>');
+      [RLT('第一打', '1st 12'), RLT('第二打', '2nd 12'), RLT('第三打', '3rd 12')].forEach((t, i) => b += '<button style="grid-row:4;grid-column:' + (2 + i * 4) + '/span 4" data-k="d' + (i + 1) + '">' + t + '<span class="stk"></span></button>');
+      [['low', RLT('小', '1-18')], ['even', RLT('双', 'EVEN')], ['red', RLT('红', 'RED')], ['black', RLT('黑', 'BLACK')], ['odd', RLT('单', 'ODD')], ['high', RLT('大', '19-36')]].forEach(([k, t], i) => b += '<button class="' + (k === 'red' ? 'r' : k === 'black' ? 'k' : '') + '" style="grid-row:5;grid-column:' + (2 + i * 2) + '/span 2" data-k="' + k + '">' + t + '<span class="stk"></span></button>');
       b += '</div>';
-      const wimg = TART && !us; f.innerHTML = '<div class="rl-wrap"><div class="rl-wheel' + (wimg ? ' img' : '') + '"><div class="rl-ptr"></div>' + (wimg ? '<img class="bowl" src="' + TA + 'rl_bowl.webp" alt=""><img class="rot" src="' + TA + 'rl_ring.webp" alt="" style="transform:rotate(5deg)">' : wheelSVG(order)) + '<div class="rl-num" id="rlNum">–</div></div><div class="area"><div class="hist" id="rlHist"></div>' + resLine() + '</div></div>' + b + '<div class="pt2">' + (g.tv === 'lucky' ? 'LUCKY STRIKE: every spin 1–5 numbers are struck with a 50x–500x multiplier · straight-up bets pay 29:1, or the multiplier when a struck number wins · other bets pay as usual · ' : '') + (g.tv === 'fr' ? 'La Partage: even-money bets lose only half on 0 · ' : '') + 'Tap a number for straight 35:1 · tap a line for split 17:1 · a corner for 8:1 · the bottom edge for street 11:1 / six line 5:1 · Dozens/Columns 2:1 · Even-money 1:1</div>';
+      const wimg = TART && !us; f.innerHTML = '<div class="rl-wrap"><div class="rl-wheel' + (wimg ? ' img' : '') + '"><div class="rl-ptr"></div>' + (wimg ? '<img class="bowl" src="' + TA + 'rl_bowl.webp" alt=""><img class="rot" src="' + TA + 'rl_ring.webp" alt="" style="transform:rotate(5deg)">' : wheelSVG(order)) + '<div class="rl-num" id="rlNum">–</div></div><div class="area"><div class="rlh-t">' + RLT('最近开奖', 'LAST NUMBERS') + '</div><div class="hist" id="rlHist" data-empty="' + RLT('还没有记录', 'No spins yet') + '"></div>' + resLine() + '</div></div>' + b + '<div class="pt2">' + (g.tv === 'lucky' ? RLT('幸运闪电：每局随机 1–5 个号码获得 50–500 倍；单号注平时赔 29:1，中闪电号码按倍数赔 · ', 'LUCKY STRIKE: 1–5 numbers get a 50x–500x multiplier each spin · straight-up pays 29:1, or the multiplier on a struck number · ') : '') + (g.tv === 'fr' ? RLT('开出 0 时平注只输一半 · ', 'La Partage: even-money bets lose half on 0 · ') : '') + RLT('单号 35:1 · 两号（点线）17:1 · 四号（点角）8:1 · 打/列 2:1 · 红黑单双大小 1:1', 'Number 35:1 · line 17:1 · corner 8:1 · dozen/column 2:1 · red/black/odd/even/low/high 1:1') + '</div>';
       f.querySelectorAll('.rl-board [data-k]').forEach(x => { x.onclick = e => { e.stopPropagation(); addBet(x.dataset.k); }; x.oncontextmenu = e => { e.preventDefault(); e.stopPropagation(); removeBet(x.dataset.k); }; });
       this.paintHist();
     },
-    paintHist() { const h = document.getElementById('rlHist'); if (h) h.innerHTML = TT.hist.slice(-16).map(n => '<span class="' + (n === '0' || n === '00' ? 'z' : TE.REDS.includes(+n) ? 'r' : '') + '">' + n + '</span>').join(''); },
+    paintHist() { const h = document.getElementById('rlHist'); if (h && !TT.hist.length) { h.innerHTML = '<em>' + h.dataset.empty + '</em>'; return; } if (h) h.innerHTML = TT.hist.slice(-12).map(n => '<span class="' + (n === '0' || n === '00' ? 'z' : TE.REDS.includes(+n) ? 'r' : '') + '">' + n + '</span>').join(''); },
     async render(v, r) {
       const svg = document.querySelector('.rl-wheel .rot') || document.querySelector('.rl-wheel svg'), off = svg.tagName === 'IMG' ? 5 : 0, num = document.getElementById('rlNum'); num.textContent = ''; num.className = 'rl-num';
       const order = this.order, idx = order.findIndex(x => String(x) === v.n), n = order.length;
-      document.querySelectorAll('.rl-board .lk').forEach(e => e.remove()); document.querySelectorAll('.rl-board .luck').forEach(e => e.classList.remove('luck'));
+      document.querySelectorAll('.rl-board .hitn').forEach(e => e.classList.remove('hitn')); document.querySelectorAll('.rl-board .lk').forEach(e => e.remove()); document.querySelectorAll('.rl-board .luck').forEach(e => e.classList.remove('luck'));
       if (v.lucky) { floatLuck(); for (const [num, m] of Object.entries(v.lucky)) { const bt = document.querySelector('.rl-board [data-k="n' + num + '"]'); if (bt) { bt.classList.add('luck'); bt.insertAdjacentHTML('beforeend', '<b class="lk">' + m + 'x</b>'); if (sfx.pop) sfx.pop(); await wait(260); } } await wait(400); }
       const target = 360 * 5 + (360 - idx / n * 360); this.rot = this.rot - (this.rot % 360) + target; svg.style.transform = 'rotate(' + (this.rot + off) + 'deg)'; sfx.spin(); if (sfx.ball) sfx.ball();
       await wait(4600); num.textContent = v.n; num.className = 'rl-num ' + v.color; sfx.stop();
-      TT.hist.push(v.n); this.paintHist(); markWins(v.wins); showRes(r.win > 0 ? v.n + ' ' + v.color.toUpperCase() + ' · WIN ' + fmt(r.win) : v.n + ' ' + v.color.toUpperCase(), r.win);
+      TT.hist.push(v.n); this.paintHist(); markWins(v.wins); { const hb = document.querySelector('.rl-board [data-k="n' + v.n + '"]'); if (hb) hb.classList.add('hitn'); }
+      { const cz = { red: '红', black: '黑', green: '绿' }[v.color] || '', ce = v.color.toUpperCase(); showRes(v.n + ' ' + RLT(cz, ce) + (r.win > 0 ? ' · ' + RLT('赢 ', 'WIN ') + fmt(r.win) : ''), r.win); }
     },
-    dealLabel: 'Spin'
+    dealLabel: 'Spin',
+    keepBets: false
   };
   // BACCARAT / DRAGON TIGER
   // 2026-11-18 baccarat page rework (phone QA): stable card area with slots, coloured side labels, readable chips on spots, clear result banner

@@ -257,6 +257,10 @@ Object.assign(I18N.en,{"我的战绩":"My Stats","通关进度":"Progress","累�
 Object.assign(I18N.ja,{"我的战绩":"戦績","通关进度":"進行度","累计胜利":"勝利数","累计击杀":"撃破数","击败 BOSS":"ボス撃破","拥有英雄":"所持英雄","最常用英雄":"よく使う英雄","最熟练的塔":"最も熟練した塔","还没有熟练的塔":"熟練した塔はまだない","无尽最高":"エンドレス最高"});
 Object.assign(I18N.ko,{"我的战绩":"내 전적","通关进度":"진행도","累计胜利":"승리","累计击杀":"처치","击败 BOSS":"보스 처치","拥有英雄":"보유 영웅","最常用英雄":"가장 많이 쓴 영웅","最熟练的塔":"최고 숙련 탑","还没有熟练的塔":"숙련된 탑 없음","无尽最高":"무한 최고"});
 Object.assign(I18N.es,{"我的战绩":"Mis estadísticas","通关进度":"Progreso","累计胜利":"Victorias","累计击杀":"Bajas","击败 BOSS":"Jefes","拥有英雄":"Héroes","最常用英雄":"Más usado","最熟练的塔":"Torre top","还没有熟练的塔":"Aún sin maestría","无尽最高":"Récord infinito"});
+Object.assign(I18N.en,{"继续上一局？":"Resume last battle?","继续第 {n} 波":"Resuming wave {n}","放弃":"Discard"});
+Object.assign(I18N.ja,{"继续上一局？":"前回の戦闘を再開？","继续第 {n} 波":"ウェーブ{n}から再開","放弃":"破棄"});
+Object.assign(I18N.ko,{"继续上一局？":"지난 전투를 이어할까요?","继续第 {n} 波":"웨이브 {n}부터 계속","放弃":"포기"});
+Object.assign(I18N.es,{"继续上一局？":"¿Continuar la última batalla?","继续第 {n} 波":"Continuando oleada {n}","放弃":"Descartar"});
 
 'use strict';
 // ====================== 基础 ======================
@@ -3436,6 +3440,22 @@ function statPop(){const S=SAVE.st||{};const own=HERO_ORDER.filter(owns).length;
   popup('📊 '+TR('我的战绩'),L,[{label:TR('确定'),style:'green'}])}
 (function(){const dt=drawTasks;drawTasks=function(d){dt(d);try{if(tasksTab!==3)return;const x=W/2-460,y=150,w=920;button('📊 '+TR('我的战绩'),96,22,170,50,statPop,{style:'blue',size:16})}catch(e){}}})();
 
+// ====================== 断点续玩（BTD6 自动存档）：两波之间自动存档，退出后回来可以从这一波继续 ======================
+function resumeGet(){try{return JSON.parse(localStorage.getItem('hero_resume')||'null')}catch(e){return null}}
+function resumeSet(o){try{if(o)localStorage.setItem('hero_resume',JSON.stringify(o));else localStorage.removeItem('hero_resume')}catch(e){}}
+let resumeData=null,resumeAsked=false;
+(function(){
+  const up=update;update=function(dt){up(dt);try{if(!G||G.over||G.firstWave||G.L.chal||G.li<0&&!G.L.endless||G.hmode)return;if(G.enemies.some(e=>!e.dead)||(G.spawnQ&&G.spawnQ.length))return;if(G.savedWave===G.wave)return;G.savedWave=G.wave;
+    resumeSet({li:G.li,end:G.L.endless?G.endlessMap||1:0,wave:G.wave,gold:G.gold,lives:G.lives,buf:G.buf||{},tw:G.towers.map(t=>t.type?[t.type,t.lvl,t.br==null?-1:t.br,t.para?1:0]:null),team:SAVE.team.slice(),at:Date.now(),name:String(G.L.name)})}catch(e){}};
+  const eb=endBattle;endBattle=function(win){eb(win);resumeSet(null)};
+  const sl=startLevel;startLevel=function(li,e){if(G)G.endlessMap=null;sl(li,e);try{if(G&&e)G.endlessMap=e}catch(_){}try{const R=resumeData;resumeData=null;if(!R||!G)return;
+    G.gold=99999;try{const pads=new Set(R.tw.map((t,i)=>t?i:-1).filter(i=>i>=0));if(G.obs){G.obs=G.obs.filter(o=>!pads.has(o.pad));for(const i of pads)if(G.towers[i])G.towers[i].obs=null;G.obsTotal=G.obs.length}}catch(_){}R.tw.forEach((s,i)=>{if(!s||!G.towers[i])return;build(i,s[0]);for(let k=1;k<s[1];k++)upgrade(i);if(s[2]>=0&&G.towers[i]){G.towers[i].br=s[2];if(s[0]==='barracks')try{setupBarracks(G.towers[i])}catch(_){}}if(s[3])G.towers[i].para=1});
+    G.gold=R.gold;G.lives=R.lives;G.buf=R.buf||{};G.wave=R.wave;G.firstWave=false;G.waveTimer=8;G.savedWave=R.wave;G.card=null;G.tut=null;G.banner={s:TR('继续第 {n} 波').replace('{n}',R.wave+1),t:0};track('resume',{li:R.li,w:R.wave})}catch(err){console.error(err)}};
+  const ml=metaLevels;metaLevels=function(){ml.apply(this,arguments);try{const R=resumeGet();if(!R||resumeAsked||POP||lvPop)return;resumeAsked=true;if(Date.now()-R.at>3*864e5){resumeSet(null);return}
+    popup('⏯ '+TR('继续上一局？'),[R.name,TR('继续第 {n} 波').replace('{n}',R.wave+1)+'  ·  ❤ '+R.lives+'  ·  💰 '+R.gold],[{label:TR('继续'),style:'green',fn:()=>{resumeData=R;SAVE.team=R.team.filter(owns);startLevel(R.li,R.end||0);scene='battle'}},{label:TR('放弃'),style:'gray',fn:()=>resumeSet(null)}])}catch(e){}};
+  if(window.__api)Object.assign(window.__api,{update,endBattle,startLevel});
+})();
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -3478,7 +3498,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794983786';
+const BUILD_VER='1794983971';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

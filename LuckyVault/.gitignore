@@ -1,4 +1,1 @@
-data/
-node_modules/
-runtime/
-*.log
+ui-smoke/

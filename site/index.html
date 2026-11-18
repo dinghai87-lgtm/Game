@@ -1,198 +1,785 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ELERONZEN TECHNOLOGY INC — Games</title>
-<meta name="description" content="ELERONZEN TECHNOLOGY INC publishes mobile and web games. Play Hero Defense free in your browser.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ELERONZEN TECHNOLOGY INC — Hero Defense</title>
+<meta name="description" content="ELERONZEN TECHNOLOGY INC is a game publisher. Play Hero Defense, a free tower defense strategy game, in your browser. iOS and Android versions coming soon.">
 <meta property="og:title" content="ELERONZEN TECHNOLOGY INC">
-<meta property="og:description" content="Publisher of Hero Defense — a free tower defense game you can play in your browser.">
+<meta property="og:description" content="Publisher of Hero Defense, a free tower defense strategy game you can play in the browser.">
 <meta property="og:image" content="/img/feature_en.webp">
-<meta name="theme-color" content="#121212">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#08080a">
 <link rel="icon" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<script>
+(function () {
+  var l = null;
+  try { l = localStorage.getItem("elz_lang"); } catch (e) {}
+  if (l !== "en" && l !== "zh") {
+    var nav = navigator.language || (navigator.languages && navigator.languages[0]) || "";
+    l = /^zh/i.test(nav) ? "zh" : "en";
+  }
+  var h = document.documentElement;
+  h.lang = l;
+  h.setAttribute("data-lang", l);
+  var href = l === "zh" ? "/img/zh_1_battle.webp" : "/img/en_1_battle.webp";
+  var pre = document.createElement("link");
+  pre.rel = "preload";
+  pre.as = "image";
+  pre.href = href;
+  document.head.appendChild(pre);
+})();
+</script>
 <style>
-:root{--bg:#111113;--bg2:#18181b;--card:#1f1f23;--line:#2c2c31;--gold:#d8a838;--gold2:#f0c75a;--tx:#ecebe6;--mut:#a3a19a}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.65 -apple-system,"Segoe UI",Roboto,"Helvetica Neue","PingFang SC","Microsoft YaHei",sans-serif}
-a{color:inherit}
-.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
-.serif{font-family:Georgia,"Times New Roman","Songti SC","Noto Serif CJK SC",serif;letter-spacing:.02em}
-/* nav */
-header{position:sticky;top:0;z-index:10;background:rgba(17,17,19,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.nav{display:flex;align-items:center;justify-content:space-between;height:64px}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:700;letter-spacing:.14em;font-size:15px}
-.brand i{width:28px;height:28px;border:2px solid var(--gold);transform:rotate(45deg);display:inline-block;position:relative}
-.brand i:after{content:"";position:absolute;inset:6px;background:var(--gold)}
-nav ul{display:flex;gap:26px;list-style:none;margin:0;padding:0;align-items:center}
-nav ul a{text-decoration:none;color:var(--mut);font-size:14px}
-nav ul a:hover{color:var(--tx)}
-.lang{background:none;border:1px solid var(--line);color:var(--tx);border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer}
-/* hero */
-.hero{padding:110px 0 90px;position:relative;overflow:hidden}
-.hero:before{content:"";position:absolute;inset:0;background:radial-gradient(700px 380px at 75% 30%,rgba(216,168,56,.16),transparent 70%)}
-.hero .wrap{position:relative;display:grid;grid-template-columns:1fr auto;gap:40px;align-items:center}
-.emb{width:260px;height:auto;filter:drop-shadow(0 18px 50px rgba(216,168,56,.25))}
-.eyebrow{color:var(--gold);font-size:13px;letter-spacing:.24em;text-transform:uppercase;font-weight:600}
-h1,h2{text-wrap:balance}
-h1{font-size:clamp(36px,6vw,64px);line-height:1.08;margin:18px 0 22px;max-width:780px}
-.lead{color:var(--mut);font-size:19px;max-width:620px;margin:0 0 36px}
-.btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:700;border-radius:10px;padding:14px 26px;font-size:16px;transition:transform .15s,background .15s}
-.btn.pri{background:var(--gold);color:#17130a}
-.btn.pri:hover{background:var(--gold2);transform:translateY(-1px)}
-.btn.sec{border:1px solid var(--line);color:var(--tx);margin-left:12px}
-.btn.sec:hover{border-color:var(--gold)}
-section{padding:90px 0;border-top:1px solid var(--line)}
-h2{font-size:clamp(28px,4vw,40px);margin:10px 0 14px}
-.sub{color:var(--mut);max-width:640px;margin:0 0 44px}
-/* game card */
-.game{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden}
-.banner{position:relative;aspect-ratio:2.5;max-height:470px;width:100%;background:#000}
-.banner img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-.banner:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(17,17,19,.92) 0%,rgba(17,17,19,.55) 42%,rgba(17,17,19,0) 70%),linear-gradient(0deg,rgba(31,31,35,1) 0%,rgba(31,31,35,0) 30%)}
-.banner .ov{position:absolute;z-index:1;left:40px;top:50%;transform:translateY(-50%);max-width:46%}
-.banner .logo{width:100%;height:auto;max-width:300px;display:block;margin-bottom:22px}
-.gbody{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;padding:8px 40px 40px;align-items:start}
-.tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
-.tags span{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:4px 11px;color:var(--mut)}
-.game p{color:var(--mut);margin:0 0 20px}
-.feat{list-style:none;padding:0;margin:0;display:grid;gap:10px}
-.feat li{padding-left:26px;position:relative}
-.feat li:before{content:"";position:absolute;left:4px;top:9px;width:9px;height:9px;background:var(--gold);transform:rotate(45deg)}
-.note{font-size:13px;color:var(--mut);margin-top:12px}
-.shots{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.shots img{width:100%;border-radius:10px;border:1px solid var(--line);display:block;aspect-ratio:2.17;object-fit:cover;background:#000;cursor:zoom-in}
-.shots .cap{grid-column:1/3;font-size:13px;color:var(--mut)}
-/* about */
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.box{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:28px}
-.box h3{margin:0 0 8px;font-size:18px}
-.box p{margin:0;color:var(--mut);font-size:15px}
-.num{color:var(--gold);font-weight:700;font-size:13px;letter-spacing:.2em}
-/* contact */
-.contact{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.contact .box a{color:var(--gold2);text-decoration:none;word-break:break-all}
-footer{border-top:1px solid var(--line);padding:36px 0 46px;color:var(--mut);font-size:14px}
-.foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
-.foot a{color:var(--mut);text-decoration:none;margin-right:18px}
-.foot a:hover{color:var(--tx)}
-[data-zh]{display:none!important}
-html[lang=zh] [data-en]{display:none!important}
-html[lang=zh] [data-zh]{display:revert!important}
-@media(min-width:1700px){body{zoom:1.15}}
-@media(min-width:2300px){body{zoom:1.4}}
-@media(max-width:860px){
- .hero .wrap{grid-template-columns:1fr}
- .emb{width:96px;order:-1;margin-bottom:-14px}
- nav ul li.hide{display:none}
- .gbody{grid-template-columns:1fr;padding:4px 22px 26px;gap:26px}
- .banner{aspect-ratio:auto;max-height:none;padding-top:34%}
- .banner img.bg{height:auto;aspect-ratio:2.17}
- .banner .ov{position:relative;left:auto;top:auto;transform:none;max-width:none;padding:0 22px 8px}
- .banner .logo{max-width:210px;margin-bottom:16px}
- .banner:after{background:linear-gradient(180deg,rgba(31,31,35,0) 0%,rgba(31,31,35,.4) 25%,rgba(31,31,35,1) 44%)}
- .grid3,.contact{grid-template-columns:1fr}
- .hero{padding:72px 0 60px}
- section{padding:64px 0}
- .btn.sec{margin:12px 0 0}
+:root {
+  --bg: #08080a;
+  --bg-2: #101014;
+  --ink: #f4f0e6;
+  --muted: #b7b1a4;
+  --gold: #d8a838;
+  --gold-2: #f0d48a;
+  --line: rgba(216, 168, 56, .28);
+  --serif: "Iowan Old Style", Palatino, Georgia, "Songti SC", "STSong", "Noto Serif SC", "Times New Roman", serif;
+  --sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
-@media(max-width:400px){h1{font-size:31px}.eyebrow{letter-spacing:.14em;font-size:12px}.wrap{padding:0 18px}.lead{font-size:17px}}
-.lb{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;z-index:50;cursor:zoom-out;padding:20px}.lb.on{display:flex}.lb img{max-width:100%;max-height:100%;border-radius:10px}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 92px; background: var(--bg); }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 17px/1.65 var(--sans);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; border: 0; }
+a { color: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid var(--gold-2); outline-offset: 3px; }
+::selection { background: rgba(216, 168, 56, .35); color: #fff; }
+.wrap {
+  width: min(1120px, calc(100% - 40px));
+  margin-inline: auto;
+}
+h1, h2, h3, p { text-wrap: pretty; }
+h1, h2 {
+  font-family: var(--serif);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  margin: 0;
+}
+h1 { font-size: clamp(40px, 5.4vw, 72px); }
+h2 { font-size: clamp(32px, 4vw, 54px); }
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+  color: var(--gold-2);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+}
+.eyebrow:before {
+  content: "";
+  width: 32px;
+  height: 1px;
+  background: var(--gold);
+  flex: none;
+}
+html[lang="zh"] .eyebrow { letter-spacing: .16em; text-transform: none; font-size: 14px; }
+.sub { color: var(--muted); max-width: 40em; margin: 14px 0 0; font-size: 18px; }
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: 76px;
+  background: #08080a;
+  border-bottom: 1px solid rgba(216, 168, 56, .2);
+}
+.bar {
+  height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: auto;
+  text-decoration: none;
+  min-width: 0;
+}
+.brand img {
+  height: 42px;
+  width: auto;
+  display: block;
+  mix-blend-mode: screen;
+  flex: none;
+}
+.brand span {
+  font-weight: 700;
+  letter-spacing: .2em;
+  font-size: 14px;
+}
+.nav-links { display: flex; align-items: center; gap: 28px; }
+.nav-links a {
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+html[lang="zh"] .nav-links a { letter-spacing: .04em; text-transform: none; font-size: 15px; }
+.nav-links a:hover { color: var(--ink); }
+.bar-tools { display: flex; align-items: center; gap: 10px; flex: none; }
+.lang {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.lang button, .menu-btn {
+  font-family: inherit;
+  cursor: pointer;
+  background: transparent;
+  color: var(--muted);
+  border: 0;
+}
+.lang button {
+  padding: 7px 12px;
+  font-size: 12px;
+  letter-spacing: .14em;
+}
+.lang button[aria-pressed="true"] {
+  background: var(--gold);
+  color: #1a1408;
+  font-weight: 700;
+}
+.menu-btn {
+  display: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+html[lang="zh"] .menu-btn { letter-spacing: .04em; text-transform: none; font-size: 14px; }
+
+.hero {
+  position: relative;
+  background: #08080a;
+  overflow: hidden;
+}
+.hero-visual { position: relative; }
+.hero-bg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: center center;
+  background: #14120c;
+}
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8,8,10,.28) 0%, rgba(8,8,10,0) 28%, rgba(8,8,10,.18) 58%, #08080a 100%);
+  pointer-events: none;
+}
+.hero-slot {
+  position: relative;
+  z-index: 1;
+  margin-top: -88px;
+  padding-bottom: 18px;
+}
+.hero-copy { max-width: 640px; }
+.wordmark {
+  width: min(420px, 100%);
+  height: auto;
+  display: block;
+  mix-blend-mode: screen;
+  margin: 0 0 8px;
+}
+.game-name {
+  font-family: var(--serif);
+  font-size: clamp(28px, 3vw, 40px);
+  color: var(--gold-2);
+  margin: 0 0 8px;
+  line-height: 1.15;
+}
+.game-name:empty { display: none; }
+.hero h1 { margin: 6px 0 16px; max-width: 12em; }
+.lead { margin: 0 0 26px; color: #e6e0d4; font-size: clamp(17px, 1.5vw, 20px); max-width: 34em; }
+.hero .lead { max-width: 22em; }
+.cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 18px; margin-bottom: 22px; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 14px 26px;
+  background: linear-gradient(180deg, #f3d896 0%, #d8a838 46%, #c4922a 100%);
+  color: #1a1408;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 15px;
+  border-radius: 6px;
+  box-shadow: 0 14px 34px rgba(216, 168, 56, .22), inset 0 1px 0 rgba(255,255,255,.45);
+}
+html[lang="en"] .btn { letter-spacing: .16em; text-transform: uppercase; }
+html[lang="zh"] .btn { letter-spacing: .14em; font-size: 16px; }
+.btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.soon { margin: 0; color: #d9d3c6; font-size: 14px; max-width: 16em; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.chips li {
+  border: 1px solid var(--line);
+  color: #f0e6c8;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  letter-spacing: .08em;
+}
+html[lang="zh"] .chips li { letter-spacing: .04em; }
+
+.band { padding: clamp(72px, 9vw, 130px) 0; }
+.shots { margin-top: 36px; display: grid; gap: 22px; }
+.shot { margin: 0; min-width: 0; }
+.shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #000;
+  border-radius: 14px;
+  cursor: zoom-in;
+  box-shadow: 0 24px 60px rgba(0,0,0,.35);
+  border: 1px solid rgba(216, 168, 56, .22);
+}
+.shot figcaption {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+html[lang="zh"] .shot figcaption { letter-spacing: .06em; text-transform: none; font-size: 14px; }
+.shot-row { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+
+.game-block { margin-top: clamp(72px, 9vw, 120px); display: grid; gap: 36px; align-items: start; }
+.game-block p { color: var(--muted); margin: 16px 0 0; }
+.feats { list-style: none; margin: 26px 0 0; padding: 0; display: grid; gap: 14px; }
+.feats li { position: relative; padding-left: 26px; color: var(--ink); }
+.feats li:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: .55em;
+  width: 8px;
+  height: 8px;
+  background: var(--gold);
+  transform: rotate(45deg);
+}
+.game-block .btn { margin-top: 28px; }
+.plats { display: grid; gap: 12px; }
+.plat {
+  padding: 18px 20px 20px;
+  border: 1px solid rgba(216, 168, 56, .18);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(216,168,56,.07), rgba(255,255,255,.015));
+}
+.plat h3 { margin: 0 0 4px; font-size: 16px; letter-spacing: .08em; font-weight: 700; }
+.plat p { margin: 0; color: var(--muted); font-size: 15px; }
+.plat.live h3:before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 4px rgba(216, 168, 56, .16);
+  vertical-align: 1px;
+}
+
+.studio-top {
+  display: grid;
+  gap: 28px;
+  align-items: center;
+}
+.crest {
+  width: 148px;
+  height: auto;
+  display: block;
+  mix-blend-mode: screen;
+}
+.studio-top .sub { margin-top: 18px; }
+.pillars {
+  margin-top: 42px;
+  display: grid;
+  gap: 16px;
+}
+.pillar {
+  padding: 26px 24px 28px;
+  background: rgba(255,255,255,.02);
+  border: 1px solid rgba(216, 168, 56, .16);
+  border-top: 2px solid var(--gold);
+  min-width: 0;
+}
+.pillar .num {
+  font-family: var(--serif);
+  color: var(--gold);
+  letter-spacing: .14em;
+  font-size: 13px;
+}
+.pillar h3 { margin: 10px 0 8px; font-size: 22px; font-family: var(--serif); font-weight: 500; }
+.pillar p { margin: 0; color: var(--muted); }
+
+.contact-grid { margin-top: 36px; display: grid; gap: 16px; }
+.card {
+  padding: 26px 24px;
+  border: 1px solid rgba(216, 168, 56, .16);
+  background: var(--bg-2);
+  min-width: 0;
+}
+.card h3 { margin: 0 0 8px; font-size: 14px; letter-spacing: .16em; text-transform: uppercase; color: var(--gold-2); }
+html[lang="zh"] .card h3 { letter-spacing: .08em; text-transform: none; font-size: 16px; }
+.card p { margin: 0; color: var(--ink); }
+.card a { color: var(--gold-2); text-decoration: none; border-bottom: 1px solid rgba(216,168,56,.45); overflow-wrap: anywhere; }
+
+footer {
+  border-top: 1px solid rgba(216, 168, 56, .28);
+  padding: 42px 0 56px;
+  color: var(--muted);
+}
+.foot { display: grid; gap: 22px; }
+.foot-brand { display: flex; gap: 16px; align-items: center; min-width: 0; }
+.foot-brand img { height: 64px; width: auto; display: block; mix-blend-mode: screen; flex: none; }
+.foot-brand strong { display: block; color: var(--ink); letter-spacing: .08em; font-size: 14px; }
+.foot-brand p { margin: 6px 0 0; font-size: 14px; }
+.foot-links { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+.foot-links a { color: var(--muted); text-decoration: none; }
+.foot-links a:hover { color: var(--ink); }
+.copy { margin: 0; font-size: 14px; }
+
+.lb {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(0,0,0,.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.lb.on { display: flex; }
+.lb img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 20px 80px rgba(0,0,0,.5);
+}
+.lb-x {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(0,0,0,.4);
+  color: var(--ink);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+@media (min-width: 800px) {
+  .shot-row { gap: 22px; }
+  .game-block { grid-template-columns: minmax(0, 1.2fr) minmax(260px, .8fr); gap: 48px; }
+  .studio-top { grid-template-columns: minmax(0, 1fr) auto; gap: 48px; }
+  .crest { width: 180px; }
+  .pillars, .contact-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .contact-grid { grid-template-columns: 1fr 1fr; }
+  .foot { grid-template-columns: 1fr auto; align-items: end; }
+  .foot-links { justify-content: flex-end; align-self: center; }
+  .copy { grid-column: 1 / -1; }
+}
+@media (min-width: 1000px) {
+  .hero { min-height: calc(100svh - 76px); }
+  .hero-visual { position: absolute; inset: 0; }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    aspect-ratio: auto;
+    object-fit: cover;
+    object-position: 18% center;
+  }
+  .hero-scrim {
+    background:
+      linear-gradient(90deg, #08080a 0%, #08080a 40%, rgba(8,8,10,.96) 50%, rgba(8,8,10,.62) 62%, rgba(8,8,10,.22) 76%, rgba(8,8,10,.14) 100%),
+      linear-gradient(180deg, rgba(8,8,10,.55) 0%, rgba(8,8,10,0) 16%, rgba(8,8,10,0) 74%, #08080a 100%);
+  }
+  .hero h1, .hero .lead, .hero .soon, .hero .game-name {
+    text-shadow: 0 2px 18px rgba(0,0,0,.65);
+  }
+  .hero-slot {
+    margin-top: 0;
+    min-height: calc(100svh - 76px);
+    display: flex;
+    align-items: center;
+    padding-top: 36px;
+    padding-bottom: 36px;
+  }
+  .wordmark { width: min(460px, 100%); }
+}
+@media (min-width: 1280px) {
+  .wrap { width: min(1200px, calc(100% - 80px)); }
+}
+@media (min-width: 1600px) {
+  body { font-size: 18px; }
+  .wrap { width: min(1360px, calc(100% - 120px)); }
+  h1 { font-size: 80px; }
+  h2 { font-size: 60px; }
+  .hero-copy { max-width: 700px; }
+  .wordmark { width: min(520px, 100%); }
+  .crest { width: 210px; }
+}
+@media (min-width: 2000px) {
+  .wrap { width: min(1560px, calc(100% - 160px)); }
+}
+@media (min-width: 2400px) {
+  body { font-size: 20px; }
+  .wrap { width: min(1760px, calc(100% - 200px)); }
+  h1 { font-size: 96px; }
+  h2 { font-size: 68px; }
+  .hero-copy { max-width: 780px; }
+  .wordmark { width: min(580px, 100%); }
+  .lead { font-size: 24px; }
+  .btn { min-height: 60px; padding: 16px 34px; font-size: 17px; }
+  .chips li { font-size: 14px; padding: 8px 16px; }
+  .crest { width: 240px; }
+  header, .bar { height: 88px; }
+  .hero, .hero-slot { min-height: calc(100svh - 88px); }
+}
+@media (max-width: 860px) {
+  .menu-btn { display: inline-flex; align-items: center; }
+  .nav-links {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 76px;
+    background: #08080a;
+    border-bottom: 1px solid rgba(216, 168, 56, .25);
+    padding: 6px 22px 16px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    z-index: 30;
+  }
+  .nav-links.open { display: flex; }
+  .nav-links a { padding: 14px 0; border-top: 1px solid rgba(255,255,255,.06); }
+}
+@media (max-width: 640px) {
+  .shot-row { grid-template-columns: 1fr; }
+  .brand span { letter-spacing: .14em; font-size: 13px; }
+  .hero-slot { margin-top: -64px; }
+  h1 { font-size: 38px; }
+}
+@media (max-width: 380px) {
+  .wrap { width: calc(100% - 32px); }
+  .brand span { letter-spacing: .08em; }
+  .lang button { padding: 7px 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .btn { transition: none; }
+}
 </style>
 </head>
 <body>
-<header><div class="wrap nav">
- <a class="brand" href="#top"><i></i>ELERONZEN</a>
- <nav><ul>
-  <li class="hide"><a href="#games"><span data-en>Games</span><span data-zh>游戏</span></a></li>
-  <li class="hide"><a href="#about"><span data-en>About</span><span data-zh>关于我们</span></a></li>
-  <li class="hide"><a href="#contact"><span data-en>Contact</span><span data-zh>联系</span></a></li>
-  <li><button class="lang" id="lang" aria-label="Switch language">中文</button></li>
- </ul></nav>
-</div></header>
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="#top">
+      <img src="/img/ui_logo_emblem.webp" alt="" width="300" height="360">
+      <span>ELERONZEN</span>
+    </a>
+    <nav class="nav-links" id="nav">
+      <a href="#games" data-i18n="nav.games">Games</a>
+      <a href="#studio" data-i18n="nav.studio">Studio</a>
+      <a href="#contact" data-i18n="nav.contact">Contact</a>
+    </nav>
+    <div class="bar-tools">
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" id="lang-en" aria-pressed="true">EN</button>
+        <button type="button" id="lang-zh" aria-pressed="false">ZH</button>
+      </div>
+      <button type="button" class="menu-btn" id="menu" aria-expanded="false" aria-controls="nav" data-i18n="nav.menu">Menu</button>
+    </div>
+  </div>
+</header>
 
 <main id="top">
-<div class="hero"><div class="wrap"><div>
- <div class="eyebrow">ELERONZEN TECHNOLOGY INC</div>
- <h1 class="serif"><span data-en>Games built to be played anywhere.</span><span data-zh>随时随地，<br>都能玩的好游戏。</span></h1>
- <p class="lead"><span data-en>We publish strategy and casual games for the web, iOS and Android — quick to start, deep enough to keep playing.</span><span data-zh>我们发行网页、iOS 和 Android 平台的策略与休闲游戏——上手快，越玩越有深度。</span></p>
- <a class="btn pri" href="/hero-defense/"><span data-en>Play Hero Defense</span><span data-zh>开始玩英雄塔防</span> →</a>
- <a class="btn sec" href="#games"><span data-en>Our games</span><span data-zh>我们的游戏</span></a>
-</div><img class="emb" src="/img/ui_logo_emblem.webp" alt="" width="300" height="360"></div></div>
+  <section class="hero" aria-label="Hero Defense">
+    <div class="hero-visual">
+      <img class="hero-bg" id="hero-bg" src="/img/en_1_battle.webp" alt="" width="1600" height="736">
+      <div class="hero-scrim"></div>
+    </div>
+    <div class="wrap hero-slot">
+      <div class="hero-copy">
+        <p class="eyebrow" data-i18n="hero.eye">Flagship game</p>
+        <img class="wordmark" id="wordmark" src="/img/ui_logo_full.webp" alt="Hero Defense" width="800" height="320">
+        <p class="game-name" data-i18n="hero.name"></p>
+        <h1 data-i18n="hero.h1">Hold every road.</h1>
+        <p class="lead" data-i18n="hero.lead">Hero Defense is a free tower defense strategy game. Build towers, rally heroes and hold the line against every wave.</p>
+        <div class="cta-row">
+          <a class="btn" id="play" href="/hero-defense/" data-i18n="hero.play">Play Now</a>
+          <p class="soon" data-i18n="hero.soon">Free in the browser. iOS and Android versions coming soon.</p>
+        </div>
+        <ul class="chips">
+          <li data-i18n="chip.td">Tower Defense</li>
+          <li data-i18n="chip.strategy">Strategy</li>
+          <li data-i18n="chip.free">Free</li>
+          <li>Web · iOS · Android</li>
+        </ul>
+      </div>
+    </div>
+  </section>
 
-<section id="games"><div class="wrap">
- <div class="eyebrow"><span data-en>Featured game</span><span data-zh>主打游戏</span></div>
- <h2 class="serif"><span data-en>Hero Defense</span><span data-zh>英雄塔防</span></h2>
- <p class="sub"><span data-en>Our flagship tower defense game. Free to play, right in your browser — no download needed.</span><span data-zh>我们的旗舰塔防游戏。免费游玩，打开浏览器就能玩，无需下载。</span></p>
- <div class="game">
-  <div class="banner">
-   <img class="bg" data-en src="/img/en_1_battle.webp" alt="Hero Defense gameplay">
-   <img class="bg" data-zh src="/img/zh_1_battle.webp" alt="英雄塔防 游戏画面">
-   <div class="ov">
-    <img class="logo" src="/img/ui_logo_full.webp" alt="Hero Defense" width="800" height="320">
-    <a class="btn pri" href="/hero-defense/"><span data-en>Play free now</span><span data-zh>立即免费开玩</span> →</a>
-    <div class="note"><span data-en>iOS and Android apps coming soon.</span><span data-zh>iOS 与 Android 版本即将上线。</span></div>
-   </div>
-  </div>
-  <div class="gbody">
-   <div>
-    <div class="tags"><span>Tower Defense</span><span data-en>Strategy</span><span data-zh>策略</span><span data-en>Free to play</span><span data-zh>免费</span><span>Web · iOS · Android</span></div>
-    <p><span data-en>Build towers, recruit heroes and hold the line against waves of monsters across a growing campaign of stages.</span><span data-zh>建造防御塔、招募英雄，在不断扩充的关卡中抵御一波又一波的怪物。</span></p>
-    <ul class="feat">
-     <li><span data-en>Heroes with talents, skins and pets</span><span data-zh>英雄天赋、皮肤与宠物</span></li>
-     <li><span data-en>Campaign, boss raids, odyssey and weekly challenges</span><span data-zh>主线关卡、Boss 讨伐、远征与每周挑战</span></li>
-     <li><span data-en>Play in English, 中文, 日本語, 한국어 and Español</span><span data-zh>支持中文、English、日本語、한국어、Español</span></li>
-    </ul>
-   </div>
-   <div class="shots">
-    <img data-en src="/img/en_2_map.webp" alt="World map" loading="lazy">
-    <img data-zh src="/img/zh_2_map.webp" alt="世界地图" loading="lazy">
-    <img data-en src="/img/en_3_heroes.webp" alt="Heroes" loading="lazy">
-    <img data-zh src="/img/zh_3_heroes.webp" alt="英雄" loading="lazy">
-    <div class="cap"><span data-en>World map · Hero hall</span><span data-zh>世界地图 · 英雄殿</span></div>
-   </div>
-  </div>
- </div>
-</div></section>
+  <section class="band" id="games">
+    <div class="wrap">
+      <p class="eyebrow" data-i18n="gal.eye">Gallery</p>
+      <h2 data-i18n="gal.h2">Scenes from the field</h2>
+      <p class="sub" data-i18n="gal.sub">The battle, the world map and the hero hall.</p>
+      <div class="shots">
+        <figure class="shot">
+          <img data-shot="1_battle" src="/img/en_1_battle.webp" width="1600" height="736" alt="Hero Defense battle">
+          <figcaption data-i18n="shot.battle">The battle</figcaption>
+        </figure>
+        <div class="shot-row">
+          <figure class="shot">
+            <img data-shot="2_map" src="/img/en_2_map.webp" width="720" height="331" alt="Hero Defense world map">
+            <figcaption data-i18n="shot.map">World map</figcaption>
+          </figure>
+          <figure class="shot">
+            <img data-shot="3_heroes" src="/img/en_3_heroes.webp" width="720" height="331" alt="Hero Defense heroes">
+            <figcaption data-i18n="shot.heroes">Hero hall</figcaption>
+          </figure>
+        </div>
+      </div>
 
-<section id="about"><div class="wrap">
- <div class="eyebrow"><span data-en>About us</span><span data-zh>关于我们</span></div>
- <h2 class="serif"><span data-en>A small publisher with a big love for games</span><span data-zh>一家热爱游戏的小型发行商</span></h2>
- <p class="sub"><span data-en>ELERONZEN TECHNOLOGY INC publishes games developed by Wantai Game Development (Vantax). We focus on fair, polished games that respect players' time.</span><span data-zh>ELERONZEN TECHNOLOGY INC 负责发行由万泰游戏开发（Vantax）研发的游戏。我们专注于公平、精致、尊重玩家时间的作品。</span></p>
- <div class="grid3">
-  <div class="box"><div class="num">01</div><h3><span data-en>Play instantly</span><span data-zh>即点即玩</span></h3><p><span data-en>Our games run in any modern browser, on phone or desktop.</span><span data-zh>手机或电脑，任何现代浏览器都能直接运行。</span></p></div>
-  <div class="box"><div class="num">02</div><h3><span data-en>Fair by design</span><span data-zh>公平设计</span></h3><p><span data-en>Clear rules and published drop odds for every random reward.</span><span data-zh>规则清晰，所有随机奖励都公开概率。</span></p></div>
-  <div class="box"><div class="num">03</div><h3><span data-en>Always improving</span><span data-zh>持续更新</span></h3><p><span data-en>Regular updates with new content, events and fixes.</span><span data-zh>定期带来新内容、新活动和问题修复。</span></p></div>
- </div>
-</div></section>
+      <div class="game-block">
+        <div>
+          <p class="eyebrow" data-i18n="game.eye">The game</p>
+          <h2 data-i18n="game.h2">Hero Defense</h2>
+          <p data-i18n="game.p">Developed by Wantai Game Development (Vantax) and published by ELERONZEN TECHNOLOGY INC. Recruit heroes, raise towers and outlast waves of monsters across a growing campaign.</p>
+          <ul class="feats">
+            <li data-i18n="feat.1">Heroes with talents, skins and pets</li>
+            <li data-i18n="feat.2">Campaign, boss raids, odyssey and weekly challenges</li>
+            <li data-i18n="feat.3">English, Chinese, Japanese, Korean and Spanish</li>
+          </ul>
+          <a class="btn" href="/hero-defense/" data-i18n="hero.play">Play Now</a>
+        </div>
+        <div class="plats">
+          <article class="plat live">
+            <h3 data-i18n="plat.web.t">Web</h3>
+            <p data-i18n="plat.web.d">Live now. Play in your browser.</p>
+          </article>
+          <article class="plat">
+            <h3 data-i18n="plat.ios.t">iOS</h3>
+            <p data-i18n="plat.ios.d">Coming soon</p>
+          </article>
+          <article class="plat">
+            <h3 data-i18n="plat.and.t">Android</h3>
+            <p data-i18n="plat.and.d">Coming soon</p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<section id="contact"><div class="wrap">
- <div class="eyebrow"><span data-en>Contact</span><span data-zh>联系我们</span></div>
- <h2 class="serif"><span data-en>Get in touch</span><span data-zh>与我们联系</span></h2>
- <p class="sub"><span data-en>Player support, business and partnership inquiries are all welcome.</span><span data-zh>玩家支持、商务与合作咨询，都欢迎来信。</span></p>
- <div class="contact">
-  <div class="box"><h3>Email</h3><p><a href="mailto:info@eleronzentechnology.com">info@eleronzentechnology.com</a></p></div>
-  <div class="box"><h3><span data-en>Address</span><span data-zh>地址</span></h3><p>ELERONZEN TECHNOLOGY INC<br>2227 Prairie Center Pkwy, Num D<br>Brighton, CO 80601, USA</p></div>
- </div>
-</div></section>
+  <section class="band" id="studio">
+    <div class="wrap">
+      <div class="studio-top">
+        <div>
+          <p class="eyebrow" data-i18n="studio.eye">The publisher</p>
+          <h2 data-i18n="studio.h2">Games, placed in players' hands</h2>
+          <p class="sub" data-i18n="studio.p">ELERONZEN TECHNOLOGY INC is a game publisher. Our games are developed by Wantai Game Development (Vantax). We release work that is fair, finished and respectful of a player's time.</p>
+        </div>
+        <img class="crest" src="/img/ui_logo_emblem.webp" alt="" width="300" height="360">
+      </div>
+      <div class="pillars">
+        <article class="pillar">
+          <div class="num" data-i18n="p1.n">01</div>
+          <h3 data-i18n="p1.t">Play instantly</h3>
+          <p data-i18n="p1.d">The web version runs in a modern browser, on a phone or a computer.</p>
+        </article>
+        <article class="pillar">
+          <div class="num" data-i18n="p2.n">02</div>
+          <h3 data-i18n="p2.t">Fair by design</h3>
+          <p data-i18n="p2.d">Clear rules, and published drop odds for every random reward.</p>
+        </article>
+        <article class="pillar">
+          <div class="num" data-i18n="p3.n">03</div>
+          <h3 data-i18n="p3.t">Kept in motion</h3>
+          <p data-i18n="p3.d">New stages, events and fixes arrive on a steady cadence.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="contact">
+    <div class="wrap">
+      <p class="eyebrow" data-i18n="con.eye">Contact</p>
+      <h2 data-i18n="con.h2">Write to us</h2>
+      <p class="sub" data-i18n="con.sub">Player support, business and partnerships.</p>
+      <div class="contact-grid">
+        <article class="card">
+          <h3 data-i18n="con.email">Email</h3>
+          <p><a href="mailto:info@eleronzentechnology.com">info@eleronzentechnology.com</a></p>
+        </article>
+        <article class="card">
+          <h3 data-i18n="con.addr">Address</h3>
+          <p>ELERONZEN TECHNOLOGY INC<br>2227 Prairie Center Pkwy, Num D<br>Brighton, CO 80601, USA</p>
+        </article>
+      </div>
+    </div>
+  </section>
 </main>
 
-<footer><div class="wrap foot">
- <div>© 2026 ELERONZEN TECHNOLOGY INC. <span data-en>Hero Defense © Wantai Game Development.</span><span data-zh>英雄塔防 © 万泰游戏开发。</span></div>
- <div><a href="/hero-defense/privacy.html"><span data-en>Privacy</span><span data-zh>隐私政策</span></a><a href="/hero-defense/terms.html"><span data-en>Terms</span><span data-zh>服务条款</span></a><a href="/hero-defense/odds.html"><span data-en>Drop odds</span><span data-zh>概率说明</span></a></div>
-</div></footer>
+<footer>
+  <div class="wrap foot">
+    <div class="foot-brand">
+      <img src="/img/ui_logo_emblem.webp" alt="" width="300" height="360">
+      <div>
+        <strong>ELERONZEN TECHNOLOGY INC</strong>
+        <p data-i18n="foot.dev">Hero Defense is developed by Wantai Game Development (Vantax).</p>
+      </div>
+    </div>
+    <nav class="foot-links" aria-label="Legal">
+      <a href="/hero-defense/privacy.html" data-i18n="foot.privacy">Privacy</a>
+      <a href="/hero-defense/terms.html" data-i18n="foot.terms">Terms</a>
+      <a href="/hero-defense/odds.html" data-i18n="foot.odds">Drop odds</a>
+    </nav>
+    <p class="copy">© 2026 ELERONZEN TECHNOLOGY INC.</p>
+  </div>
+</footer>
+
+<div class="lb" id="lb" hidden>
+  <button type="button" class="lb-x" id="lb-x" aria-label="Close">&times;</button>
+</div>
 
 <script>
-(function(){
- var h=document.documentElement,b=document.getElementById('lang'),k='elz_lang',l=null;
- try{l=localStorage.getItem(k)}catch(e){}
- if(!l)l=/^zh/i.test(navigator.language||'')?'zh':'en';
- function set(x){h.lang=x;b.textContent=x==='zh'?'English':'中文';document.title=x==='zh'?'ELERONZEN TECHNOLOGY INC — 游戏':'ELERONZEN TECHNOLOGY INC — Games';try{localStorage.setItem(k,x)}catch(e){}}
- b.onclick=function(){set(h.lang==='zh'?'en':'zh')};set(l);
+(function () {
+  var T = {"en":{"meta.title":"ELERONZEN TECHNOLOGY INC \u2014 Hero Defense","meta.desc":"ELERONZEN TECHNOLOGY INC is a game publisher. Play Hero Defense, a free tower defense strategy game, in your browser. iOS and Android versions coming soon.","nav.games":"Games","nav.studio":"Studio","nav.contact":"Contact","nav.menu":"Menu","nav.menuClose":"Close","hero.eye":"Flagship game","hero.name":"","hero.h1":"Hold every road.","hero.lead":"Hero Defense is a free tower defense strategy game. Build towers, rally heroes and hold the line against every wave.","hero.play":"Play Now","hero.soon":"Free in the browser. iOS and Android versions coming soon.","chip.td":"Tower Defense","chip.strategy":"Strategy","chip.free":"Free","gal.eye":"Gallery","gal.h2":"Scenes from the field","gal.sub":"The battle, the world map and the hero hall.","shot.battle":"The battle","shot.map":"World map","shot.heroes":"Hero hall","game.eye":"The game","game.h2":"Hero Defense","game.p":"Developed by Wantai Game Development (Vantax) and published by ELERONZEN TECHNOLOGY INC. Recruit heroes, raise towers and outlast waves of monsters across a growing campaign.","feat.1":"Heroes with talents, skins and pets","feat.2":"Campaign, boss raids, odyssey and weekly challenges","feat.3":"English, Chinese, Japanese, Korean and Spanish","plat.web.t":"Web","plat.web.d":"Live now. Play in your browser.","plat.ios.t":"iOS","plat.ios.d":"Coming soon","plat.and.t":"Android","plat.and.d":"Coming soon","studio.eye":"The publisher","studio.h2":"Games, placed in players' hands","studio.p":"ELERONZEN TECHNOLOGY INC is a game publisher. Our games are developed by Wantai Game Development (Vantax). We release work that is fair, finished and respectful of a player's time.","p1.n":"01","p1.t":"Play instantly","p1.d":"The web version runs in a modern browser, on a phone or a computer.","p2.n":"02","p2.t":"Fair by design","p2.d":"Clear rules, and published drop odds for every random reward.","p3.n":"03","p3.t":"Kept in motion","p3.d":"New stages, events and fixes arrive on a steady cadence.","con.eye":"Contact","con.h2":"Write to us","con.sub":"Player support, business and partnerships.","con.email":"Email","con.addr":"Address","foot.dev":"Hero Defense is developed by Wantai Game Development (Vantax).","foot.privacy":"Privacy","foot.terms":"Terms","foot.odds":"Drop odds","alt.logo":"Hero Defense","alt.battle":"Hero Defense battle","alt.map":"Hero Defense world map","alt.heroes":"Hero Defense heroes","lb.close":"Close"},"zh":{"meta.title":"ELERONZEN TECHNOLOGY INC \u2014 \u82f1\u96c4\u5854\u9632","meta.desc":"ELERONZEN TECHNOLOGY INC \u662f\u6e38\u620f\u53d1\u884c\u5546\u3002\u65d7\u8230\u6e38\u620f\u300a\u82f1\u96c4\u5854\u9632\u300b\u514d\u8d39\u3001\u7b56\u7565\u3001\u5854\u9632\uff0c\u53ef\u5728\u6d4f\u89c8\u5668\u4e2d\u76f4\u63a5\u5f00\u73a9\uff0ciOS \u4e0e Android \u7248\u672c\u5373\u5c06\u4e0a\u7ebf\u3002","nav.games":"\u6e38\u620f","nav.studio":"\u5de5\u4f5c\u5ba4","nav.contact":"\u8054\u7cfb","nav.menu":"\u83dc\u5355","nav.menuClose":"\u5173\u95ed","hero.eye":"\u65d7\u8230\u6e38\u620f","hero.name":"\u82f1\u96c4\u5854\u9632","hero.h1":"\u5b88\u4f4f\u6bcf\u4e00\u6761\u8def\u3002","hero.lead":"\u514d\u8d39\u5854\u9632\u7b56\u7565\u6e38\u620f\u3002\u5efa\u9020\u9632\u5fa1\u5854\uff0c\u53ec\u96c6\u82f1\u96c4\uff0c\u6321\u4f4f\u4e00\u6ce2\u53c8\u4e00\u6ce2\u7684\u8fdb\u653b\u3002","hero.play":"\u7acb\u5373\u6e38\u73a9","hero.soon":"\u6d4f\u89c8\u5668\u514d\u8d39\u5f00\u73a9\u3002iOS \u4e0e Android \u7248\u672c\u5373\u5c06\u4e0a\u7ebf\u3002","chip.td":"\u5854\u9632","chip.strategy":"\u7b56\u7565","chip.free":"\u514d\u8d39","gal.eye":"\u6e38\u620f\u753b\u9762","gal.h2":"\u8d70\u8fdb\u6218\u573a","gal.sub":"\u5b9e\u673a\u753b\u9762\uff1a\u6218\u6597\u3001\u4e16\u754c\u5730\u56fe\u4e0e\u82f1\u96c4\u6bbf\u3002","shot.battle":"\u6218\u6597","shot.map":"\u4e16\u754c\u5730\u56fe","shot.heroes":"\u82f1\u96c4\u6bbf","game.eye":"\u5173\u4e8e\u672c\u4f5c","game.h2":"\u82f1\u96c4\u5854\u9632","game.p":"\u7531\u4e07\u6cf0\u6e38\u620f\u5f00\u53d1\uff08Vantax\uff09\u7814\u53d1\uff0cELERONZEN TECHNOLOGY INC \u53d1\u884c\u3002\u62db\u52df\u82f1\u96c4\uff0c\u7b51\u8d77\u9632\u5fa1\u5854\uff0c\u5728\u4e0d\u65ad\u5c55\u5f00\u7684\u6218\u5f79\u4e2d\u625b\u4f4f\u4e00\u6ce2\u53c8\u4e00\u6ce2\u7684\u602a\u7269\u3002","feat.1":"\u82f1\u96c4\u5929\u8d4b\u3001\u76ae\u80a4\u4e0e\u5ba0\u7269","feat.2":"\u4e3b\u7ebf\u5173\u5361\u3001Boss \u8ba8\u4f10\u3001\u8fdc\u5f81\u4e0e\u6bcf\u5468\u6311\u6218","feat.3":"\u652f\u6301\u4e2d\u6587\u3001English\u3001\u65e5\u672c\u8a9e\u3001\ud55c\uad6d\uc5b4\u4e0e Espa\u00f1ol","plat.web.t":"\u7f51\u9875","plat.web.d":"\u73b0\u5df2\u4e0a\u7ebf\uff0c\u6253\u5f00\u6d4f\u89c8\u5668\u5373\u53ef\u6e38\u73a9","plat.ios.t":"iOS","plat.ios.d":"\u5373\u5c06\u4e0a\u7ebf","plat.and.t":"Android","plat.and.d":"\u5373\u5c06\u4e0a\u7ebf","studio.eye":"\u53d1\u884c\u5546","studio.h2":"\u628a\u6e38\u620f\u4ea4\u5230\u73a9\u5bb6\u624b\u91cc","studio.p":"ELERONZEN TECHNOLOGY INC \u662f\u4e00\u5bb6\u6e38\u620f\u53d1\u884c\u5546\u3002\u6e38\u620f\u7531\u4e07\u6cf0\u6e38\u620f\u5f00\u53d1\uff08Vantax\uff09\u7814\u53d1\u3002\u6211\u4eec\u53d1\u884c\u516c\u5e73\u3001\u5b8c\u6574\u3001\u5e76\u5c0a\u91cd\u73a9\u5bb6\u65f6\u95f4\u7684\u4f5c\u54c1\u3002","p1.n":"01","p1.t":"\u5373\u70b9\u5373\u73a9","p1.d":"\u7f51\u9875\u7248\u5728\u624b\u673a\u548c\u7535\u8111\u7684\u73b0\u4ee3\u6d4f\u89c8\u5668\u91cc\u90fd\u80fd\u76f4\u63a5\u8fd0\u884c\u3002","p2.n":"02","p2.t":"\u516c\u5e73\u4e3a\u672c","p2.d":"\u89c4\u5219\u6e05\u695a\uff0c\u6bcf\u4e00\u9879\u968f\u673a\u5956\u52b1\u90fd\u516c\u5f00\u6389\u843d\u6982\u7387\u3002","p3.n":"03","p3.t":"\u6301\u7eed\u6253\u78e8","p3.d":"\u65b0\u5173\u5361\u3001\u6d3b\u52a8\u4e0e\u4fee\u590d\u4f1a\u6309\u8282\u594f\u5230\u6765\u3002","con.eye":"\u8054\u7cfb","con.h2":"\u4e0e\u6211\u4eec\u8054\u7cfb","con.sub":"\u73a9\u5bb6\u652f\u6301\u3001\u5546\u52a1\u4e0e\u5408\u4f5c\uff0c\u90fd\u6b22\u8fce\u6765\u4fe1\u3002","con.email":"\u90ae\u7bb1","con.addr":"\u5730\u5740","foot.dev":"\u82f1\u96c4\u5854\u9632\u7531\u4e07\u6cf0\u6e38\u620f\u5f00\u53d1\uff08Vantax\uff09\u7814\u53d1\u3002","foot.privacy":"\u9690\u79c1\u653f\u7b56","foot.terms":"\u670d\u52a1\u6761\u6b3e","foot.odds":"\u6982\u7387\u8bf4\u660e","alt.logo":"\u82f1\u96c4\u5854\u9632","alt.battle":"\u82f1\u96c4\u5854\u9632\u6218\u6597\u753b\u9762","alt.map":"\u82f1\u96c4\u5854\u9632\u4e16\u754c\u5730\u56fe","alt.heroes":"\u82f1\u96c4\u5854\u9632\u82f1\u96c4\u6bbf","lb.close":"\u5173\u95ed"}};
+  var shots = { "1_battle": ["alt.battle", "1_battle"], "2_map": ["alt.map", "2_map"], "3_heroes": ["alt.heroes", "3_heroes"] };
+  var root = document.documentElement;
+  var menu = document.getElementById("menu");
+  var nav = document.getElementById("nav");
+  var lb = document.getElementById("lb");
+  var lbImg = null;
+
+  function apply(lang) {
+    if (lang !== "en" && lang !== "zh") lang = "en";
+    var pack = T[lang];
+    root.lang = lang;
+    root.setAttribute("data-lang", lang);
+    document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      var key = el.getAttribute("data-i18n");
+      if (!pack[key] && pack[key] !== "") return;
+      el.textContent = pack[key];
+    });
+    document.title = pack["meta.title"];
+    var desc = document.querySelector('meta[name="description"]');
+    if (desc) desc.setAttribute("content", pack["meta.desc"]);
+    var ogt = document.querySelector('meta[property="og:title"]');
+    if (ogt) ogt.setAttribute("content", pack["meta.title"]);
+    var ogd = document.querySelector('meta[property="og:description"]');
+    if (ogd) ogd.setAttribute("content", pack["meta.desc"]);
+    var prefix = lang === "zh" ? "/img/zh_" : "/img/en_";
+    var hero = document.getElementById("hero-bg");
+    hero.src = prefix + "1_battle.webp";
+    hero.alt = "";
+    var mark = document.getElementById("wordmark");
+    mark.alt = pack["alt.logo"];
+    document.querySelectorAll("[data-shot]").forEach(function (img) {
+      var id = img.getAttribute("data-shot");
+      img.src = "/img/" + (lang === "zh" ? "zh_" : "en_") + id + ".webp";
+      img.alt = pack[shots[id][0]];
+    });
+    document.getElementById("lang-en").setAttribute("aria-pressed", lang === "en" ? "true" : "false");
+    document.getElementById("lang-zh").setAttribute("aria-pressed", lang === "zh" ? "true" : "false");
+    document.getElementById("lb-x").setAttribute("aria-label", pack["lb.close"]);
+    var name = document.querySelector(".game-name");
+    if (name) {
+      if (!pack["hero.name"]) name.setAttribute("aria-hidden", "true");
+      else name.removeAttribute("aria-hidden");
+    }
+    try { localStorage.setItem("elz_lang", lang); } catch (e) {}
+  }
+
+  document.getElementById("lang-en").addEventListener("click", function () { apply("en"); });
+  document.getElementById("lang-zh").addEventListener("click", function () { apply("zh"); });
+
+  menu.addEventListener("click", function () {
+    var open = nav.classList.toggle("open");
+    menu.setAttribute("aria-expanded", open ? "true" : "false");
+    menu.textContent = open ? T[root.lang]["nav.menuClose"] : T[root.lang]["nav.menu"];
+  });
+  nav.addEventListener("click", function (e) {
+    if (e.target.closest("a")) {
+      nav.classList.remove("open");
+      menu.setAttribute("aria-expanded", "false");
+      menu.textContent = T[root.lang]["nav.menu"];
+    }
+  });
+
+  function closeLb() {
+    lb.classList.remove("on");
+    lb.hidden = true;
+    document.body.style.overflow = "";
+    if (lbImg) lbImg.remove();
+    lbImg = null;
+  }
+  document.querySelectorAll(".shot img").forEach(function (img) {
+    img.addEventListener("click", function () {
+      if (!lbImg) {
+        lbImg = document.createElement("img");
+        lb.appendChild(lbImg);
+      }
+      lbImg.src = img.currentSrc || img.src;
+      lbImg.alt = img.alt;
+      lb.hidden = false;
+      lb.classList.add("on");
+      document.body.style.overflow = "hidden";
+    });
+  });
+  document.getElementById("lb-x").addEventListener("click", closeLb);
+  lb.addEventListener("click", function (e) { if (e.target === lb) closeLb(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      closeLb();
+      nav.classList.remove("open");
+      menu.setAttribute("aria-expanded", "false");
+      menu.textContent = T[root.lang]["nav.menu"];
+    }
+  });
+
+  apply(root.getAttribute("data-lang") === "zh" ? "zh" : "en");
 })();
 </script>
-<div class="lb" id="lb"><img alt=""></div>
-<script>(function(){var lb=document.getElementById('lb'),im=lb.querySelector('img');document.querySelectorAll('.shots img').forEach(function(i){i.onclick=function(){im.src=i.src.replace(/\/img\/(en|zh)_/,'/img/$1_');lb.classList.add('on')}});lb.onclick=function(){lb.classList.remove('on')}})();</script>
 </body>
 </html>

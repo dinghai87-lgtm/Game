@@ -553,3 +553,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 - Baccarat, Three Card Poker, Sic Bo, Roulette, Blackjack checked on a laptop-size screen: the new zoned layouts scale correctly. Fixed: the rule printed on the felt edge (DEALER PLAYS WITH QUEEN HIGH OR BETTER, BLACKJACK PAYS 3 TO 2 …) was English in 中文 mode — now follows the language setting for all 10 tables that have one.
 - Parked: on desktop roulette the felt artwork's cut-out sits slightly left of the number board (art alignment, cosmetic).
 - sw lv-v132. Tests 90/90.
+
+## Round 57 (02:27) — Roulette felt art fixed
+- The roulette felt image had a dark chip-tray recess that showed as a black box next to the 0 on desktop. Painted it out (felt patch matched to the surrounding brightness, soft edges). Original kept as /tmp backup. sw lv-v133. Tests 90/90.

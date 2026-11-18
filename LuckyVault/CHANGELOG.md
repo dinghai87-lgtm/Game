@@ -556,3 +556,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 57 (02:27) — Roulette felt art fixed
 - The roulette felt image had a dark chip-tray recess that showed as a black box next to the 0 on desktop. Painted it out (felt patch matched to the surrounding brightness, soft edges). Original kept as /tmp backup. sw lv-v133. Tests 90/90.
+
+## Round 58 (02:34) — Slot win line no longer under the spin button (desktop)
+- On laptop / desktop screens the raised round spin button covered the win line (祝你好运 / WIN 36.00). The win line now keeps clear space above the control bar on wide screens; reels re-size to fit. Checked 1440×900 and 1280×720. sw lv-v134. Tests 90/90.

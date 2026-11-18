@@ -929,7 +929,23 @@
     actLabel: (a) => a === 'call' ? PKT('跟注', 'CALL') + ' ' + fmt((TT.bets.ante || 0) * 2) : a === 'fold' ? PKT('弃牌', 'FOLD') : null,
     keepBets: false
   };
-  REND.caribbean = { setup(f) { pokerSetup(f, [['ante', 'Ante', 'Raise = 2× ante', 'big']], 'Dealer qualifies with Ace-King · Raise pays 1:1 up to 100:1 for a royal flush'); }, render: (v, r) => pokerRender(v, r, 'Raise (2× ante) or fold?') };
+  // Caribbean Stud: raise with a pair or better, or with Ace-King (basic strategy hint)
+  function csHint(P, ph) { if (ph && ph !== 'High Card') return true; const r = P.map(RV); return r.includes(14) && r.includes(13); }
+  REND.caribbean = {
+    setup(f) { pkZones(f, { d: 5, p: 5, note: PKT('庄家 A-K 以上才合格 · 加注赔 1:1 → 皇家同花顺 100:1 · 长按下注格看说明', 'Dealer qualifies with Ace-King · Raise pays 1:1 up to 100:1 for a royal flush · Long-press a bet for rules'),
+      spots: [['ante', PKT('底注', 'ANTE'), PKT('加注 = 底注 2 倍', 'Raise = 2× ante'), 'big', '先押底注，你和庄家各拿五张牌（庄家亮一张）。看牌后加注（底注的 2 倍）或弃牌。庄家 A-K 以上才合格；不合格时底注赔 1:1、加注退回；合格则比牌，加注按牌型赔（对子 1:1 … 皇家同花顺 100:1）。<br>Bet the Ante; you and the dealer get five cards (one dealer card shown). Raise 2× ante or fold. Dealer needs Ace-King; if not, Ante pays 1:1 and the Raise pushes; otherwise hands are compared and the Raise pays by hand (pair 1:1 … royal flush 100:1).']] }); },
+    async render(v, r) {
+      const H = document.getElementById('tcpH');
+      if (!v.done) { ['tcpD', 'tcpP'].forEach(id => document.getElementById(id).classList.remove('win', 'lose')); await putCards(document.getElementById('pC'), v.P, true); await putCards(document.getElementById('dC'), v.D, true);
+        document.getElementById('pL').innerHTML = PKT('你的手牌', 'YOUR HAND') + (v.ph ? ' <b>' + hn3(v.ph) + '</b>' : ''); document.getElementById('dL').innerHTML = PKT('庄家', 'DEALER');
+        const go = csHint(v.P, v.ph); H.innerHTML = PKT('建议：', 'Tip: ') + (go ? PKT('加注（对子以上或 A-K）', 'RAISE (pair or better, or A-K)') : PKT('弃牌（不到 A-K）', 'FOLD (below A-K)')); showRes(PKT('加注还是弃牌？', 'Raise or fold?'), 0); return; }
+      await putCards(document.getElementById('dC'), v.D, true, 1);
+      document.getElementById('pL').innerHTML = PKT('你的手牌', 'YOUR HAND') + (v.ph ? ' <b>' + hn3(v.ph) + '</b>' : ''); document.getElementById('dL').innerHTML = PKT('庄家', 'DEALER') + (v.dh ? ' <b>' + hn3(v.dh) + '</b>' : '');
+      pkResult(v, r);
+    },
+    actLabel: (a) => a === 'raise' ? PKT('加注', 'RAISE') + ' ' + fmt((TT.bets.ante || 0) * 2) : a === 'fold' ? PKT('弃牌', 'FOLD') : null,
+    keepBets: false
+  };
   REND.war = { setup(f) { f.innerHTML = '<div class="hands"><div class="area"><div class="lbl">Dealer</div><div class="cards" id="wD"></div></div><div class="area"><div class="lbl">You</div><div class="cards" id="wP"></div></div></div>' + resLine() + '<div class="spots" id="wS"></div><div class="pt2">Higher card wins 1:1 · On a tie, go to war (match your bet) or surrender half</div>'; document.getElementById('wS').appendChild(spotBtn('main', 'Bet', '1:1', 'big')); },
     async render(v, r) { const D = document.getElementById('wD'), P = document.getElementById('wP'); D.innerHTML = ''; P.innerHTML = ''; v.D.forEach((c, i) => D.appendChild(cardEl(c, i))); v.P.forEach((c, i) => P.appendChild(cardEl(c, i))); (sfx.card || sfx.click)(); await wait(400); showRes((v.out || '') + (r.win > 0 ? ' · WIN ' + fmt(r.win) : ''), r.win); } };
   REND.reddog = { setup(f) { f.innerHTML = '<div class="cards" id="rdC"></div><div class="lbl" id="rdL">Will the third card fall in between?</div>' + resLine() + '<div class="spots" id="rdS"></div><div class="pt2">Spread 1 pays 5:1 · 2 pays 4:1 · 3 pays 2:1 · 4+ pays 1:1 · Pair + match 11:1</div>'; document.getElementById('rdS').appendChild(spotBtn('main', 'Bet', 'Raise to double', 'big')); },

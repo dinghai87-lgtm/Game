@@ -471,3 +471,7 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 - Same zoned layout as Three Card Poker (shared helper pkZones): dealer 2 slots, board 5 slots, player 2 slots, fixed heights — no jumping as flop / turn / river land.
 - Call button shows the amount (跟注 10.00 = 2× ante) with a note; results and hand names translated (两对 / 葫芦 / 四条 / 皇家同花顺 …); winner glows; losing chips leave the table.
 - sw lv-v102. Tests 90/90.
+
+## Round 36 (23:10) — Caribbean Stud refined
+- Zoned layout (dealer 5 slots with one up-card, player 5 slots), hand name shown while deciding, strategy tip (raise with a pair+ or A-K), Raise button shows the amount, results translated, winner glow, losing chips cleared.
+- sw lv-v103. Tests 90/90.

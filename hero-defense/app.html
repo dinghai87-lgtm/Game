@@ -247,6 +247,7 @@ Object.assign(I18N.en,{"熟练度":"Mastery","伤害":"DMG","任意塔熟练度�
 Object.assign(I18N.ja,{"熟练度":"熟練度","伤害":"ダメージ","任意塔熟练度升级 {n} 次":"塔の熟練度を{n}回上げる"});
 Object.assign(I18N.ko,{"熟练度":"숙련도","伤害":"피해","任意塔熟练度升级 {n} 次":"탑 숙련도 {n}회 상승"});
 Object.assign(I18N.es,{"熟练度":"Maestría","伤害":"Daño","任意塔熟练度升级 {n} 次":"Sube la maestría de torres {n} veces"});
+Object.assign(I18N.en,{"每日免费召唤":"Free daily summon","今天还没领":"Not claimed today"});Object.assign(I18N.ja,{"每日免费召唤":"毎日無料召喚","今天还没领":"本日未受取"});Object.assign(I18N.ko,{"每日免费召唤":"매일 무료 소환","今天还没领":"오늘 미수령"});Object.assign(I18N.es,{"每日免费召唤":"Invocación diaria gratis","今天还没领":"Aún no reclamada hoy"});
 
 'use strict';
 // ====================== 基础 ======================
@@ -3348,8 +3349,12 @@ function drawSynBook(){ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,0,W,H);hit(
 const PITY_N=40;
 (function(){const pl=pull;pull=function(){SAVE.pity=(SAVE.pity||0)+1;let r=pl.apply(this,arguments);if(r&&r.t==='hero'){SAVE.pity=0;return r}
   if(SAVE.pity>=PITY_N){SAVE.pity=0;const id=Math.random()<.5?featHero():HERO_ORDER[Math.floor(Math.random()*HERO_ORDER.length)];addShards(id,30);track('pity',{id});r={t:'hero',id,n:30,pity:1}}return r};
-  const dg=drawGacha;drawGacha=function(dt){dg(dt);try{if(gachaRes)return;const left=PITY_N-(SAVE.pity||0);const s=TR('再召唤 {n} 次必出整个英雄（保底）').replace('{n}',left);ctx.font=`900 15px ${FONT}`;const w=ctx.measureText(s).width+40;ctx.fillStyle='rgba(60,20,90,.85)';rr(W/2-w/2,462,w,30,15);ctx.fill();fitTxt(s,W/2,477,15,w-20,'#e7c9ff','center',2);
-    hpbar(W/2-120,496,240,8,(SAVE.pity||0)/PITY_N,'#7a3cc0','#d6a8ff')}catch(e){}};if(window.__api)Object.assign(window.__api,{pull})})();
+  const dg=drawGacha;drawGacha=function(dt){dg(dt);try{if(gachaRes)return;const left=PITY_N-(SAVE.pity||0);const s=TR('再召唤 {n} 次必出整个英雄（保底）').replace('{n}',left);ctx.font=`900 15px ${FONT}`;const w=ctx.measureText(s).width+40;ctx.fillStyle='rgba(60,20,90,.85)';rr(W/2-w/2,418,w,28,14);ctx.fill();fitTxt(s,W/2,432,14,w-20,'#e7c9ff','center',2);
+    hpbar(W/2-120,449,240,7,(SAVE.pity||0)/PITY_N,'#7a3cc0','#d6a8ff')}catch(e){}};if(window.__api)Object.assign(window.__api,{pull})})();
+// 每日免费召唤 1 次（所有玩家）
+(function(){const dg=drawGacha;drawGacha=function(dt){dg(dt);try{if(gachaRes||freePulls()>0)return;const used=SAVE.daily&&SAVE.daily.free0;if(used)return;button('🎁 '+TR('每日免费召唤'),W/2-150,462,300,52,()=>{if(SAVE.daily.free0)return;SAVE.daily.free0=1;const r=pull();save();gachaRes=[r];gachaT=0;AUD.sfx('upgrade');track('free_pull',{})},{style:'gold',size:18});
+  if(Math.sin(performance.now()/200)>0)redDot(W/2+142,466)}catch(e){console.error(e)}};
+  const tl=todoList;todoList=function(){const L=tl();try{if(feat('gacha')&&freePulls()===0&&!(SAVE.daily&&SAVE.daily.free0))L.unshift(['🎁',TR('每日免费召唤'),TR('今天还没领'),()=>{todoPop=false;scene='gacha';gachaRes=null}])}catch(_){}return L}})();
 
 // ====================== 空投补给（植物大战僵尸的「捡阳光」式互动）：战斗中不时空投箱子，点一下拿金币或 ⚡ ======================
 (function(){
@@ -3433,7 +3438,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794983091';
+const BUILD_VER='1794983221';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

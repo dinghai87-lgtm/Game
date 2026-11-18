@@ -290,3 +290,4 @@ json.dump(man, open(OUT + '/manifest.json', 'w'), indent=1, ensure_ascii=False)
 # fruit slots replaced in order from fruits-berries-vegetables-icon-512x512-set:
 #  hot-chilli-7s 20 chilli,6 pepper,7 tomato,11 mango,14 papaya,30 cherries,8 pumpkin | gold-bar-7s viking 3 ingot (gold colourised),29,27,18,45,35,32
 #  lucky-clover-7s loot 9 clover,43,17,50,4,24,9 | neon-retro-7s 19,39,31,46,44,10,2 | liberty-bells 15,30,38,16,12,39,26 | fortune-wheel-deluxe 21,35,13,11,8,45,29
+# round 16: dragon-empire-4096 <- dragon loot 3,32,31,36,34,28,43,49,12,W47,S45 ; neon-nights <- gems 20,3,92,78,81,82,61,76,26,W64,S30 (both were 11/11 identical to golden-dragon / star-gems)

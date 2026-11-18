@@ -374,3 +374,6 @@ Platform release: everything on the "do all of these" list except the public dep
 
 ## Round 15 (18:35) — Classic 7s group de-duplicated
 - 6 games (Hot Chilli 7s, Gold Bar 7s, Lucky Clover 7s, Neon Retro 7s, Liberty Bells, Fortune Wheel Deluxe) shared one identical 11-symbol set. Each now has its own colour 7/BAR and its own painted fruit set (CraftPix 512px fruits; clover, gold ingot) + new covers. sw lv-v71. Tests 90/90.
+
+## Round 16 (18:25) — Dragon Empire 4096 & Neon Nights own sets
+- Both were 11/11 identical to Golden Dragon / Star Gems. New painted symbol sets + covers. sw lv-v72. Tests 90/90.

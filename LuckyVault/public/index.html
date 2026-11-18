@@ -294,7 +294,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .pk{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
 .pk button{position:relative;background:linear-gradient(160deg,#2b3d55,#1a2636);border:1px solid var(--line);border-radius:14px;padding:16px 10px 12px;text-align:center}
 .pk button:hover{border-color:var(--gold)}
-.pk .cn{font-size:22px;font-weight:900;color:var(--gold);display:flex;align-items:center;justify-content:center;gap:6px}
+.pk .pki{display:block;height:74px;max-width:100%;margin:0 auto 6px;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}.pk .cn{font-size:22px;font-weight:900;color:var(--gold);display:flex;align-items:center;justify-content:center;gap:6px}
 .pk .cn .coin{width:20px;height:20px}
 .pk .pr{margin-top:10px;background:var(--acc);color:#04140b;border-radius:8px;padding:7px;font-weight:900}
 .pk .tg{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#ff3b5c;font-size:10px;font-weight:900;padding:2px 8px;border-radius:999px;white-space:nowrap}
@@ -856,7 +856,7 @@ async function openStore(){if(needLogin())return;let pk,bonus;
  const skew=Date.now()-(bonus.now||Date.now());
  let h='<h2>Coin Store</h2><p>Top up coins to keep playing. Coins are for entertainment only.</p>';
  h+='<div class="bonus"><div><div style="font-size:12px;font-weight:800;opacity:.9">FREE BONUS</div><b><span class="coin"></span> '+fmt(bonus.amount)+'</b></div><button id="bonusBtn">Claim</button></div>';
- h+='<button class="bigbtn alt" style="margin-top:10px;width:100%" id="dailyBtn">🎁 Daily reward</button>';h+='<h3>Coin packages</h3><div class="pk">'+pk.map(p=>'<button data-pk="'+p.id+'">'+(p.tag?'<span class="tg">'+p.tag+'</span>':'')+'<div class="cn"><span class="coin"></span>'+p.coins.toLocaleString()+'</div><div class="pr">'+(window.LVIAP&&LVIAP.native&&LVIAP.price(p)||'$'+p.price.toFixed(2))+'</div></button>').join('')+'</div>';
+ h+='<button class="bigbtn alt" style="margin-top:10px;width:100%" id="dailyBtn">🎁 Daily reward</button>';h+='<h3>Coin packages</h3><div class="pk">'+pk.map((p,i)=>'<button data-pk="'+p.id+'">'+(p.tag?'<span class="tg">'+p.tag+'</span>':'')+'<img class="pki" alt="" src="assets/shop/pk'+Math.min(5,i+1)+'.webp"><div class="cn"><span class="coin"></span>'+p.coins.toLocaleString()+'</div><div class="pr">'+(window.LVIAP&&LVIAP.native&&LVIAP.price(p)||'$'+p.price.toFixed(2))+'</div></button>').join('')+'</div>';
  h+='<p class="note">Coins are a virtual item with no real-world value. They cannot be withdrawn, exchanged for money or transferred. Purchases are final. 18+ only.'+(API.mode==='local'?' <b>Demo mode: purchases are simulated and nothing is charged.</b>':'')+'</p>';
  h+='<div class="btnrow"><button class="bigbtn alt" id="storeClose">Close</button></div>';
  $('#storeC').innerHTML=h;$('#store').classList.add('show');$('#storeClose').onclick=()=>{closeOv('#store');clearInterval(storeTimer)};$('#dailyBtn').onclick=()=>{closeOv('#store');clearInterval(storeTimer);checkDaily(true)};

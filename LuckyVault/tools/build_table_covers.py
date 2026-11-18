@@ -18,10 +18,46 @@ def put(b, src, cx, cy, h=None, w=None, rot=0, shadow=True):
     if shadow:
         sh = Image.new('RGBA', im.size, (0, 0, 0, 0)); sh.putalpha(im.split()[3].point(lambda v: v * .5)); sh = sh.filter(ImageFilter.GaussianBlur(9)); b.alpha_composite(sh, (int(cx - im.size[0] / 2) + 6, int(cy - im.size[1] / 2) + 12))
     b.alpha_composite(im, (int(cx - im.size[0] / 2), int(cy - im.size[1] / 2)))
-def fin(b, slug):
+ZH = json.load(open(A + '../tools/table_names_zh.json')) if __import__('os').path.exists(A + '../tools/table_names_zh.json') else {}
+K = T + 'kit/'
+DEALER = {'blackjack': (T + 'dealer_bj.webp', 470), 'roulette': (K + 'dealer_rl.webp', 400), 'mroul': (K + 'dealer_rl.webp', 400),
+          'baccarat': (T + 'dealer_pk.webp', 360), 'dragontiger': (T + 'dealer_pk.webp', 360), 'mbacc': (T + 'dealer_pk.webp', 360), 'mdt': (T + 'dealer_pk.webp', 360),
+          'sicbo': (K + 'dealer_blue.webp', 470), 'craps': (K + 'dealer_blue.webp', 470), 'msicbo': (K + 'dealer_blue.webp', 470)}
+for _k in ('tcp', 'holdem', 'caribbean', 'war', 'reddog', 'uth', 'letitride', 'mstud', 'fourcard', 'hcf', 'paigow', 'paigowtiles'): DEALER[_k] = (K + 'dealer_pk_menu.webp', 430)
+from PIL import ImageFont
+FE = '/usr/share/fonts/opentype/inter/Inter-BlackItalic.otf'; FZ = '/usr/share/fonts/opentype/noto/NotoSansCJK-Black.ttc'
+def title(b, en, zh):
+    d = ImageDraw.Draw(b); size = 74
+    while size > 30:
+        F = ImageFont.truetype(FE, size); 
+        if d.textlength(en.upper(), font=F) <= W - 60: break
+        size -= 2
+    t = en.upper(); w = d.textlength(t, font=F); x, y = (W - w) / 2, 34
+    band = Image.new('RGBA', (W, H), (0, 0, 0, 0)); bd = ImageDraw.Draw(band)
+    for i in range(190): bd.rectangle((0, i, W, i + 1), fill=(0, 0, 0, int(170 * (1 - i / 190))))
+    b.alpha_composite(band)
+    # gold text: gradient fill through a text mask, dark outline + glow
+    m = Image.new('L', (W, H), 0); ImageDraw.Draw(m).text((x, y), t, font=F, fill=255, stroke_width=0)
+    o = Image.new('L', (W, H), 0); ImageDraw.Draw(o).text((x, y), t, font=F, fill=255, stroke_width=7)
+    glow = Image.new('RGBA', (W, H), (255, 190, 40, 0)); glow.putalpha(o.filter(ImageFilter.GaussianBlur(10)).point(lambda v: v * .55)); b.alpha_composite(glow)
+    sh = Image.new('RGBA', (W, H), (40, 12, 0, 255)); sh.putalpha(o); b.alpha_composite(sh)
+    g = Image.new('RGBA', (W, H)); gd = ImageDraw.Draw(g)
+    for yy in range(H): k = max(0, min(1, (yy - y) / (size * 1.15))); gd.line((0, yy, W, yy), fill=(255, int(246 - 70 * k), int(170 - 150 * k), 255))
+    g.putalpha(m); b.alpha_composite(g)
+    if zh:
+        FZo = ImageFont.truetype(FZ, 40); d = ImageDraw.Draw(b); w2 = d.textlength(zh, font=FZo); y2 = y + size * 1.22
+        d.text(((W - w2) / 2, y2), zh, font=FZo, fill=(255, 255, 255), stroke_width=5, stroke_fill=(30, 10, 0))
+def fin(b, slug, tk=None, name=''):
     vg = Image.new('RGBA', (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(vg)
     for i in range(200): d.rectangle((0, H - 260 + i, W, H - 259 + i), fill=(0, 0, 0, int(i * 1.15)))
-    b = Image.alpha_composite(b, vg); import os; os.makedirs(A + 'games/' + slug, exist_ok=True); b.convert('RGB').save(A + 'games/' + slug + '/cover.webp', 'WEBP', quality=86)
+    b = Image.alpha_composite(b, vg)
+    if tk in DEALER:
+        src, h = DEALER[tk]; im = Image.open(src).convert('RGBA'); im = im.resize((int(im.size[0] * h / im.size[1]), h), Image.LANCZOS)
+        sh = Image.new('RGBA', im.size, (0, 0, 0, 0)); sh.putalpha(im.split()[3].point(lambda v: v * .55)); sh = sh.filter(ImageFilter.GaussianBlur(12))
+        x0 = W - im.size[0] + int(im.size[0] * .18); y0 = H - im.size[1]
+        b.alpha_composite(sh, (x0 - 14, y0 + 6)); b.alpha_composite(im, (x0, y0))
+    if name and __import__('os').environ.get('COVER_TITLES'): title(b, re.sub(r'^[^A-Za-z]*', '', name).replace('Shared ', 'Live '), ZH.get(name) or re.sub(r'[A-Za-z\' ]+$', '', name).strip())
+    import os; os.makedirs(A + 'games/' + slug, exist_ok=True); b.convert('RGB').save(A + 'games/' + slug + '/cover.webp', 'WEBP', quality=86)
     man['games'].setdefault(slug, {})['cover'] = 'cover.webp'
 C = lambda c: T + 'cards/' + c + '.webp'; CH = lambda v: T + 'chips/%d.webp' % v
 random.seed(3)
@@ -79,7 +115,7 @@ for i, t in enumerate(tabs):
         r.polygon([(70, 120), (35, 175), (70, 160)], fill=(230, 40, 70)); r.polygon([(150, 120), (185, 175), (150, 160)], fill=(230, 40, 70)); r.polygon([(80, 160), (110, 215), (140, 160)], fill=(255, 150, 20))
         R = R.rotate(-38, expand=True, resample=Image.BICUBIC); b.alpha_composite(R, (int(x - R.size[0] / 2), int(y - R.size[1] / 2)))
         from PIL import ImageFont
-        F = ImageFont.truetype('/usr/share/fonts/opentype/inter/Inter-BlackItalic.otf', 110); d = ImageDraw.Draw(b); t = '25.00x'; w = d.textlength(t, font=F); d.text((W / 2 - w / 2 + 4, 134), t, font=F, fill=(0, 0, 0, 160)); d.text((W / 2 - w / 2, 130), t, font=F, fill=(255, 255, 255))
+        F = ImageFont.truetype('/usr/share/fonts/opentype/inter/Inter-BlackItalic.otf', 110); d = ImageDraw.Draw(b); t = '25.00x'; w = d.textlength(t, font=F); d.text((W / 2 - w / 2 + 4, 234), t, font=F, fill=(0, 0, 0, 160)); d.text((W / 2 - w / 2, 230), t, font=F, fill=(255, 255, 255))
     elif tk in ('sicbo', 'craps'):
         b = base('bg_dice.webp', 'felt_pk_blue.webp'); put(b, CH(1000), 210, 420, 170); put(b, CH(100), 390, 430, 150); put(b, CH(25), 300, 520, 140)
     elif tk == 'wheel':
@@ -110,5 +146,5 @@ for i, t in enumerate(tabs):
                     for z in range(6): d.line((x + 10 + z * 16, y + 8, x + z * 16 - 6, y + 100), fill=(200, 205, 215), width=3)
         put(b, T + 'stars_l.webp', 120, 640, 120); put(b, T + 'stars_r.webp', 480, 640, 120)
     else: continue
-    fin(b, slug)
+    fin(b, slug, tk, name)
 json.dump(man, open(A + 'manifest.json', 'w'), indent=1, ensure_ascii=False); print('table covers done')

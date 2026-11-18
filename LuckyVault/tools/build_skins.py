@@ -272,3 +272,9 @@ pack('Triple Fortune Wilds', '', {'h1': C + Y('9_seven'), 'h2': C + Y('8_bar'), 
 for _g in ('vegas-wheel-7s', 'triple-fortune-wilds'): man['games'][_g]['nolabel'] = True
 man.setdefault('audio', {})['music'] = 'assets/audio/music.mp3'
 json.dump(man, open(OUT + '/manifest.json', 'w'), indent=1, ensure_ascii=False)
+
+# ---- 2026-11-18: Big Catch Bonanza gets its own CraftPix "RPG sea theme 512x512 icons" set (was sharing Koi Pond's fish) ----
+# S = '<extracted rpg-sea-theme-game-512x512-icons>/PNG/without background/'
+# mp = {'h1':'35','h2':'47','h3':'33','h4':'18','l1':'20','l2':'19','l3':'21','l4':'28','l5':'15','W':'45','S':'44'}  (shark, octopus, pearl, fish, starfish, shell, wheel, hook, bottle, lighthouse=W, map=S)
+# ---- 2026-11-18: Pirate Gold Link gets its own set from the same sea pack (was sharing Pirate Plunder's loot icons) ----
+# mp = {'h1':'43','h2':'31','h3':'32','h4':'13','l1':'11','l2':'10','l3':'3','l4':'6','l5':'1','W':'36','S':'44'}  (galleon, jolly roger, cannon, hat, compass, coins, spyglass, rum, bomb, cutlass=W, map=S)

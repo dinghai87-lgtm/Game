@@ -471,7 +471,7 @@ const TALENTS=[
  {k:'meteor',name:TR('天火燎原'),desc:TR('天火冷却 -10%，伤害 +25%'),max:5,cost:2,col:5},{k:'reinf',name:TR('援军精锐'),desc:TR('援军生命和攻击 +40%'),max:5,cost:2,col:5},
 ];
 // 所有塔都有天赋：伤害 + 攻速（辅助塔：光环效果 + 范围），全部无上限，每 10 级单价 +1 倍
-for(const tp of TOWER_ORDER){const T0=TOWERS[tp];if(!TALENTS.find(t=>t.k===tp+'_d')){const sup=!!T0.support;TALENTS.push({k:tp+'_d',name:T0.name+TR(sup?'光环':'强化'),desc:TR(sup?'光环效果 +5%':'伤害 +12%'),cost:1,tw:tp},{k:tp+'_m',name:T0.name+TR(sup?'扩展':'精通'),desc:TR(sup?'范围 +4%':'攻速 +8%'),cost:2,tw:tp})}}
+for(const tp of TOWER_ORDER){const T0=TOWERS[tp];if(!TALENTS.find(t=>t.k===tp+'_d')){const sup=!!T0.support;const SUF={强化:{en:'Power',ja:'強化',ko:'강화',es:'Poder'},精通:{en:'Mastery',ja:'熟練',ko:'숙련',es:'Maestría'},光环:{en:'Aura',ja:'オーラ',ko:'오라',es:'Aura'},扩展:{en:'Reach',ja:'射程',ko:'사거리',es:'Alcance'}};const sf=k=>{const m=SUF[k][String(LANG).slice(0,2)];return m?' '+m:TR(k)};TALENTS.push({k:tp+'_d',name:T0.name+sf(sup?'光环':'强化'),desc:TR(sup?'光环效果 +5%':'伤害 +12%'),cost:1,tw:tp},{k:tp+'_m',name:T0.name+sf(sup?'扩展':'精通'),desc:TR(sup?'范围 +4%':'攻速 +8%'),cost:2,tw:tp})}}
 for(const t of TALENTS){t.max=Infinity;if(!t.tw&&t.k.includes('_'))t.tw=t.k.split('_')[0]}
 const talNext=(t,v)=>t.cost*(1+Math.floor(v/10));
 function talentCost(k,v){const t=TALENTS.find(t=>t.k===k);if(!t)return 0;let s=0;for(let i=0;i<v;i++)s+=talNext(t,i);return s}
@@ -552,7 +552,7 @@ function damage(e,amt,type,src){if(e.dead||amt<=0)return;
   else if(type==='magic')amt*=1-(e.D.mres||0);
   if(e.shieldT>0)amt*=.2;if(e.markT>0)amt*=1.5;if(e.slow>0&&G.cmb&&G.cmb.ft)amt*=1.4;if(e.esh>0){const ab=Math.min(e.esh,amt);e.esh-=ab;amt-=ab;if(e.esh<=0)G.fx.push({k:'ring',x:e.x,y:e.y-20,t:0,r:34,c:'#9be7ff',w:4});if(amt<=0){e.hitT=.08;return}}try{dmgStat(src,Math.min(amt,Math.max(0,e.hp)))}catch(_){}e.hp-=amt;e.hitT=.08;if(e.hp<=0)killEnemy(e)}
 function heroXP(a,x){if(!a.hero)return;SAVE.xp[a.hero]=(SAVE.xp[a.hero]||0)+x;a.xpGot+=x;const nl=heroLvl(a.hero);if(nl>a.lvl){const M=heroM(nl),oM=heroM(a.lvl);const om=a.max;a.max=a.max*M.hp/oM.hp;if(!a.dead)a.hp=Math.min(a.max,a.hp+a.max-om);a.dmg=[a.dmg[0]*M.dmg/oM.dmg,a.dmg[1]*M.dmg/oM.dmg];a.lvl=nl;
-  G.fx.push({k:'ring',x:a.x,y:a.y,t:0,r:70,c:'#ffe27a',w:8});G.fx.push({k:'ring',x:a.x,y:a.y-30,t:0,r:40,c:'#fff3b0',w:4});G.lvFx=G.lvFx||[];G.lvFx.push({x:a.x,y:a.y,t:0});floatText('LEVEL UP!  Lv'+nl,a.x,a.y-80,'#ffd84a',1.4,1);sfx('lvlup',a.x)}}
+  G.fx.push({k:'ring',x:a.x,y:a.y,t:0,r:70,c:'#ffe27a',w:8});G.fx.push({k:'ring',x:a.x,y:a.y-30,t:0,r:40,c:'#fff3b0',w:4});G.lvFx=G.lvFx||[];G.lvFx.push({x:a.x,y:a.y,t:0});if(!G.over){const kk=G.lvFx.filter(f=>f.t<.6).length-1;floatText('LEVEL UP!  Lv'+nl,a.x,a.y-80-kk*28,'#ffd84a',1.4,1)}sfx('lvlup',a.x)}}
 function killEnemy(e){if(e.dead)return;try{battleDrop(e);shardDrop(e);eliteDeath(e)}catch(_){}{const gx=Math.max(1,Math.round(e.D.bounty*.6*Math.sqrt(e.hpMul||1)));for(const a of G.allies)if(a.hero&&!a.dead)heroXP(a,gx)}e.dead=true;e.deadT=0;e.anim='die';e.at=0;G.kills++;comboKill();dailyAdd('kills');passAdd(1);const b=Math.round(e.D.bounty*2.3*Math.pow(e.hpMul||1,.7)*(G.L.goldX||1)*(evOn('weekend')?2:1)*(1+Math.min(.3,.05*vipLv())));G.gold+=b;G.xpGain+=e.D.bounty;
   if(e.blockedBy){e.blockedBy.blocking=e.blockedBy.blocking.filter(x=>x!==e);e.blockedBy=null}
   G.coins.push({x:e.x,y:e.y-30,t:0,v:b});sfx('die',e.x);if(Math.random()<.35)sfx('coin');if(G.bossBar===e){G.bossBar=null;G.fx.push({k:'boom',x:e.x,y:e.y,t:0,r:120,c:'#ffcc33'})}}
@@ -1109,9 +1109,10 @@ function drawTutorial(){const T=G.tut;if(!T||G.over||G.card||POP)return;const k=
   if((k==='move'||k==='upgrade')&&(G.firstWave||T.t<.01))return;if(k==='meteor'&&G.wave<2)return;
   const pul=.6+.4*Math.sin(G.time*6);let ay=null,tx=null,ty=null,txt2=TR(T.L[T.i].t);
   ctx.save();ctx.strokeStyle='#ffe27a';ctx.lineWidth=4;ctx.globalAlpha=pul;
+  const WS=(k==='build'||k==='upgrade');if(WS)ctx.translate(OX,OY);let avoid=[];
   if(k==='build'){const built=G.towers.filter(t=>t.type).map(t=>t.type);const want=built.includes('arrow')?'barracks':'arrow';
     txt2=want==='arrow'?TR('点击发光的石台，建一座【箭塔】'):TR('再建一座【武僧院】：武僧会冲上去挡住敌人');
-    if(G.sel!=null&&!G.towers[G.sel].type){const tw=G.towers[G.sel];const cx=tw.x,cy=tw.y-20,R=128;const ccy=clamp(cy,R+70,H-R-145);const ccx=clamp(cx,R+40,W-R-40);ay=ccy;
+    if(G.sel!=null&&!G.towers[G.sel].type){const tw=G.towers[G.sel];const cx=tw.x,cy=tw.y-20,R=128;const ccy=clamp(cy,R+70,H-R-145);const ccx=clamp(cx,R+40,W-R-40);ay=ccy;avoid.push([ccx-R-50+OX,ccy-R-60+OY,ccx+R+50+OX,ccy+R+50+OY]);
       const LIST=TOWER_ORDER.slice(0,8).filter(twOpen);const j=LIST.indexOf(want);if(j>=0){const n=LIST.length,a=-Math.PI/2+(j+(n===4?.5:0))*2*Math.PI/n;tx=ccx+Math.cos(a)*R;ty=ccy+Math.sin(a)*R*.92;
         ctx.beginPath();ctx.arc(tx,ty,46,0,7);ctx.stroke();arrowDown(tx,ty-70)}txt2=TR('点【')+TOWERS[want].name+TR('】建造');}
     else{const pads=G.towers.filter(t=>!t.off&&!t.type);const p0=G.paths[0].pts[0];pads.sort((a,b)=>Math.hypot(a.x-W/2,a.y-H/2)-Math.hypot(b.x-W/2,b.y-H/2));const tw=pads[0];
@@ -1123,9 +1124,13 @@ function drawTutorial(){const T=G.tut;if(!T||G.over||G.card||POP)return;const k=
     else{ctx.beginPath();ctx.ellipse(tw.x,tw.y-20,60,60,0,0,7);ctx.stroke();arrowDown(tw.x,tw.y-110)}}}
   else if(k==='meteor'){tx=W-150;ty=H-56;ctx.beginPath();ctx.arc(W-150,H-56,52,0,7);ctx.stroke();arrowDown(W-150,H-130);if(G.spellMode==='meteor')txt2=TR('现在点地图上敌人最多的地方')}
   ctx.restore();
-  // 提示条：目标在上半屏就放下面，避免挡住
-  if(ay==null)ay=ty;const bw=700,bx=W/2-bw/2,by=(ay!=null&&ay<H*.5)?H-230:118;ns('ui_Window_Background',bx,by,bw,64,150,.2);
-  if(T.L===TUT)txt(TR('新手教学')+' '+(T.i+1)+'/'+T.L.length,bx+70,by+32,14,'#ffb36b','center',3);fitTxt(txt2,bx+(T.L===TUT?380:350),by+32,19,T.L===TUT?520:640,'#fff','center',3);
+  // 提示条：在几个候选位置里挑一个最不挡目标、英雄、按钮的位置（宽屏时世界坐标要加 OX/OY 偏移）
+  if(tx!=null){const sx=tx+(WS?OX:0),sy=ty+(WS?OY:0);avoid.push([sx-75,sy-110,sx+75,sy+60])}
+  for(const a of (G.allies||[]))if(a.hero&&!a.dead)avoid.push([a.x+OX-50,a.y+OY-100,a.x+OX+50,a.y+OY+20]);
+  avoid.push([W/2-125,58,W/2+125,140],[0,H-96,400,H]);if(feat('meteor')&&!G.noSpell)avoid.push([W-250,H-120,W,H]);
+  const bw=Math.min(700,W-150);let bx=W/2-(bw+98)/2,by=H-230,best=1e18;const bxs=[bx,Math.min(410,W-bw-110),Math.max(10,W-bw-110)];
+  for(const c of [H-230,H-82,150,H*.5-32])for(const xx of bxs){let o=0;for(const r of avoid){const ix=Math.min(xx+bw+98,r[2])-Math.max(xx,r[0]),iy=Math.min(c+64,r[3])-Math.max(c,r[1]);if(ix>0&&iy>0)o+=ix*iy}if(o<best-1){best=o;by=c;bx=xx}}ns('ui_Window_Background',bx,by,bw,64,150,.2);
+  if(T.L===TUT)txt(TR('新手教学')+' '+(T.i+1)+'/'+T.L.length,bx+70,by+32,14,'#ffb36b','center',3);fitTxt(txt2,bx+(T.L===TUT?140+(bw-140)/2:bw/2),by+32,19,T.L===TUT?bw-170:bw-60,'#fff','center',3);
   button(TR('跳过'),bx+bw+8,by+9,90,46,()=>{if(T.L===TUT)SAVE.tutDone=1;else SAVE.tut2=1;G.tut=null;save()},{style:'gray',size:14})}
 function arrowDown(x,y){const b=Math.sin(G.time*8)*6;ctx.save();ctx.globalAlpha=1;ctx.fillStyle='#ffe27a';ctx.strokeStyle='#5a1d00';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x-16,y-22+b);ctx.lineTo(x+16,y-22+b);ctx.lineTo(x+16,y-2+b);ctx.lineTo(x+28,y-2+b);ctx.lineTo(x,y+24+b);ctx.lineTo(x-28,y-2+b);ctx.lineTo(x-16,y-2+b);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()}
 function drawCombo(dt){if(G.comboShow>0&&G.combo>=5){G.comboShow-=dt;const a=Math.min(1,G.comboShow*2);ctx.save();ctx.globalAlpha=a;const s=1+Math.max(0,G.comboShow-1.2)*2;ctx.translate(210,134);ctx.scale(s,s);gtxt(G.combo+' '+TR('连杀！'),0,0,G.combo>=20?40:32,'#fff6d0',G.combo>=20?'#ff4a2a':'#ffb320',6);ctx.restore()}
@@ -1528,7 +1533,7 @@ function drawSelMenu(){const i=G.sel,tw=G.towers[i];const cx=tw.x,cy=tw.y-20;
     hit(cx-130,cy-130,260,260,()=>{G.sel=null;AUD.sfx('close')},'menu');
     {const c=tCost(T,tw.lvl);const can=G.gold>=c;const top=cy-84<110;const ux=top?cx-82:cx,uy=top?cy+14:cy-84;ibtn('ui_Icon_Arrow_Up',ux,uy,64,()=>upgrade(i),{dis:!can});ctx.fillStyle='rgba(18,10,4,.9)';ctx.font=`900 13px ${FONT}`;const cw2=Math.max(60,ctx.measureText(c).width+30);rr(ux-cw2/2,uy+26,cw2,20,10);ctx.fill();coinIcon(ux-cw2/2+13,uy+36,6);txt(c,ux+6,uy+36,13,can?'#ffe27a':'#999')}
     const sv=Math.round(tw.spent*.6);ibtn('ui_Icon_Decline',cx+82,cy+14,54,()=>sell(i));ctx.fillStyle='rgba(18,10,4,.9)';rr(cx+56,cy+38,52,18,9);ctx.fill();txt('+'+sv,cx+82,cy+47,12,'#ffe27a');
-    const needH=92+(tw.br!=null?20:0)+(tw.lvl>=BRANCH_LV&&tw.br==null?116:0);let bx=clamp(cx-130,10,W-270),by=clamp(cy+66,70,H-160);if(by+needH>H-112){by=clamp(cy-needH/2-20,70,H-112-needH);bx=cx>W/2?cx-140-260:cx+140;bx=clamp(bx,10,W-270)}ns('ui_Window_Background',bx,by,260,tw.br!=null?112:92,150,.22);
+    const needH=92+(tw.br!=null?20:0)+(tw.lvl>=BRANCH_LV&&tw.br==null?116:0);let bx=clamp(cx-130,10,W-270),by=clamp(cy-84<110&&TOWERS[tw.type]&&!TOWERS[tw.type].support&&tw.type!=='barracks'?cy+160:cy+66,70,H-160);if(by+needH>H-112){by=clamp(cy-needH/2-20,70,H-112-needH);bx=cx>W/2?cx-140-260:cx+140;bx=clamp(bx,10,W-270)}ns('ui_Window_Background',bx,by,260,tw.br!=null?112:92,150,.22);
     fitTxt(T.name+' · Lv'+tw.lvl+(tw.lvl>=4?TR(' 精通'):''),bx+130,by+22,17,244,'#ffe27a','center',3);
     if(T.support)fitTxt(T.support==='tp'?TR('传送距离 ')+(200+10*tw.lvl)+TR('   范围 ')+Math.round(st.range):TR('光环 +')+Math.round(supPct(tw.lvl)*100)+'%'+TR('   范围 ')+Math.round(st.range),bx+130,by+46,14,244,'#fff','center',3);else if(T.dmg)fitTxt(TR('伤害 ')+Math.round(st.dmg[0])+'-'+Math.round(st.dmg[1])+TR('   射程 ')+st.range,bx+130,by+46,14,244,'#fff','center',3);else{const SS=soldierStats(tw.lvl);fitTxt(TR('武僧生命 ')+Math.round(SS.hp)+TR('   攻击 ')+Math.round(SS.dmg[0])+'-'+Math.round(SS.dmg[1]),bx+130,by+46,14,244,'#fff','center',3)}
     fitTxt(tw.lvl>=4?T.l4:T.desc,bx+130,by+68,12,244,'#e9d3a8','center',2);{const ch=comboHint(tw);if(ch){ctx.fillStyle='rgba(0,0,0,.75)';rr(bx,by-24,260,20,10);ctx.fill();fitTxt(ch,bx+130,by-13.5,11,250,'#9ef0ff','center',0)}}branchUI(i,tw,bx,by)}}
@@ -1540,7 +1545,7 @@ function drawHud(dt){const t=G.time;
   imgC('ui_Icon_Swords',260,35,30,'drop-shadow(0 1px 1px #000)');txt(G.wave+(G.L.endless?'':' / '+G.L.waves),282,36,21,'#fff','left',4);
   // wave progress
   if(!G.L.endless){const px=W/2-170,py=16;img('ui_ProgressBar_Background',px,py,340,30);ctx.save();ctx.beginPath();ctx.rect(px+8,py,(340-16)*G.wave/G.L.waves,30);ctx.clip();img('ui_ProgressBar_Fill_Redish',px+8,py+8,324,14);ctx.restore();
-    if(G.L.boss)imgC('ui_Skull',px+330,py+15,22);txt(G.L.name,W/2,py+44,14,'#ffe9b0','center',3)}
+    if(G.L.boss)imgC('ui_Skull',px+330,py+15,22);fitTxt(G.L.name,W/2,py+16,14,250,'#ffe9b0','center',3)}
   if(G.wave<G.L.waves&&!G.firstWave&&G.waveTimer>0)button(TR('召唤下一波  +')+Math.round(G.waveTimer*1.5),W/2-120,72,240,48,()=>callWave(true),{size:17,style:'red',icon:'ui_Icon_Swords'});
   else if(G.firstWave)button(TR('开始战斗'),W/2-110,72,220,54,()=>callWave(true),{size:22,style:'red',icon:'ui_Icon_Swords'});
   if(feat('auto'))ibtn('ui_Icon_Reload',W-186,36,60,()=>{SAVE.autoSkill=!SAVE.autoSkill;save();showToast(SAVE.autoSkill?TR('自动释放技能：开'):TR('自动释放技能：关'));AUD.sfx('click')},{label:SAVE.autoSkill?'AUTO':'OFF',filter:SAVE.autoSkill?'hue-rotate(80deg) saturate(1.6)':null});
@@ -1728,7 +1733,7 @@ function drawTalents(){hits=[];bgMenu(2,.55);ibtn('ui_Icon_Arrow_Left',46,46,66,
   const cols=4,cw=292,ch=228,gx=(W-cols*cw-(cols-1)*10)/2,gy=140;
   groups.forEach((g,gi)=>{const x=gx+(gi%cols)*(cw+10),y=gy+Math.floor(gi/cols)*(ch+8);ns('ui_Window_Background',x,y,cw,ch,150,.3);
     const big=true;if(g.img)imgW(g.img,x+52,y+100,78,g.tint||null);
-    txt(g.n,x+52,y+(big?30:28),17,'#ffe27a','center',3);
+    fitTxt(g.n,x+54,y+(big?30:28),17,96,'#ffe27a','center',3);
     g.ks.forEach((k,j)=>{const tt=TALENTS.find(t=>t.k===k);if(!tt)return;const v=tal(k),c=talNext(tt,v),can=free>=c;const rx=x+108,ry=y+(big?10+j*108:8+j*70),rw=cw-118,rh=big?100:64;
       ctx.fillStyle='rgba(0,0,0,.28)';rr(rx,ry,rw,rh,10);ctx.fill();if(!g.img&&ICO[k])img(ICO[k],x+26,ry+36,52,52);
       fitTxt(tt.name,rx+10,ry+18,15,rw-90,'#fff','left',3);txt('Lv '+v,rx+rw-10,ry+18,15,v?'#ffd84a':'#999','right',3);
@@ -1932,8 +1937,8 @@ function drawBag(dt){hits=[];titleT+=dt;bgMenu(1,.6);sceneHeader(TR('装备'),ba
     {const ow=gearOwner(g.id);if(ow){portrait(HEROES[ow].set,x+56,y+16,13);ctx.strokeStyle=ow===heroFocus?'#7dff7a':'#ffe27a';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x+56,y+16,13,0,7);ctx.stroke()}}hit(x,y,70,100,()=>{bagSel=g.id;AUD.sfx('click')})});
   button(TR('给TA穿戴'),ix+430,iy+8,130,44,()=>{const n=equipBestFor(heroFocus);showToast(n?HEROES[heroFocus].name+' '+TR('穿上 ')+n+TR(' 件装备'):TR('没有可穿的装备，去打怪掉落吧'));AUD.sfx(n?'upgrade':'click')},{style:'green',size:16});
   button(TR('一键合成'),ix+290,iy+8,130,44,()=>{const r=autoMerge();if(SAVE.autoEquip!==false)autoEquipAll(true);showToast(r.n?TR('合成了 ')+r.n+TR(' 次 · 最高 ')+gearName(r.last):TR('暂无可合成（需同部位、同品质两件）'));AUD.sfx(r.n?'lvlup':'click')},{style:'gold',size:16});
-  button(TR('自动穿戴')+(SAVE.autoEquip!==false?' ON':' OFF'),ix+570,iy+8,110,44,()=>{SAVE.autoEquip=SAVE.autoEquip===false;save();if(SAVE.autoEquip)autoEquipAll(true);AUD.sfx('click')},{style:SAVE.autoEquip!==false?'blue':'gray',size:14});
-  txt(TR('同部位同品质的两件自动合成，等级+1 · 钻石可强化'),ix+670,iy+438,13,'#e9d3a8','right',2);
+  button(TR('自动穿戴')+(SAVE.autoEquip!==false?' ON':' OFF'),ix+568,iy+8,114,44,()=>{SAVE.autoEquip=SAVE.autoEquip===false;save();if(SAVE.autoEquip)autoEquipAll(true);AUD.sfx('click')},{style:SAVE.autoEquip!==false?'blue':'gray',size:14});
+  fitTxt(TR('同部位同品质的两件自动合成，等级+1 · 钻石可强化'),ix+675,iy+431,13,320,'#e9d3a8','right',2);
   {const cn=SAVE.gear.filter(g=>g.r===0&&!isEquipped(g.id)).length;button(TR('分解普通')+(cn?' ('+cn+')':''),ix+190,iy+410,150,40,cn?()=>{const r=salvageCommons();showToast(TR('分解了 ')+r.n+TR(' 件 · +')+r.v+' '+SHOP_CFG.cur);AUD.sfx('sell')}:null,{style:cn?'red':'gray',size:14,disabled:!cn})}
   if(list.length>=(SAVE.bagCap||80)-10)txt(TR('背包快满了'),ix+340,iy+30,15,'#ff8a6a','center',3);
   if(!list.length)txt(TR('还没有装备，打怪、通关和打 BOSS 会掉落'),ix+345,iy+220,20,'#e9d3a8','center',3);
@@ -2653,7 +2658,7 @@ function overTip(x,y,w){const lk=G.leak;if(!lk)return false;const top=Object.ent
 // ---------- 塔的攻击目标（Bloons TD 6：首个 / 最强 / 最后 / 最近 / 优先空中） ----------
 const TGT=[[null,'首个'],['hp','最强'],['last','最后'],['close','最近'],['fly','优先飞行']];
 function tgtName(tw){const k=tw.tgt||(tw.type==='ballista'?'hp':null);const f=TGT.find(a=>a[0]===k)||TGT[0];return TR(f[1])}
-function tgtUI(i,tw){const T=TOWERS[tw.type];if(!T||T.support||tw.type==='barracks'||!feat('tgt'))return;const cx=tw.x,cy=tw.y-20;const top=cy-84<110;const bx=cx-82,by=top?cy+76:cy+14;
+function tgtUI(i,tw){const T=TOWERS[tw.type];if(!T||T.support||tw.type==='barracks'||!feat('tgt'))return;const cx=tw.x,cy=tw.y-20;const top=cy-84<110;const bx=top?cx:cx-82,by=top?cy+84:cy+14;
   ctx.save();ctx.fillStyle='rgba(18,10,4,.92)';ctx.beginPath();ctx.arc(bx,by,25,0,7);ctx.fill();ctx.strokeStyle='#9ef0ff';ctx.lineWidth=2.5;ctx.stroke();ctx.restore();txt('🎯',bx,by,20,'#fff','center',0);
   ctx.font=`900 11px ${FONT}`;const s=tgtName(tw);const lw=ctx.measureText(s).width+12;ctx.fillStyle='rgba(18,10,4,.9)';rr(bx-lw/2,by+24,lw,17,8);ctx.fill();txt(s,bx,by+32.5,11,'#9ef0ff','center',0);
   hit(bx-28,by-28,56,72,()=>{const cur=tw.tgt||(tw.type==='ballista'?'hp':null);let j=TGT.findIndex(a=>a[0]===cur);j=(j+1)%TGT.length;if(!T.air&&TGT[j][0]==='fly')j=(j+1)%TGT.length;tw.tgt=TGT[j][0];showToast('🎯 '+TR('攻击目标：')+TR(TGT[j][1]));AUD.sfx('click')})}
@@ -3049,7 +3054,7 @@ function wSave(){SAVE.winter=SAVE.winter||{candy:0,buy:{}};return SAVE.winter}
 let winterPop=false;
 (function(){
   const kl=killEnemy;killEnemy=function(e){const was=!e.dead;kl(e);try{if(was&&wOn()&&Math.random()<(e.D.boss?1:e.aff?.25:.04)){const n=e.D.boss?5:1;wSave().candy+=n;G.candyRun=(G.candyRun||0)+n;floatText('🍬+'+n,e.x,e.y-70,'#ff9bd2',.8)}}catch(_){}};
-  const eb=endBattle;endBattle=function(win){const first=G&&!G.over;eb(win);try{if(first&&win&&wOn()){wSave().candy+=5;G.candyRun=(G.candyRun||0)+5;save();setTimeout(()=>{try{showToast('❄ '+TR('冬日庆典')+'  🍬+'+G.candyRun)}catch(_){}},2200)}}catch(_){}};
+  const eb=endBattle;endBattle=function(win){const first=G&&!G.over;eb(win);try{if(first&&win&&wOn()){wSave().candy+=5;G.candyRun=(G.candyRun||0)+5;save();const cr=G.candyRun;setTimeout(()=>{try{if(scene==='battle'&&G&&!G.over)return;showToast('❄ '+TR('冬日庆典')+'  🍬+'+cr)}catch(_){}},2200)}}catch(_){}};
   const be=battleExtra;battleExtra=function(t){be(t);try{if(!wOn()||scene!=='battle'||LOWQ||SAVE.snowOff)return;const T=performance.now()/1000;ctx.save();ctx.fillStyle='rgba(255,255,255,.75)';for(let i=0;i<46;i++){const sx=(i*137.5+T*(18+i%5*6))%(W+40)-20,sy=(i*71.3+T*(40+i%7*9))%(H+20)-10;ctx.beginPath();ctx.arc(sx+Math.sin(T+i)*8,sy,1.4+i%3*.7,0,7);ctx.fill()}ctx.restore()}catch(_){}};
   const ml=metaLevels;metaLevels=function(){ml.apply(this,arguments);try{if(!wOn())return;const x=140,y=(SAVE.installHide||isStandalone())?124:164,w=200,h=36,t=performance.now()/1000;ctx.save();ctx.shadowColor='#9be7ff';ctx.shadowBlur=8+6*Math.sin(t*2.4);ctx.fillStyle='rgba(20,60,110,.92)';rr(x,y,w,h,12);ctx.fill();ctx.restore();ctx.strokeStyle='#cfefff';ctx.lineWidth=1.5;rr(x,y,w,h,12);ctx.stroke();
     fitTxt('❄ '+TR('冬日庆典')+'  🍬 '+wSave().candy,x+w/2,y+h/2+.5,14,w-14,'#fff','center',2);hit(x,y,w,h,()=>{winterPop=true;AUD.sfx('open')})}catch(e){console.error(e)}};
@@ -3559,7 +3564,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794986379';
+const BUILD_VER='1794990904';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

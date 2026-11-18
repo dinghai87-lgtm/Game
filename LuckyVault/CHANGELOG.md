@@ -525,3 +525,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 48 (01:11) — Let It Ride refined
 - Zoned layout (2 community slots, your 3 slots), three bet circles show 5.00 / 已收回, buttons 收回这一注 / 继续押, per-street tip, hand names and payout result translated (没有中奖牌型（需要 10 对以上）/ 两对 赔 2:1 · 返还 …). sw lv-v121. Tests 90/90.
+
+## Round 49 (01:17) — Mississippi Stud refined
+- Zoned layout (3 community slots, your 2), street stepper 第 3 / 4 / 5 张, ante + three street circles with amounts, buttons 押 3 倍 15.00 / 押 1 倍 5.00 / 弃牌, per-street tip, translated results (两对 赔 2:1 · 返还 60.00 …). sw lv-v122. Tests 90/90.

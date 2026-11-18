@@ -1094,13 +1094,34 @@
     actLabel: (a) => a === 'pull' ? PKT('收回这一注', 'PULL BACK') : a === 'ride' ? PKT('继续押', 'LET IT RIDE') : null,
     keepBets: false
   };
+  // Mississippi Stud refine: zoned (3 community + your 2), street stepper, ante + three street circles, 3×/1×/fold buttons with amounts, simple tip
+  function msTip(cards) { const r = cards.map(RV), cnt = {}; r.forEach(x => cnt[x] = (cnt[x] || 0) + 1); const pr = Object.entries(cnt).filter(([, n]) => n >= 2);
+    if (pr.some(([k, n]) => n >= 3 || +k >= 11) || pr.length >= 2) return 'b3'; if (pr.length || r.filter(x => x >= 11).length >= 2) return 'b1';
+    const su = cards.map(c => c[c.length - 1]); if (Object.values(su.reduce((a, x) => (a[x] = (a[x] || 0) + 1, a), {})).some(n => n === cards.length && n >= 3)) return 'b1';
+    return r.some(x => x >= 11) && cards.length === 2 ? 'b1' : 'fold'; }
   REND.mstud = {
-    setup(f) { f.innerHTML = '<div class="area"><div class="lbl">Community cards</div><div class="cards" id="msB"></div></div>' + resLine() + '<div class="area"><div class="cards" id="msP"></div><div class="lbl" id="msL">Your hand</div></div><div class="lrbets" id="msU"></div><div class="spots" id="msS"></div><div class="pt2">Bet 1× or 3× the ante on each of three streets (or fold) · pays on every bet: pair 6-10 push · JJ+ 1:1 · two pair 2:1 · trips 3:1 · straight 4:1 · flush 6:1 · full house 10:1 · quads 40:1 · straight flush 100:1 · royal 500:1</div>';
-      document.getElementById('msS').appendChild(spotBtn('ante', 'Ante', 'Then 1× or 3× per street', 'big')); },
-    async render(v, r) { const B = document.getElementById('msB'), P = document.getElementById('msP'); B.innerHTML = ''; P.innerHTML = ''; v.B.forEach((c, i) => B.appendChild(cardEl(c, i))); v.P.forEach((c, i) => P.appendChild(cardEl(c, i))); (sfx.card || sfx.click)(); await wait(300);
-      document.getElementById('msU').innerHTML = '<span class="on">A<b>' + fmt(v.ante) + '</b></span>' + [0, 1, 2].map(i => '<span class="' + (v.bets[i] ? 'on' : 'off') + '">' + (i + 3) + 'rd<b>' + (v.bets[i] ? fmt(v.ante * v.bets[i]) : '—') + '</b></span>').join('').replace('4rd', '4th').replace('5rd', '5th');
-      document.getElementById('msL').innerHTML = 'Your hand' + (v.hn ? ' <b>' + v.hn + '</b>' : '');
-      showRes(v.done ? v.out + (r.win > 0 ? ' · RETURN ' + fmt(r.win) : '') : 'Street ' + (v.st + 1) + ' of 3 · bet 1×, 3× or fold', r.win); } };
+    setup(f) {
+      f.innerHTML = '<div class="tcpz tcpb"><div class="lbl">' + PKT('公共牌', 'COMMUNITY CARDS') + '</div><div class="cards" id="msB">' + slotsH(3) + '</div></div>' + resLine() + '<div class="uthst" id="msSt">' + [PKT('第 3 张', '3RD'), PKT('第 4 张', '4TH'), PKT('第 5 张', '5TH')].map((t, i) => '<span data-i="' + i + '">' + t + '</span>').join('') + '</div><div class="tcph" id="msH"></div><div class="tcpz" id="tcpP"><div class="cards" id="msP">' + slotsH(2) + '</div><div class="lbl" id="msL">' + PKT('你的手牌', 'YOUR HAND') + '</div></div><div class="lrbets" id="msU"></div><div class="spots" id="msS"></div><div class="pt2">' + PKT('每翻一张公共牌前押底注的 1 倍或 3 倍（或弃牌）· 所有注都按牌型赔：6–10 对子退回 · J 对以上 1:1 · 两对 2:1 · 三条 3:1 · 顺子 4:1 · 同花 6:1 · 葫芦 10:1 · 四条 40:1 · 同花顺 100:1 · 皇家 500:1', 'Bet 1× or 3× the ante before each community card (or fold) · every bet pays: pair 6-10 push · JJ+ 1:1 · two pair 2:1 · trips 3:1 · straight 4:1 · flush 6:1 · full house 10:1 · quads 40:1 · SF 100:1 · royal 500:1') + '</div>';
+      document.getElementById('msS').appendChild(spotBtn('ante', PKT('底注', 'ANTE'), PKT('之后每街押 1 倍或 3 倍', 'Then 1× or 3× per street'), 'big', '先押底注，拿到 2 张手牌。之后公共牌一张一张翻开，每翻一张前可以加押底注的 1 倍或 3 倍，或者弃牌（输掉已押的）。最后 5 张牌按牌型赔付所有注。<br>Bet the Ante for two cards. Before each of the three community cards, raise 1× or 3× the ante, or fold. Your final five cards pay on every bet.'));
+      if (!document.getElementById('lrCss2')) { const st = document.createElement('style'); st.id = 'lrCss2'; st.textContent = '#msS{width:100%;max-width:360px;display:grid}#msS .spot{min-height:60px;font-size:16px}#msS .spot .stk{left:auto;top:auto;right:4px;bottom:4px;transform:none;flex-direction:row;gap:2px;align-items:flex-end}#msS .spot .pile{width:28px;height:calc(28px + (var(--n) - 1) * 3px)}#msS .spot .pile .chip{width:28px;height:28px;bottom:calc(var(--i) * 3px)}#msS .spot.has{color:#fff}#msS .spot.has small{visibility:hidden}#msU span{width:52px;height:52px;font-size:13px}' + '#felt .uthst{display:flex;gap:4px;justify-content:center}#felt .uthst span{padding:2px 10px;border-radius:999px;background:rgba(0,0,0,.45);color:#94a3b8;font:800 11px "Microsoft YaHei",Arial,sans-serif;border:1px solid rgba(255,255,255,.15)}#felt .uthst span.on{background:#ffd60a;color:#111;border-color:#ffd60a}#felt .uthst span.done{color:#e5e7eb}'; document.head.appendChild(st); }
+      this.paintU(0, []);
+    },
+    paintU(ante, bets) { document.getElementById('msU').innerHTML = '<span class="' + (ante ? 'on' : 'off') + '">' + PKT('底', 'A') + '<b>' + (ante ? fmt(ante) : '—') + '</b></span>' + [0, 1, 2].map(i => '<span class="' + (bets[i] ? 'on' : 'off') + '">' + (i + 3) + '<b>' + (bets[i] ? fmt(ante * bets[i]) : '—') + '</b></span>').join(''); },
+    async render(v, r) {
+      const B = document.getElementById('msB'), P = document.getElementById('msP'), H = document.getElementById('msH'), Z = document.getElementById('tcpP'); Z.classList.remove('win', 'lose');
+      await putCards(P, v.P, true, P.querySelectorAll('.pcard').length); const nb = v.B.filter(c => c !== '??').length; await putCards(B, v.B, true, Math.max(0, nb - 1));
+      this.paintU(v.ante, v.bets); document.querySelectorAll('#msSt span').forEach(e => { const i = +e.dataset.i; e.classList.toggle('on', !v.done && i === v.st); e.classList.toggle('done', i < v.st || v.done); });
+      document.getElementById('msL').innerHTML = PKT('你的手牌', 'YOUR HAND') + (v.hn ? ' <b>' + PKT(HNZ[v.hn] || v.hn, v.hn) + '</b>' : '');
+      if (!v.done) { const t = msTip(v.P.concat(v.B.filter(c => c !== '??'))); H.innerHTML = PKT('建议：', 'Tip: ') + { b3: PKT('押 3 倍', 'bet 3×'), b1: PKT('押 1 倍', 'bet 1×'), fold: PKT('弃牌', 'fold') }[t];
+        showRes(PKT('第 ' + (v.st + 1) + ' / 3 街：押 1 倍、3 倍还是弃牌？', 'Street ' + (v.st + 1) + ' of 3 · bet 1×, 3× or fold'), 0); return; }
+      H.innerHTML = ''; const o = String(v.out || ''), m = o.match(/^(.*?)( \(Jacks\+\))? pays (\d+):1$/);
+      Z.classList.add(m ? 'win' : 'lose');
+      const txt = m ? PKT((HNZ[m[1]] || m[1]) + (m[2] ? '（J 以上）' : '') + ' 赔 ' + m[3] + ':1', m[1] + (m[2] || '') + ' pays ' + m[3] + ':1') : o === 'Folded' ? PKT('已弃牌', 'FOLDED') : /push/.test(o) ? PKT('6–10 对子，退回', 'Pair 6-10 · push') : PKT('没有中奖牌型', 'No paying hand');
+      showRes(txt + (r.win > 0 ? ' · ' + PKT('返还 ', 'RETURN ') + fmt(r.win) : ''), r.win);
+    },
+    actLabel: (a) => { const A = TT.bets.ante || 0; return { b3: PKT('押 3 倍 ', 'BET 3× ') + fmt(A * 3), b1: PKT('押 1 倍 ', 'BET 1× ') + fmt(A), fold: PKT('弃牌', 'FOLD') }[a] || null; },
+    keepBets: false
+  };
 
   // ---- PAI GOW POKER ----
   REND.paigow = {

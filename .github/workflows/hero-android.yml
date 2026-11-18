@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['hero-defense/index.html', 'hero-defense/mobile/**']
+    paths: ['hero-defense/index.html', 'hero-defense/app.html', 'hero-defense/mobile/**']
 jobs:
   apk:
     runs-on: ubuntu-latest

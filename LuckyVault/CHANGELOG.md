@@ -572,3 +572,7 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 62 (03:10) — Shared (multiplayer) baccarat pass
 - Joined the shared table, bet during the countdown, followed the squeeze hand-off frame by frame. Fixed: '全桌 5.00' table-total label overlapped the chip (moved to the top corner, English 'All'); '更多边注 ▾ More side bets' and '咪牌 SQUEEZE ON/OFF' toggles now one language (single and shared baccarat). sw lv-v140. Tests 90/90.
+
+## Round 63 (03:26) — English mode sweep + shared tables
+- Shared Dragon Tiger / Sic Bo / Roulette joined and played one round each (bet → countdown → result): fine.
+- English-mode scan for leftover Chinese while playing slots, bonus, lobby, panels: only the copyright line remains (company name, intentional). Fixed the starter-task card header (0/5 · 全部完成再送 … → finish all for 2,000 bonus coins) and made i18n strip the Chinese half of bilingual names in English mode everywhere. sw lv-v141. Tests 90/90.

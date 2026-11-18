@@ -10,7 +10,7 @@
     if (!data || data.finished || data.hidden || !lobby || lobby.style.display === 'none') { if (el) el.remove(); return; }
     if (!el) { el = document.createElement('div'); el.id = 'onbCard'; lobby.insertAdjacentElement('afterend', el); }
     const done = data.steps.filter(s => s.done).length, next = data.steps.find(s => !s.done);
-    el.innerHTML = '<div class="ob-h"><b>🎁 新手任务 New player journey</b><span>' + done + '/' + data.steps.length + ' · 全部完成再送 ' + data.bonus.toLocaleString() + ' 金币</span><button class="ob-x" title="隐藏 Hide">✕</button></div>' +
+    el.innerHTML = (() => { const L = (window.LVLang && LVLang.get()) || 'bi', T = (zh, en) => L === 'zh' ? zh : L === 'en' ? en : zh + ' ' + en; return '<div class="ob-h"><b>🎁 ' + T('新手任务', 'New player journey') + '</b><span>' + done + '/' + data.steps.length + ' · ' + T('全部完成再送 ' + data.bonus.toLocaleString() + ' 金币', 'finish all for ' + data.bonus.toLocaleString() + ' bonus coins') + '</span><button class="ob-x" title="' + T('隐藏', 'Hide') + '">✕</button></div>'; })() +
       '<div class="ob-bar"><i style="width:' + (done / data.steps.length * 100) + '%"></i></div><div class="ob-steps">' +
       data.steps.map(s => '<div class="ob-s' + (s.done ? ' done' : s === next ? ' now' : '') + '"><span>' + (s.done ? '✔' : '○') + '</span><em>' + s.title + '</em><b>+' + s.reward + '</b>' + (s === next ? '<button data-go="' + s.go + '">去完成 GO</button>' : '') + '</div>').join('') + '</div>';
     el.querySelectorAll('[data-go]').forEach(b => b.onclick = () => (GO[b.dataset.go] || (() => {}))());

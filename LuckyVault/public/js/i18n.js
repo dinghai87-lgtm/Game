@@ -409,7 +409,8 @@
   const SKIP = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, CODE: 1, CANVAS: 1 };
   function walk(root) {
     if (!root) return; if (root.nodeType === 3) return apply(root);
-    if (root.nodeType !== 1 || SKIP[root.nodeName] || (root.closest && root.closest('[data-noi18n]'))) return;
+    if (root.nodeType !== 1 || SKIP[root.nodeName]) return;
+    if (root.closest && root.closest('[data-noi18n]')) { if (mode === 'en') { const w2 = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); const l2 = []; while (w2.nextNode()) l2.push(w2.currentNode); l2.forEach(n => { const t = (n.nodeValue || '').trim(), z = t && CJK.test(t) ? mono(t) : null; if (z && z !== t) n.nodeValue = n.nodeValue.replace(t, z); }); } return; }
     const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: n => (n.parentNode && SKIP[n.parentNode.nodeName]) ? 2 : 1 });
     const list = []; while (w.nextNode()) list.push(w.currentNode); list.forEach(apply);
     if (mode !== 'en' && root.querySelectorAll) root.querySelectorAll('input[placeholder]').forEach(i => { const z = tr(i.placeholder); if (z) i.placeholder = z; });

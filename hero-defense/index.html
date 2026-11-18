@@ -2304,12 +2304,13 @@ const g7Done=(d,i)=>g7cur(G7[d][i][0])>=G7[d][i][1];
 const g7Vis=()=>prog()>=1&&!g7().fin&&dayNo()-g7().d0<14;
 const g7Ready=()=>{const S=g7();for(let d=0;d<7;d++){if(!g7Open(d))break;for(let i=0;i<3;i++)if(g7Done(d,i)&&!S.got[d+'_'+i])return true;if([0,1,2].every(i=>S.got[d+'_'+i])&&!S.day[d])return true}return false};
 let g7Sel=null;
+const dayLbl=n=>isZh()?TR('第 ')+n+TR(' 天'):LANG==='ja'?n+'日目':LANG==='ko'?n+'일차':LANG==='es'?'Día '+n:'Day '+n;
 function drawG7(dt){hits=[];titleT+=dt;bgMenu(3,.6);sceneHeader(TR('新手七日目标'));const S=g7();const today=Math.min(6,dayNo()-S.d0);if(g7Sel==null)g7Sel=Math.max(0,today);
   for(let d=0;d<7;d++){const x=W/2-560,y=112+d*76,open=g7Open(d);const all=[0,1,2].every(i=>S.got[d+'_'+i]);
-    button((open?'':'🔒 ')+TR('第 ')+(d+1)+TR(' 天')+(S.day[d]?' ✓':''),x,y,190,64,()=>{g7Sel=d;AUD.sfx('click')},{style:g7Sel===d?'gold':open?'blue':'gray',size:19});
+    button((open?'':'🔒 ')+dayLbl(d+1)+(S.day[d]?' ✓':''),x,y,190,64,()=>{g7Sel=d;AUD.sfx('click')},{style:g7Sel===d?'gold':open?'blue':'gray',size:19});
     if(open&&([0,1,2].some(i=>g7Done(d,i)&&!S.got[d+'_'+i])||(all&&!S.day[d])))redDot(x+182,y+8)}
   const d=g7Sel,x=W/2-340,y=112,w=880;ns('ui_Window_Background',x,y,w,530,150,.3);const open=g7Open(d);
-  gtxt(TR('第 ')+(d+1)+TR(' 天'),x+w/2,y+42,30,'#fff6d0','#ffb320',5);
+  gtxt(dayLbl(d+1),x+w/2,y+42,30,'#fff6d0','#ffb320',5);
   if(!open){const hrs=Math.ceil(((S.d0+d)*864e5+new Date().getTimezoneOffset()*6e4-Date.now())/3600e3);txt(TR('还没到，')+Math.max(1,hrs)+TR(' 小时后解锁'),x+w/2,y+90,18,'#e9d3a8','center',3)}
   G7[d].forEach(([k,n,label],i)=>{const yy=y+80+i*92;const v=Math.min(n,g7cur(k)),done=v>=n,got=S.got[d+'_'+i];ns('ui_Quest_Background',x+30,yy,w-60,78,30,.4);
     fitTxt(TR(label),x+60,yy+28,19,430,open?'#fff':'#999','left',3);hpbar(x+60,yy+50,320,10,v/n,'#c27a00','#ffd36b');txt(v+' / '+n,x+400,yy+55,14,'#ffe27a','left',3);
@@ -2479,8 +2480,8 @@ function drawCodex(dt){hits=[];titleT+=dt;bgMenu(2,.6);sceneHeader(TR('图鉴'),
     if(!s){txt('???',px+pw/2,y+200,40,'#888','center',4);txt(TR('还没遇到过这个敌人'),px+pw/2,y+250,17,'#bbb','center',3);return}
     shadow(px+pw/2,y+190,30);drawSprite(D.set,'walk',titleT,px+pw/2,y+190,D.boss?1.1:1.5,false,1,true,D.tint);gtxt(D.name,px+pw/2,y+230,30,'#fff6d0',D.boss?'#ff6b3a':'#ffb320',5);
     const rows=[[TR('生命'),D.hp],[TR('速度'),D.spd>=70?TR('快'):D.spd<=36?TR('慢'):TR('中')],[TR('护甲'),Math.round((D.armor||0)*100)+'%'],[TR('魔抗'),Math.round((D.mres||0)*100)+'%'],[TR('漏掉扣血'),D.chest?0:(D.lives||1)]];
-    rows.forEach(([a,b],i)=>{const rx=px+30+(i%3)*((pw-60)/3),ry=y+274+Math.floor(i/3)*34;txt(a+'：',rx,ry,15,'#e9d3a8','left',2);txt(String(b),rx+70,ry,15,'#fff','left',2)});
-    wrapTxt('💡 '+(D.chest?TR('打倒它会掉一大笔金币，漏掉也不扣生命'):D.boss&&BOSS2[k]?TR('BOSS：血非常厚，攒好天火和技能')+' · '+TR(BOSS2[k].n)+'：'+TR(BOSS2[k].d):EN_TIP(k)),px+pw/2,y+360,15,pw-50,'#9ef0ff')}
+    rows.forEach(([a,b],i)=>{const rx=px+30+(i%2)*((pw-60)/2),ry=y+268+Math.floor(i/2)*28;const lb=a+'：';ctx.font=`900 15px ${FONT}`;const lw=ctx.measureText(lb).width;txt(lb,rx,ry,15,'#e9d3a8','left',2);txt(String(b),rx+lw+6,ry,15,'#fff','left',2)});
+    wrapTxt('💡 '+(D.chest?TR('打倒它会掉一大笔金币，漏掉也不扣生命'):D.boss&&BOSS2[k]?TR('BOSS：血非常厚，攒好天火和技能')+' · '+TR(BOSS2[k].n)+'：'+TR(BOSS2[k].d):EN_TIP(k)),px+pw/2,y+368,15,pw-50,'#9ef0ff')}
   else{const ks=TOWER_ORDER;if(codexSel==null||!TOWERS[codexSel])codexSel=ks[0];ks.forEach((k,i)=>{const cx=x+20+(i%4)*150,cy=y+20+Math.floor(i/4)*150;const T=TOWERS[k];const open=twOpen(k);
       ctx.fillStyle=codexSel===k?'rgba(255,210,100,.25)':'rgba(0,0,0,.3)';rr(cx,cy,140,140,12);ctx.fill();imgW(T.imgs[Math.min(2,T.imgs.length-1)],cx+70,cy+100,76,open?twTint(T):'grayscale(1) brightness(.5)');fitTxt(T.name,cx+70,cy+124,14,130,open?'#ffe27a':'#999','center',2);
       if(!open)txt('🔒 '+TR('第 ')+(ONB_TW[k]+1)+TR(' 关'),cx+70,cy+16,11,'#bbb','center',2);hit(cx,cy,140,140,()=>{codexSel=k;AUD.sfx('click')})});
@@ -2600,7 +2601,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794973419';
+const BUILD_VER='1794973488';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

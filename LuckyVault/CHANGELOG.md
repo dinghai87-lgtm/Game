@@ -355,3 +355,4 @@ Platform release: everything on the "do all of these" list except the public dep
 - Own symbol sets for Blazing Fruits (painted fruit), Aztec Expanding (stone-age/tribal) and Lucky Clover (fairy garden) from CraftPix 512px packs.
 - Panda Fortune gets its own Asian symbol set (CraftPix monk skill icons, rounded gold-rim tiles).
 - New: Piggy Bank (dock) — 3% of every bet is saved, break it once a day at 200+ coins (cap 10,000); server-side, ledger type 'piggy'.
+- New: Weekly Pass (Rewards panel) — 1 point per 10 coins bet, 10 tiers (300→6,000 coins), resets Monday; server-side, ledger type 'pass'.

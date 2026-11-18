@@ -71,6 +71,9 @@ const DEFAULT_SETTINGS = {
 let drv, repo, SET = Object.assign({}, DEFAULT_SETTINGS), GSTATE = {};
 const now = () => Date.now();
 // 存钱猪 piggy bank: 3% of every bet is saved (virtual coins only); break it once a day when it holds at least `min`
+// 每周通行证 weekly pass: points from betting (1 pt per 10 coins), 10 reward tiers, resets every Monday
+const PASS = { per: 10, tiers: [100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200, 4000], rewards: [300, 500, 700, 900, 1200, 1500, 2000, 2500, 3000, 6000] };
+function passOf(u) { const wk = EN.weekKey(); if (!u.sp || u.sp.wk !== wk) u.sp = { wk, pts: 0, got: [] }; return u.sp; }
 const PIG = { rate: 0.03, min: 200, cap: 10000, coolH: 24 };
 function pubUser(u) {
   return { id: u.id, name: u.name, xp: u.xp || 0, level: E.levelOf(u.xp || 0), bal: u.bal, fs: u.fs || null, tg: u.tg ? { gid: u.tg.gid } : null, bonusAt: u.bonusAt || 0,
@@ -266,6 +269,7 @@ async function afterRound(u, g, r, info, t) {
   if (info.newRound) { await repo.daily('rounds', 1, t); await repo.dailyPlayer(u.id, t); await repo.gameDaily(g.id, u.id, 1, 0, t); }
   u.st.bet = r2(u.st.bet + r.cost); u.st.win = r2(u.st.win + gs.win); if (info.newRound) u.st.spins++;
   if (r.cost) { const ev = eventActive(); const lv = E.addXp(u, r2(r.cost * (ev ? ev.xp : 1))); u.level = E.levelOf(u.xp); if (lv) { r.lvl = lv; await addTx(u, 'level_bonus', lv.reward, 'Level ' + lv.level, t); } }
+  if (r.cost > 0) { const sp = passOf(u); sp.pts = r2(sp.pts + r.cost / PASS.per); r.pass = Math.floor(sp.pts); }
   if (r.cost > 0) u.pig = Math.min(PIG.cap, r2((u.pig || 0) + r.cost * PIG.rate));   // piggy bank: a small share of every bet
   r.xp = u.xp; r.pig = r2(u.pig || 0);
   if (info.done !== false) {
@@ -445,6 +449,20 @@ R['POST /api/iap/verify'] = userRoute(async ({ uid, b }) => {
 R['GET /api/onboarding'] = userRoute(async ({ uid }) => { const u = await repo.userById(uid); return [200, EN.onbView(u)]; });
 R['POST /api/onboarding/hide'] = userRoute(async ({ uid }) => { await repo.withUser(uid, async u => { u.onb = Object.assign(u.onb || {}, { hide: true }); }); return [200, { ok: true }]; });
 R['GET /api/missions'] = userRoute(async ({ uid }) => { let v; await repo.withUser(uid, async u => { v = EN.missionView(u); }); return [200, { missions: v, achievements: EN.achView(await repo.userById(uid)) }]; });
+R['GET /api/pass'] = userRoute(async ({ uid }) => {
+  let out; await repo.withUser(uid, async u => { const sp = passOf(u); const end = new Date(sp.wk + 'T00:00:00').getTime() + 7 * 864e5;
+    out = [200, { week: sp.wk, ends: end, pts: Math.floor(sp.pts), per: PASS.per, tiers: PASS.tiers.map((need, i) => ({ i, need, reward: PASS.rewards[i], got: sp.got.includes(i) })) }]; });
+  return out;
+});
+R['POST /api/pass/claim'] = userRoute(async ({ uid, b }) => {
+  let out; await repo.withUser(uid, async (u, t) => { const sp = passOf(u), i = +b.i;
+    if (!(i >= 0 && i < PASS.tiers.length)) { out = [400, { err: 'tier', msg: 'Unknown tier' }]; return { skip: true }; }
+    if (sp.got.includes(i)) { out = [400, { err: 'claimed', msg: 'Already claimed' }]; return { skip: true }; }
+    if (sp.pts < PASS.tiers[i]) { out = [400, { err: 'locked', msg: 'Not enough pass points yet' }]; return { skip: true }; }
+    sp.got.push(i); const v = PASS.rewards[i]; u.bal = r2(u.bal + v); await addTx(u, 'pass', v, 'Tier ' + (i + 1), t);
+    out = [200, { amount: v, user: pubUser(u) }]; });
+  return out;
+});
 R['POST /api/piggy'] = userRoute(async ({ uid }) => {
   let out; await repo.withUser(uid, async (u, t) => {
     const v = r2(u.pig || 0);

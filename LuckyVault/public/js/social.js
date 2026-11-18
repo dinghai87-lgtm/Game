@@ -150,7 +150,7 @@
   let qtab = 'missions';
   X.quests = async function (tab) {
     if (!srv() || !API.user) { openAuth(); return; } qtab = tab || qtab;
-    const b = panel('Rewards', '<div class="xtabs">' + [['missions', 'Missions'], ['ach', 'Achievements'], ['lb', 'Leaderboard'], ['tour', 'Tournaments']].map(([k, n]) => '<button data-k="' + k + '" class="' + (k === qtab ? 'on' : '') + '">' + n + '</button>').join('') + '</div><div id="qb"><p class="xnote">Loading…</p></div>');
+    const b = panel('Rewards', '<div class="xtabs">' + [['missions', 'Missions'], ['pass', 'Weekly Pass'], ['ach', 'Achievements'], ['lb', 'Leaderboard'], ['tour', 'Tournaments']].map(([k, n]) => '<button data-k="' + k + '" class="' + (k === qtab ? 'on' : '') + '">' + n + '</button>').join('') + '</div><div id="qb"><p class="xnote">Loading…</p></div>');
     b.querySelectorAll('.xtabs button').forEach(x => x.onclick = () => X.quests(x.dataset.k));
     const q = b.querySelector('#qb');
     if (qtab === 'missions' || qtab === 'ach') {
@@ -165,6 +165,14 @@
         const AC = r.achievements; const got = AC.filter(a => a.at).length;
         q.innerHTML = '<p class="xnote" style="margin:0 0 10px">' + got + ' of ' + AC.length + ' unlocked. Coins are added automatically when you unlock one.</p><div class="xach">' + AC.map(a => '<div class="' + (a.at ? '' : 'lock') + '"><span class="ic emo">' + (a.icon || '🏅') + '</span><b>' + esc(a.title) + '</b>' + esc(a.desc) + '<br><small style="color:#facc15">' + num(a.reward) + ' coins' + (a.at ? ' · ' + new Date(a.at).toLocaleDateString('en-US') : '') + '</small></div>').join('') + '</div>';
       }
+    } else if (qtab === 'pass') {
+      const r = await API.call('/api/pass'); if (r.err) { q.innerHTML = '<p>' + esc(r.msg || r.err) + '</p>'; return; }
+      const max = r.tiers[r.tiers.length - 1].need;
+      q.innerHTML = '<div class="xrow" style="display:block"><b style="font-size:18px;color:#ffd60a">' + num(r.pts) + '</b> <span>pass points</span><div class="xbar" style="margin-top:6px"><i style="width:' + Math.min(100, r.pts / max * 100).toFixed(1) + '%"></i></div>' +
+        '<small style="display:block;margin-top:6px"><span>1 point for every</span> ' + r.per + ' <span>coins you bet.</span> <span>Resets in</span> ' + left(r.ends) + '</small></div>' +
+        r.tiers.map(t => { const ok = r.pts >= t.need; return '<div class="xrow"><div class="grow"><b>🎖️ ' + (t.i + 1) + '</b><small>' + num(Math.min(r.pts, t.need)) + ' / ' + num(t.need) + ' · ' + num(t.reward) + ' <span>coins</span></small><div class="xbar"><i style="width:' + Math.min(100, r.pts / t.need * 100).toFixed(1) + '%"></i></div></div>' +
+          (t.got ? '<button class="xbtn alt" disabled>Claimed ✓</button>' : '<button class="xbtn" data-t="' + t.i + '"' + (ok ? '' : ' disabled') + '>Claim</button>') + '</div>'; }).join('');
+      q.querySelectorAll('button[data-t]').forEach(x => x.onclick = async () => { x.disabled = true; const c = await API.call('/api/pass/claim', { i: +x.dataset.t }); if (c.err) { toast(c.msg || c.err); return; } setUser(c); sfx.big && sfx.big(); toast('+' + num(c.amount) + ' coins'); X.quests('pass'); });
     } else if (qtab === 'lb') {
       const board = X._board || 'won'; const r = await API.call('/api/leaderboard?board=' + board); if (r.err) { q.innerHTML = '<p>' + esc(r.msg || r.err) + '</p>'; return; }
       q.innerHTML = '<div class="xtabs"><button data-b="won" class="' + (board === 'won' ? 'on' : '') + '">Total won</button><button data-b="mult" class="' + (board === 'mult' ? 'on' : '') + '">Biggest multiplier</button></div>' +

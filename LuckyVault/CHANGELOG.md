@@ -361,3 +361,4 @@ Platform release: everything on the "do all of these" list except the public dep
 - New: welcome-back gift — away 3+ days → 2,000 coins (+500/day, max 5,000), once a week; server-side, ledger type 'comeback'.
 - Theme music: 15 slot families now use real composed loops (Abstraction/Tallbeard Music Loop Bundle, CC0), loudness-normalised.
 - Lobby hero banners use real art (WILD badge + chips, blackjack dealer + cards, royal flush fan) instead of emoji; LOG IN no longer wraps on phones.
+- Rewards panel fully translated to Chinese (achievements, missions, counters).

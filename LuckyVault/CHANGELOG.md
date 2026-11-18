@@ -377,3 +377,6 @@ Platform release: everything on the "do all of these" list except the public dep
 
 ## Round 16 (18:25) — Dragon Empire 4096 & Neon Nights own sets
 - Both were 11/11 identical to Golden Dragon / Star Gems. New painted symbol sets + covers. sw lv-v72. Tests 90/90.
+
+## Round 17 (18:25) — Ice Queen frost-potion set, Bamboo Panda herbal lows
+- Ice Queen was sharing Frozen Kingdom's jewels (9/11); now a frost-potion set from CraftPix RPG elixir icons + new cover. Bamboo Panda's low symbols became herbal tonics (wine gourd etc.) so it no longer mirrors Lucky Panda Link. sw lv-v73. Tests 90/90.

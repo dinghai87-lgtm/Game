@@ -401,3 +401,6 @@ Platform release: everything on the "do all of these" list except the public dep
 - Buffalo Wild Reels shared 9/11 with Buffalo Stampede (viking loot). Now a frontier hunting-trophy set (stag skull, boar, horns, bear paw, pelt...) + cover.
 - Load check (phone, cold): 0.73s, 67 requests, 1.2 MB, gzip on.
 - sw lv-v79. Tests 90/90.
+
+## Round 24 (19:20) — Wild Cherry Deluxe finally has cherries
+- Top symbol is now cherries (+ raspberry, strawberry, mango); no longer mirrors Monkey Business' fruit. New cover. sw lv-v80. Tests 90/90.

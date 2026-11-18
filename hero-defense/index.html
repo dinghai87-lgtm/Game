@@ -384,13 +384,13 @@ function upgrade(i){const tw=G.towers[i];const T=TOWERS[tw.type];const c=tCost(T
   G.gold-=c;tw.spent+=c;tw.lvl++;dailyAdd('builds');tutStep('upgrade');tw.buildT=.4;if(tw.type==='barracks')setupBarracks(tw);sfx('upgrade',tw.x);saveLayout();G.fx.push({k:'ring',x:tw.x,y:tw.y,t:0,r:60,c:'#ffd84a'})}
 function sell(i){const tw=G.towers[i];const v=Math.round(tw.spent*.6);G.gold+=v;floatText('+'+v,tw.x,tw.y-40,'#ffd84a');if(tw.soldiers){tw.soldiers.forEach(s=>{s.dead=true;s.gone=true;s.blocking.forEach(e=>{if(e.blockedBy===s)e.blockedBy=null})});G.allies=G.allies.filter(a=>!tw.soldiers.includes(a))}
   Object.assign(tw,{type:null,lvl:0,soldiers:null,rally:null});G.sel=null;sfx('sell',tw.x);saveLayout()}
-function targetFor(x,y,range,air,mode){let best=null,bv=-1;for(const e of G.enemies){if(e.dead||e.d<0||e.untT>0)continue;if(e.fly&&!air)continue;const dd=Math.hypot(e.x-x,(e.y-y)*1.15);if(dd>range)continue;const v=mode==='hp'?e.hp:e.d/e.p.len;if(v>bv){bv=v;best=e}}return best}
+function targetFor(x,y,range,air,mode){let best=null,bv=-Infinity;for(const e of G.enemies){if(e.dead||e.d<0||e.untT>0)continue;if(e.fly&&!air)continue;const dd=Math.hypot(e.x-x,(e.y-y)*1.15);if(dd>range)continue;const v=mode==='hp'?e.hp:mode==='last'?-e.d/e.p.len:mode==='close'?-dd:mode==='fly'?(e.fly?2:0)+e.d/e.p.len:e.d/e.p.len;if(v>bv){bv=v;best=e}}return best}
 function updateTowers(dt){for(const tw of G.towers){if(!tw.type)continue;G.curSrc='t:'+tw.type;if(tw.dis>0){tw.dis-=dt;continue}if(tw.frz>0){tw.frz-=dt;dt*=.6}tw.at+=dt;if(tw.buildT>0)tw.buildT-=dt;if(tw.atk>0)tw.atk-=dt;
   if(tw.type==='barracks'){for(const s of tw.soldiers){if(s.dead&&!s.gone){s.respawn-=dt;if(s.respawn<=0&&s.deadT>1){Object.assign(s,makeSoldier(tw,tw.soldiers.indexOf(s),tw.soldiers.length));s.home=s.home;setupBarracks(tw)}}}continue}
   const st=towerStats(tw);tw.cd-=dt;if(tw.cd>0)continue;const T=TOWERS[tw.type];const top={x:tw.x,y:tw.y-62};
   if(T.support){if(T.support!=='tp')continue;const cands=G.enemies.filter(e=>!e.dead&&!e.D.boss&&e.d>0&&Math.hypot(e.x-tw.x,(e.y-tw.y)*1.15)<st.range).sort((a,b)=>b.d-a.d).slice(0,tw.lvl>=4?2:1);if(!cands.length){tw.cd=.5;continue}
     tw.cd=Math.max(3,8-.3*(tw.lvl-1));tw.atk=.45;for(const e of cands){G.fx.push({k:'smoke',x:e.x,y:e.y,t:0});if(e.blockedBy){e.blockedBy.blocking=e.blockedBy.blocking.filter(x=>x!==e);e.blockedBy=null}e.d=Math.max(0,e.d-200-10*tw.lvl);const q=pathAt(e.p,e.d);e.x=q.x;e.y=q.y;G.fx.push({k:'ring',x:e.x,y:e.y,t:0,r:40,c:'#7fe3ff'})}sfx('magic',tw.x);continue}
-  const e=targetFor(tw.x,tw.y,st.range,T.air,tw.type==='ballista'?'hp':null);if(!e)continue;tw.cd=st.rate;tw.atk=.45;tw.face=e.x<tw.x;
+  const e=targetFor(tw.x,tw.y,st.range,T.air,tw.tgt||(tw.type==='ballista'?'hp':null),tw);if(!e)continue;tw.cd=st.rate;tw.atk=.45;tw.face=e.x<tw.x;
   const dmg=rnd(st.dmg[0],st.dmg[1]);
   if(tw.type==='arrow'){const n=tw.lvl>=4?2:1;for(let k=0;k<n;k++)G.proj.push({k:'arrow',x:top.x+k*6,y:top.y,tg:e,spd:700,dmg,type:'phys',delay:k*.12});sfx('arrow',tw.x)}
   else if(tw.type==='magic'){G.proj.push({k:'orb',x:top.x,y:top.y-6,tg:e,spd:430,dmg,type:'magic',chain:tw.lvl>=4?3:0});sfx('magic',tw.x)}
@@ -460,7 +460,7 @@ function updateEnemies(dt){for(const e of G.enemies){e.at+=dt;if(e.hitT>0)e.hitT
     if(e.anim==='atk'&&e.at>.5)e.anim='walk';continue}
   e.anim='walk';const sp=e.spd*sm*(e.charge>0?3:1);e.d+=sp*dt;
   const q=pathAt(e.p,e.d);const nx=-q.dy,ny=q.dx;e.x=q.x+nx*e.off;e.y=q.y+ny*e.off;e.flip=q.dx<-.2;
-  if(e.d>=e.p.len){e.dead=true;e.gone=true;const lv=e.D.chest?0:(e.D.lives||1);G.lives=Math.max(0,G.lives-lv);if(!lv){floatText(TR('跑掉了…'),e.x,e.y-20,'#ffd84a')}else{floatText('-'+lv,e.x,e.y-20,'#ff5e5e');sfx('leak');G.lifeFlash=.6;G.shake=.3}if(G.bossBar===e)G.bossBar=null;
+  if(e.d>=e.p.len){e.dead=true;e.gone=true;const lv=e.D.chest?0:(e.D.lives||1);if(lv){G.leak=G.leak||{};G.leak[e.t]=(G.leak[e.t]||0)+lv}G.lives=Math.max(0,G.lives-lv);if(!lv){floatText(TR('跑掉了…'),e.x,e.y-20,'#ffd84a')}else{floatText('-'+lv,e.x,e.y-20,'#ff5e5e');sfx('leak');G.lifeFlash=.6;G.shake=.3}if(G.bossBar===e)G.bossBar=null;
     if(G.lives<=0&&!G.over){G.lives=0;endBattle(false)}}}
   G.enemies=G.enemies.filter(e=>!(e.gone||(e.dead&&e.deadT>1.4)))}
 
@@ -1403,7 +1403,7 @@ function drawOver(dt){const o=G.over;o.t+=dt;hits=[];ctx.fillStyle=`rgba(0,0,0,$
   if(L.endless){gtxt(TR('坚持到第 ')+G.wave+TR(' 波'),W/2,y+90,44,'#fff6d8','#ffc23a',8)}
   else if(win){img('ui_LevelComplete_Stars_Background',W/2-210,y+30,420,185);for(let i=0;i<3;i++){const f=clamp((o.t-.7-i*.35)*4,0,1);if(f>0&&!o['s'+i]&&i<o.stars){o['s'+i]=1;AUD.sfx('star',null,i)}
       const sx=W/2-118+i*118,sy=y+108-(i===1?22:0);ctx.save();ctx.translate(sx,sy);const sc=i<o.stars?(f<1?1.6-.6*f:1):1;ctx.scale(sc,sc);starIcon(0,0,i===1?118:96,i<o.stars&&f>0);ctx.restore()}}
-  else{imgC('ui_Skull',W/2,y+84,66);txt(TR('升级英雄和天赋后再来挑战！'),W/2,y+142,22,'#ffe9b0','center',4)}
+  else{imgC('ui_Skull',W/2,y+84,66);let tp=false;try{tp=overTip(x,y,w)}catch(_){}if(!tp)txt(TR('升级英雄和天赋后再来挑战！'),W/2,y+142,22,'#ffe9b0','center',4)}
   overExtra(o,x,y,w);
   paper(x+60,y+218,w-120,92);
   imgC('ui_LevelComplete_Stats_Swords',x+110,y+248,30);txt(TR('击杀  ')+G.kills,x+136,y+248,20,'#4a2808','left',0);
@@ -1492,7 +1492,7 @@ function drawLevelPop(){const i=lvPop,L=getLevel(i);hits=[];ctx.fillStyle='rgba(
   ibtn('ui_Icon_Decline',x+w-20,y+20,56,()=>{lvPop=null;AUD.sfx('close')})}
 function drawHeroes(dt){hits=[];titleT+=dt;bgMenu(3,.55);
   ibtn('ui_Icon_Arrow_Left',46,46,66,()=>{scene=heroesBack||'levels';heroesBack=null});gtxt(TR('英雄殿'),W/2,48,46,'#fff6d0','#ffb320',8);
-  plate(W-200,22,180,48);starIcon(W-170,46,34,true);txt(totalStars(),W-110,47,24,'#ffe27a','center',4);ybPill(W-410,22);fixTeam();if(feat('bag'))button(TR('装备'),96,22,150,50,()=>{bagBack='heroes';scene='bag';AUD.sfx('click')},{style:'gray',size:18,icon:'ui_Icon_Sword'});
+  plate(W-200,22,180,48);starIcon(W-170,46,34,true);txt(totalStars(),W-110,47,24,'#ffe27a','center',4);ybPill(W-410,22);fixTeam();if(feat('bag'))button(TR('装备'),96,22,150,50,()=>{bagBack='heroes';scene='bag';AUD.sfx('click')},{style:'gray',size:18,icon:'ui_Icon_Sword'});button('📖 '+TR('图鉴'),feat('bag')?256:96,22,150,50,()=>{scene='codex';codexSel=null;AUD.sfx('click')},{style:'blue',size:18});
   const ts=totalStars();ns('ui_Window_Background',24,92,640,560,150,.4);
   HERO_ORDER.forEach((id,i)=>{const D=HEROES[id];const BIG=HERO_ORDER.length>10,PR=BIG?6:5,gs=BIG?.68:.82,gx=36+(i%PR)*(BIG?102:123),gy=(BIG?170:110)+Math.floor(i/PR)*(BIG?200:268);ctx.save();ctx.translate(gx,gy);ctx.scale(gs,gs);const x=0,y=0;const un=owns(id);const inTeam=SAVE.team.includes(id);const foc=heroFocus===id;
     ns('ui_Store_Item_Background',x,y,140,248,40,.5,foc?'brightness(1.25) sepia(.3)':null);if(foc){ctx.save();ctx.strokeStyle='#ffe27a';ctx.lineWidth=3;rr(x+2,y+2,136,244,12);ctx.stroke();ctx.restore()}
@@ -1596,7 +1596,7 @@ function loopBody(now){const rdt=Math.min(.05,(now-last)/1000);last=now;try{perf
   AUD.music(musicFor());
   if(scene==='battle'&&G){const alive=G.enemies.filter(e=>!e.dead).length;AUD.setIntensity(G.firstWave?.2:clamp(.3+alive/16+G.wave/(G.L.endless?40:G.L.waves)*.3,0,1))}
   ctx.clearRect(0,0,W,H);
-  const MENU=(OX||OY)&&['title','heroes','talents','endless','shop','tasks','pass','gacha','bag','pick','rebirth','g7'].includes(scene);let _W=W,_H=H;
+  const MENU=(OX||OY)&&['title','heroes','talents','endless','shop','tasks','pass','gacha','bag','pick','rebirth','g7','codex'].includes(scene);let _W=W,_H=H;
   if(MENU){const k=Math.max(W/WW,H/WH)*1.04;const bgk=scene==='title'?'map3':'map'+({heroes:3,talents:2,shop:1,tasks:2,pass:4,gacha:3,bag:1,pick:3,endless:4,rebirth:2}[scene]||1);mirrorBg(bgk,scene==='title'?.35:.5);ctx.save();ctx.translate(OX,OY);HOX=OX;HOY=OY;W=WW;H=WH}
   try{
   if(scene==='load')drawLoad();
@@ -1612,6 +1612,7 @@ function loopBody(now){const rdt=Math.min(.05,(now-last)/1000);last=now;try{perf
   else if(scene==='bag')drawBag(rdt);else if(scene==='pick')drawPick(rdt);
   else if(scene==='rebirth')drawRebirth(rdt);
   else if(scene==='g7')drawG7(rdt);
+  else if(scene==='codex')drawCodex(rdt);
   else if(scene==='battle'&&G){if(!paused&&!G.over){for(let i=0;i<speed;i++){update(rdt);for(const a of G.allies)if(a.hero&&a.anim==='atk'&&a.at>.6)a.anim='idle'}}drawBattle(rdt);try{drawCard();drawRogue()}catch(e){console.error(e)}}
   }finally{if(MENU){ctx.restore();W=_W;H=_H;HOX=0;HOY=0}}
   drawPOP();adTick(rdt);drawAD();
@@ -2084,7 +2085,7 @@ function drawFbBtn(){const x=140,y=SAVE.installHide||isStandalone()?84:124,w=120
 // ====================== 新手体验：功能逐关解锁 / 新功能卡片 / 英雄介绍 / 新敌人提示 ======================
 // prog() = 已通关的主线关卡数。没解锁的功能直接隐藏，解锁时弹卡片说明。老玩家（进度够）全部照旧。
 const prog=()=>maxCleared()+1;
-const ONB_F={hall:1,speed:1,auto:1,meteor:1,signin:1,reinf:2,shop:2,talents:2,tasks:2,fb:2,install:2,pops:2,gacha:3,bag:3,sk2:3,deal:3,event:3,gem:4,items:4,endless:4,team:3,rec:5,chal:5,pass:5,sk3:6,support:11,rebirth:24,cards:3,trap:6,hchal:8,merchant:5,weekly:6};
+const ONB_F={hall:1,speed:1,auto:1,meteor:1,signin:1,reinf:2,shop:2,talents:2,tasks:2,fb:2,install:2,pops:2,gacha:3,bag:3,sk2:3,deal:3,event:3,gem:4,items:4,endless:4,team:3,rec:5,chal:5,pass:5,sk3:6,support:11,rebirth:24,cards:3,trap:6,hchal:8,merchant:5,weekly:6,tgt:4};
 const ONB_TW={arrow:0,barracks:0,magic:1,cannon:2,frost:3,poison:5,tesla:7,ballista:9,drum:11,eagle:11,wind:11,portal:11};
 const feat=k=>!!SAVE.rebirth||prog()>=(ONB_F[k]||0);
 // 塔的解锁只限制主线关卡；挑战、试炼、无尽沿用原规则
@@ -2094,7 +2095,7 @@ const ONB_CARD={hall:['英雄殿','查看每位英雄的技能，用碎片给英
   gacha:['召唤','用钻石召唤新英雄，集齐碎片解锁'],bag:['装备','战斗会掉落装备，在英雄殿里给英雄穿上'],sk2:['英雄第 2 个技能','每位英雄多了一个技能，亮起时点一下释放'],
   gem:['钻石技能','战斗右侧：花钻石放大招——金币雨、时间静止、天罚、全军复苏'],items:['道具','冰冻炸弹冻住全场，地雷埋在路上'],endless:['无尽模式','地图上的奖杯：敌人无穷无尽，看你能守多少波，还有每周排行榜'],
   chal:['每日挑战','在「任务」里：每天一关特殊规则，奖励更多'],pass:['通行证','打关卡攒经验，领取每一级的奖励'],sk3:['英雄第 3 个技能','英雄的终极技能已解锁'],
-  support:['辅助塔','战鼓、鹰眼、疾风等光环塔，让周围的塔更强'],rebirth:['转生','重置进度，换取永久的全塔伤害加成'],cards:['强化三选一','每隔几波暂停，从 3 张强化卡里选 1 张，本局有效'],trap:['地图机关','路上的机关可以点：熔岩、落石、雪崩、毒沼，冷却 40 秒'],merchant:['流浪商人','关卡打到一半，商人会来卖好东西，用金币买'],weekly:['周赛','每周一张全服同图的赛季关，按成绩上排行榜（在「任务」里）'],hchal:['英雄挑战','三星通关后，同一关可以挑战「英雄」「钢铁」两种高难模式，首通送钻石']};
+  support:['辅助塔','战鼓、鹰眼、疾风等光环塔，让周围的塔更强'],rebirth:['转生','重置进度，换取永久的全塔伤害加成'],cards:['强化三选一','每隔几波暂停，从 3 张强化卡里选 1 张，本局有效'],trap:['地图机关','路上的机关可以点：熔岩、落石、雪崩、毒沼，冷却 40 秒'],tgt:['攻击目标','点一座塔，再点 🎯 可以切换它先打谁：首个 / 最强 / 最后 / 最近 / 优先飞行'],merchant:['流浪商人','关卡打到一半，商人会来卖好东西，用金币买'],weekly:['周赛','每周一张全服同图的赛季关，按成绩上排行榜（在「任务」里）'],hchal:['英雄挑战','三星通关后，同一关可以挑战「英雄」「钢铁」两种高难模式，首通送钻石']};
 
 // 旧存档迁移：以前网页版是测试模式（全英雄免费），把玩家实际用过的英雄正式给他
 (function(){try{if(!SAVE.migOwn){SAVE.migOwn=1;for(const h in (SAVE.xp||{}))if(SAVE.xp[h]>0&&HEROES[h]&&!SAVE.owned.includes(h)&&!SHOP_CFG.freeHeroes.includes(h))SAVE.owned.push(h);
@@ -2428,6 +2429,66 @@ function shareReport(){try{const o=G.over,L=G.L;const cw=1080,ch=1350,c=document
   if(window.__api)Object.assign(window.__api,{update,startLevel,callWave,endBattle,spawnEnemy,build,upgrade,castSpell});
 })();
 
+// ====================== 竞品对比补强：下一波预告 / 失败原因分析 / 提前开战缩短法术冷却 / 塔的攻击目标 / 图鉴 ======================
+
+// ---------- 下一波预告（王国保卫战：点骷髅能看到下一波是什么） ----------
+function nextWavePreview(){if(!G||G.over||G.wave>=G.L.waves)return null;const w=G.wave+1;if(G.prevW&&G.prevW.w===w)return G.prevW.list;let wv;try{wv=genWave(w)}catch(e){return null}
+  const m={};for(const g of wv.groups){m[g.t]=(m[g.t]||0)+g.cnt}const list=Object.entries(m).sort((a,b)=>(ENEMIES[b[0]].boss?1e6:0)+b[1]-(ENEMIES[a[0]].boss?1e6:0)-a[1]);G.prevW={w,list};return list}
+function enemyIcon(t,x,y,s){const D=ENEMIES[t];const k=Object.keys(IMG).find(k=>k.startsWith(D.set+'_walk'))||Object.keys(IMG).find(k=>k.startsWith(D.set+'_'));const im=k&&IMG[k];
+  if(im&&im.complete&&im.width){const sc=s/Math.max(im.width,im.height)*1.5;ctx.save();if(D.tint)ctx.filter=D.tint;ctx.drawImage(im,x-im.width*sc/2,y-im.height*sc*.6,im.width*sc,im.height*sc);ctx.restore()}}
+function drawWavePreview(){if(!G||G.over||G.tut||G.card||!(G.firstWave||G.waveTimer>0))return;const L=nextWavePreview();if(!L||!L.length)return;const p=G.paths[0].pts[0];
+  const n=Math.min(5,L.length),w=n*56+16,h=78;let x=clamp(p[0]+46,8,WW-w-8),y=clamp(p[1]-80,70,WH-h-130);if(x+w>WW-90)x=clamp(p[0]-46-w,8,WW-w-8);
+  ctx.save();ctx.fillStyle='rgba(15,8,3,.78)';rr(x,y,w,h,12);ctx.fill();ctx.strokeStyle='rgba(255,215,120,.45)';ctx.lineWidth=1.5;rr(x,y,w,h,12);ctx.stroke();ctx.restore();
+  txt(TR('下一波'),x+w/2,y+11,12,'#ffe27a','center',2);
+  L.slice(0,n).forEach(([t,c],i)=>{const cx=x+8+28+i*56,cy=y+50;enemyIcon(t,cx,cy,40);const D=ENEMIES[t];if(D.fly)txt('✈',cx+14,cy-14,11,'#9ef0ff','center',2);if(D.boss)txt('BOSS',cx,cy-20,9,'#ff6b4a','center',2);txt('×'+c,cx+12,cy+16,11,'#fff','center',2)});
+  hit(x,y,w,h,()=>{showToast(L.slice(0,4).map(([t,c])=>ENEMIES[t].name+'×'+c).join('  '))})}
+
+// ---------- 失败原因分析（输了告诉玩家为什么、下次怎么办） ----------
+function overTip(x,y,w){const lk=G.leak;if(!lk)return false;const top=Object.entries(lk).sort((a,b)=>b[1]-a[1])[0];if(!top)return false;const [t,n]=top;const D=ENEMIES[t];
+  txt(TR('漏掉最多的是：')+D.name+' ×'+n,W/2,y+132,19,'#ffe9b0','center',4);fitTxt('💡 '+EN_TIP(t),W/2,y+162,16,w-60,'#9ef0ff','center',3);return true}
+
+// ---------- 塔的攻击目标（Bloons TD 6：首个 / 最强 / 最后 / 最近 / 优先空中） ----------
+const TGT=[[null,'首个'],['hp','最强'],['last','最后'],['close','最近'],['fly','优先飞行']];
+function tgtName(tw){const k=tw.tgt||(tw.type==='ballista'?'hp':null);const f=TGT.find(a=>a[0]===k)||TGT[0];return TR(f[1])}
+function tgtUI(i,tw){const T=TOWERS[tw.type];if(!T||T.support||tw.type==='barracks'||!feat('tgt'))return;const cx=tw.x,cy=tw.y-20;const top=cy-84<110;const bx=cx-82,by=top?cy+76:cy+14;
+  ctx.save();ctx.fillStyle='rgba(18,10,4,.92)';ctx.beginPath();ctx.arc(bx,by,25,0,7);ctx.fill();ctx.strokeStyle='#9ef0ff';ctx.lineWidth=2.5;ctx.stroke();ctx.restore();txt('🎯',bx,by,20,'#fff','center',0);
+  ctx.font=`900 11px ${FONT}`;const s=tgtName(tw);const lw=ctx.measureText(s).width+12;ctx.fillStyle='rgba(18,10,4,.9)';rr(bx-lw/2,by+24,lw,17,8);ctx.fill();txt(s,bx,by+32.5,11,'#9ef0ff','center',0);
+  hit(bx-28,by-28,56,72,()=>{const cur=tw.tgt||(tw.type==='ballista'?'hp':null);let j=TGT.findIndex(a=>a[0]===cur);j=(j+1)%TGT.length;if(!T.air&&TGT[j][0]==='fly')j=(j+1)%TGT.length;tw.tgt=TGT[j][0];showToast('🎯 '+TR('攻击目标：')+TR(TGT[j][1]));AUD.sfx('click')})}
+
+// ---------- 图鉴（王国保卫战的百科：见过的敌人、防御塔资料） ----------
+let codexTab=0,codexSel=null;
+const enSeenAll=()=>SAVE.enSeen||[];
+function drawCodex(dt){hits=[];titleT+=dt;bgMenu(2,.6);sceneHeader(TR('图鉴'),'heroes');tabs([TR('敌人'),TR('防御塔')],codexTab,i=>{codexTab=i;codexSel=null},88);
+  const x=W/2-560,y=150,w=1120,h=500;ns('ui_Window_Background',x,y,w,h,150,.3);
+  if(codexTab===0){const ks=Object.keys(ENEMIES).filter(k=>k!=='sentry'||true);const seen=enSeenAll();if(codexSel==null)codexSel=ks.find(k=>seen.includes(k))||ks[0];
+    const cols=8,cw=78,chh=74;ks.forEach((k,i)=>{const cx=x+20+(i%cols)*cw,cy=y+20+Math.floor(i/cols)*chh;const s=seen.includes(k);ctx.fillStyle=codexSel===k?'rgba(255,210,100,.25)':'rgba(0,0,0,.3)';rr(cx,cy,cw-6,chh-6,10);ctx.fill();
+      if(s){enemyIcon(k,cx+36,cy+44,40)}else txt('?',cx+36,cy+34,30,'#666','center',3);if(ENEMIES[k].boss)txt('BOSS',cx+36,cy+8,9,'#ff6b4a','center',2);hit(cx,cy,cw-6,chh-6,()=>{codexSel=k;AUD.sfx('click')})});
+    txt(TR('已发现 ')+seen.filter(k=>ENEMIES[k]).length+' / '+ks.length,x+330,y+h-20,15,'#ffe27a','center',3);
+    const k=codexSel,D=ENEMIES[k],s=seen.includes(k),px=x+660,pw=w-680;ctx.fillStyle='rgba(15,8,3,.6)';rr(px,y+20,pw,h-40,16);ctx.fill();
+    if(!s){txt('???',px+pw/2,y+200,40,'#888','center',4);txt(TR('还没遇到过这个敌人'),px+pw/2,y+250,17,'#bbb','center',3);return}
+    shadow(px+pw/2,y+190,30);drawSprite(D.set,'walk',titleT,px+pw/2,y+190,D.boss?1.1:1.5,false,1,true,D.tint);gtxt(D.name,px+pw/2,y+230,30,'#fff6d0',D.boss?'#ff6b3a':'#ffb320',5);
+    const rows=[[TR('生命'),D.hp],[TR('速度'),D.spd>=70?TR('快'):D.spd<=36?TR('慢'):TR('中')],[TR('护甲'),Math.round((D.armor||0)*100)+'%'],[TR('魔抗'),Math.round((D.mres||0)*100)+'%'],[TR('漏掉扣血'),D.chest?0:(D.lives||1)]];
+    rows.forEach(([a,b],i)=>{const rx=px+30+(i%3)*((pw-60)/3),ry=y+274+Math.floor(i/3)*34;txt(a+'：',rx,ry,15,'#e9d3a8','left',2);txt(String(b),rx+70,ry,15,'#fff','left',2)});
+    wrapTxt('💡 '+(D.chest?TR('打倒它会掉一大笔金币，漏掉也不扣生命'):D.boss&&BOSS2[k]?TR('BOSS：血非常厚，攒好天火和技能')+' · '+TR(BOSS2[k].n)+'：'+TR(BOSS2[k].d):EN_TIP(k)),px+pw/2,y+360,15,pw-50,'#9ef0ff')}
+  else{const ks=TOWER_ORDER;if(codexSel==null||!TOWERS[codexSel])codexSel=ks[0];ks.forEach((k,i)=>{const cx=x+20+(i%4)*150,cy=y+20+Math.floor(i/4)*150;const T=TOWERS[k];const open=twOpen(k);
+      ctx.fillStyle=codexSel===k?'rgba(255,210,100,.25)':'rgba(0,0,0,.3)';rr(cx,cy,140,140,12);ctx.fill();imgW(T.imgs[Math.min(2,T.imgs.length-1)],cx+70,cy+100,76,open?twTint(T):'grayscale(1) brightness(.5)');fitTxt(T.name,cx+70,cy+124,14,130,open?'#ffe27a':'#999','center',2);
+      if(!open)txt('🔒 '+TR('第 ')+(ONB_TW[k]+1)+TR(' 关'),cx+70,cy+16,11,'#bbb','center',2);hit(cx,cy,140,140,()=>{codexSel=k;AUD.sfx('click')})});
+    const T=TOWERS[codexSel],px=x+640,pw=w-660;ctx.fillStyle='rgba(15,8,3,.6)';rr(px,y+20,pw,h-40,16);ctx.fill();imgW(T.imgs[Math.min(2,T.imgs.length-1)],px+pw/2,y+190,130,twTint(T));gtxt(T.name,px+pw/2,y+230,30,'#fff6d0','#ffb320',5);
+    let yy=y+268;const line=(s,c)=>{yy+=wrapTxt(s,px+pw/2,yy,15,pw-50,c||'#fff3d0')*21+8};line(T.desc);line(TR('精通（4 级）：')+T.l4,'#ffe27a');
+    if(BRANCH[codexSel])line(TR('进阶（10 级）：')+BRANCH[codexSel].map(b=>TR(b[0])+'（'+TR(b[1])+'）').join(' / '),'#d6a8ff');
+    const cb=COMBOS.filter(c=>c.a===codexSel||c.b===codexSel);if(cb.length)line(TR('组合：')+cb.map(c=>TR(c.n)+'（'+TOWERS[c.a===codexSel?c.b:c.a].name+'）').join(' / '),'#9ef0ff');
+    txt(TR('建造 ')+T.cost[0]+(T.air===false?'  ·  '+TR('打不到飞行'):T.air?'  ·  '+TR('能打飞行'):''),px+pw/2,y+h-50,15,'#ffd84a','center',3)}}
+
+// ---------- 接入 ----------
+(function(){
+  const cw=callWave;callWave=function(early){const wt=G.waveTimer,fw=G.firstWave;cw(early);
+    if(early&&!fw&&wt>0){const cut=wt*.5;let any=false;for(const s of Object.values(G.spells))if(s.cd>0){s.cd=Math.max(0,s.cd-cut);any=true}if(any)floatText(TR('法术冷却 -')+Math.round(cut)+'s',WW/2,184,'#9ef0ff')}};
+  const sp=spawnEnemy;spawnEnemy=function(t,pi,hm,d0){const e=sp(t,pi,hm,d0);try{SAVE.enSeen=SAVE.enSeen||[];if(e&&!SAVE.enSeen.includes(t))SAVE.enSeen.push(t)}catch(_){}return e};
+  const be=battleExtra;battleExtra=function(t){be(t);try{drawWavePreview()}catch(e){console.error(e)}};
+  const bu=branchUI;branchUI=function(i,tw,bx,by){bu(i,tw,bx,by);try{tgtUI(i,tw)}catch(e){console.error(e)}};
+  if(window.__api)Object.assign(window.__api,{callWave,spawnEnemy});
+})();
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -2470,7 +2531,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794972157';
+const BUILD_VER='1794972632';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

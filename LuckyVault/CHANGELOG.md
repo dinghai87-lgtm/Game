@@ -628,3 +628,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 80 (06:32)
 - 双语模式：句子中间夹数字的片段（如「200 金币。 coins.」「奖励 ×1×1 bonuses」）只显示中文，不再逐词中英混排；存钱猪、图鉴、VIP 面板已逐个截图确认
+
+## Round 81 (06:43)
+- 多人百家乐：自己下的筹码改为右下角小筹码+金额，不再压住「庄/闲」字（之前挂着的遗留问题）

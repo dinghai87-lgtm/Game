@@ -647,3 +647,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 ## Round 85 (08:27)
 - 全量回归：slot_smoke 200 次 0 问题；ui_smoke 全部桌台 0 问题；单元测试 90/90；翻译缺失扫描 0 条；360px 小屏 6 个页面截图正常
 - 发现：vantaxgame.com/luckyvault 仍是 lv-v106（GitHub 已是最新 lv-v172），总站自动部署没有跟上，需要 Grok 检查
+
+## Round 86 (08:29)
+- 电脑端（屏幕高度 ≤880）多人百家乐：龙宝/大小老虎等边注默认收起到「更多边注 ▾」，路单露出更多

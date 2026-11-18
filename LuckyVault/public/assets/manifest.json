@@ -139,7 +139,9 @@
    "logo": "logo.webp",
    "autologo": true,
    "snd": "casino",
-   "thumb": "thumb.webp"
+   "thumb": "thumb.webp",
+   "sym_l4": "l4.webp",
+   "sym_l5": "l5.webp"
   },
   "zombieland": {
    "sym_h1": "h1.webp",

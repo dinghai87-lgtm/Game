@@ -278,3 +278,7 @@ json.dump(man, open(OUT + '/manifest.json', 'w'), indent=1, ensure_ascii=False)
 # mp = {'h1':'35','h2':'47','h3':'33','h4':'18','l1':'20','l2':'19','l3':'21','l4':'28','l5':'15','W':'45','S':'44'}  (shark, octopus, pearl, fish, starfish, shell, wheel, hook, bottle, lighthouse=W, map=S)
 # ---- 2026-11-18: Pirate Gold Link gets its own set from the same sea pack (was sharing Pirate Plunder's loot icons) ----
 # mp = {'h1':'43','h2':'31','h3':'32','h4':'13','l1':'11','l2':'10','l3':'3','l4':'6','l5':'1','W':'36','S':'44'}  (galleon, jolly roger, cannon, hat, compass, coins, spyglass, rum, bomb, cutlass=W, map=S)
+# ---- 2026-11-18 (2): own symbol sets from CraftPix 512px painted icon packs ----
+# blazing-fruits  <- fruits-berries-vegetables-icon-512x512-set: h1 12 watermelon, h2 45 pineapple, h3 10 grapes, h4 19 dragonfruit, l1 30 cherries, l2 18 lemon, l3 21 orange, l4 38 strawberry, l5 27 banana (W/S kept)
+# aztec-expanding <- rpg-stone-age-game-512x512-icons: h1 38 stone calendar, h2 25 skull, h3 50 tooth necklace, h4 48 tusks, l1 19 spear, l2 20 knife, l3 14 egg, l4 16 axe, l5 18 boomerang, W 4 torch, S 46 fire
+# lucky-clover    <- rpg-fairy-loot-icons: h1 32 ladybugs, h2 34 flower ring, h3 38 fairy jar, h4 14 toadstool, l1 12 leaf, l2 41 flower, l3 35 emerald ring, l4 31 bee, l5 43 pouch, W 11 wand, S 36 crystal ball

@@ -1372,9 +1372,9 @@ function drawHud(dt){const t=G.time;
     const S3=SK3[a.hero],ready3=a.scd3<=0&&!a.dead;if(feat('sk3'))slot(S3.ic,X+200,Y+48,40,a.dead?1:Math.max(0,a.scd3)/S3.cd,ready3,null,null,!ready3&&!a.dead?Math.ceil(a.scd3):null);
     ctx.restore();
     hit(x,y,96*cs,96*cs,()=>{if(!a.dead){G.heroSel=G.heroSel===a?null:a;G.sel=null;G.spellMode=null}AUD.sfx('click')});
-    hit(x+(112-30)*cs,y+(44-30)*cs,60*cs,60*cs,()=>{if(ready)heroSkill(a);else AUD.sfx('deny')});
-    if(feat('sk2'))hit(x+(158-23)*cs,y+(44-23)*cs,46*cs,46*cs,()=>{if(ready2)heroSkill2(a);else AUD.sfx('deny')});
-    if(feat('sk3'))hit(x+(200-20)*cs,y+(48-20)*cs,40*cs,40*cs,()=>{if(a.scd3<=0&&!a.dead)heroSkill3(a);else AUD.sfx('deny')})});
+    hit(x+(112-30)*cs,y+(44-30)*cs,60*cs,60*cs,()=>{if(ready)heroSkill(a);else{AUD.sfx('deny');skillInfo(a,1)}});
+    if(feat('sk2'))hit(x+(158-23)*cs,y+(44-23)*cs,46*cs,46*cs,()=>{if(ready2)heroSkill2(a);else{AUD.sfx('deny');skillInfo(a,2)}});
+    if(feat('sk3'))hit(x+(200-20)*cs,y+(48-20)*cs,40*cs,40*cs,()=>{if(a.scd3<=0&&!a.dead)heroSkill3(a);else{AUD.sfx('deny');skillInfo(a,3)}})});
   // spells
   [['meteor','sp_meteor',TR('天火')],['reinf','sp_reinf',TR('援军')]].forEach(([k,ic,nm],i)=>{if(!feat(k)||G.noSpell)return;const S=G.spells[k];const x=W-150+i*86,y=H-56;const ready=S.cd<=0;
     if(G.spellMode===k){ctx.save();ctx.strokeStyle='#ffe27a';ctx.lineWidth=4;ctx.globalAlpha=.6+.4*Math.sin(t*10);octPath(x,y,40);ctx.stroke();ctx.restore()}
@@ -2448,7 +2448,7 @@ function nextWavePreview(){if(!G||G.over||G.wave>=G.L.waves)return null;const w=
 function enemyIcon(t,x,y,s){const D=ENEMIES[t];const k=Object.keys(IMG).find(k=>k.startsWith(D.set+'_walk'))||Object.keys(IMG).find(k=>k.startsWith(D.set+'_'));const im=k&&IMG[k];
   if(im&&im.complete&&im.width){const sc=s/Math.max(im.width,im.height)*1.5;ctx.save();if(D.tint)ctx.filter=D.tint;ctx.drawImage(im,x-im.width*sc/2,y-im.height*sc*.6,im.width*sc,im.height*sc);ctx.restore()}}
 function drawWavePreview(){if(!G||G.over||G.tut||G.card||!(G.firstWave||G.waveTimer>0))return;const L=nextWavePreview();if(!L||!L.length)return;const p=G.paths[0].pts[0];
-  const n=Math.min(5,L.length),w=n*56+16,h=78;let x=clamp(p[0]+46,8,WW-w-8),y=clamp(p[1]-80,70,WH-h-130);if(x+w>WW-90)x=clamp(p[0]-46-w,8,WW-w-8);
+  const n=Math.min(5,L.length),w=n*56+16,h=78;const mx=WW-w-(feat('gem')?100:12);let x=clamp(p[0]+46,8,mx),y=clamp(p[1]-80,70,WH-h-130);if(p[0]+46>mx)x=clamp(p[0]-46-w,8,mx);
   ctx.save();ctx.fillStyle='rgba(15,8,3,.78)';rr(x,y,w,h,12);ctx.fill();ctx.strokeStyle='rgba(255,215,120,.45)';ctx.lineWidth=1.5;rr(x,y,w,h,12);ctx.stroke();ctx.restore();
   txt(TR('下一波'),x+w/2,y+11,12,'#ffe27a','center',2);
   L.slice(0,n).forEach(([t,c],i)=>{const cx=x+8+28+i*56,cy=y+50;enemyIcon(t,cx,cy,40);const D=ENEMIES[t];if(D.fly)txt('✈',cx+14,cy-14,11,'#9ef0ff','center',2);if(D.boss)txt('BOSS',cx,cy-20,9,'#ff6b4a','center',2);txt('×'+c,cx+12,cy+16,11,'#fff','center',2)});
@@ -2553,6 +2553,11 @@ function drawObs(){const t=G.time;for(const o of G.obs||[]){const x=o.x,y=o.y;ct
   if(window.__api)Object.assign(window.__api,{startLevel,build,endBattle});
 })();
 
+// 技能还在冷却时点一下：显示技能名字、效果和剩余秒数（看图标就知道是什么技能）
+function skillInfo(a,n){try{const D=HEROES[a.hero];let nm,ds,cd;if(n===1){nm=D.skill;ds=D.sdesc;cd=a.scd}else if(n===2){const S=SK2[a.hero];nm=TR(S.n);ds=TR(S.d);cd=a.scd2}else{const S=SK3[a.hero];nm=TR(S.n);ds=TR(S.d);cd=a.scd3}
+  G.skTip={s:nm+'：'+ds+(a.dead?'':' · '+Math.ceil(Math.max(0,cd))+'s'),t:3}}catch(_){}}
+(function(){const dh=drawHud;drawHud=function(dt){dh(dt);const T=G&&G.skTip;if(!T)return;T.t-=1/60;if(T.t<=0){G.skTip=null;return}ctx.save();ctx.globalAlpha=Math.min(1,T.t*2);ctx.font=`900 15px ${FONT}`;const w=Math.min(W-60,ctx.measureText(T.s).width+30);ctx.fillStyle='rgba(15,8,3,.88)';rr(14,H-246,w,30,15);ctx.fill();fitTxt(T.s,14+w/2,H-231,15,w-20,'#ffe9b0','center',2);ctx.restore()}})();
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -2595,7 +2600,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794973258';
+const BUILD_VER='1794973419';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

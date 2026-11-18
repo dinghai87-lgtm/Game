@@ -656,3 +656,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 88 (08:41)
 - 电脑端矮屏（≤760 高）骰宝：下注格压缩到 40px，整张台一屏放下，最后一排不再被筹码栏挡住
+
+## 打包 (08:49)
+- v5.12 打包（lv-v175），已发送并写入 claude导出；ui-smoke 测试截图已从仓库移除并加入 .gitignore

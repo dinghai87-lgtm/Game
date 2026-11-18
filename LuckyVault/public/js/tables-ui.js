@@ -26,6 +26,7 @@
 @keyframes dealIn{from{transform:translate(38vw,-34vh) rotate(-35deg) scale(.6);opacity:.2}to{transform:none;opacity:1}}.cards .dealt{animation:dealIn .42s cubic-bezier(.2,.8,.25,1) both}
 .more-sb{display:none;flex-basis:100%;border:1px dashed rgba(255,214,10,.6);background:rgba(0,0,0,.25);color:#ffd60a;border-radius:10px;padding:6px;font:800 11px "Microsoft YaHei",Arial,sans-serif;cursor:pointer}
 @media(max-width:600px){#bacS .more-sb{display:block}#bacS:not(.more) .spot.mini:not(.has){display:none}}
+@media(min-width:601px) and (max-height:760px){.sb-board .spot{min-height:40px!important;padding:2px 4px}.sb-board .sbh{margin:0}#sbD{margin:0}}
 @media(min-width:601px) and (max-height:880px){#bacS .more-sb{display:block}#bacS:not(.more) .spot.mini:not(.has){display:none}}
 @media(max-width:600px){.vpmulti.ten{grid-template-columns:1fr 1fr;max-width:100%;width:100%}.vpmulti.ten .vpm{min-width:0;overflow:hidden}.vpmulti.ten .vpm b{display:none}.vpmulti.ten .vpm.won{outline:1px solid #ffd60a}}
 .spot .sinf{position:absolute;top:4px;right:5px;width:17px;height:17px;border-radius:50%;background:rgba(255,214,10,.9);color:#2a1a00;font:900 11px/17px system-ui,sans-serif;font-style:normal;text-align:center;z-index:4;cursor:help;box-shadow:0 1px 3px rgba(0,0,0,.5)}.spot.mini .sinf{width:15px;height:15px;font-size:10px;line-height:15px;top:3px;right:4px}

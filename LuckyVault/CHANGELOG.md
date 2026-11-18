@@ -501,3 +501,7 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 ## Round 42 (00:50) — Money Wheel refined
 - Bet spots in the wheel's segment colours (1 gold · 2 blue · 5 purple · 10 pink · 20 green · Joker · Logo), numbers row of five + Joker/Logo row; chips in the corner; last-results strip under the wheel; clear result banner (开出 5 · 赢 30.00 / 1 · NO WIN); losing chips cleared; rules on long-press.
 - sw lv-v112. Tests 90/90.
+
+## Round 43 (01:10) — Slot paytables showed blank / placeholder icons (all slots)
+- Found while reviewing Thunder Temple frame by frame: in every slot's Info / 赔付表 the symbol pictures were squashed to nothing by a CSS rule meant for the paytable rows (it also hit the nested cell divs), so players saw coloured bars or empty boxes instead of the real symbols. Rule scoped to the row boxes; the real art now shows for all slots (checked Lucky 777).
+- sw lv-v113. Tests 90/90.

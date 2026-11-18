@@ -565,3 +565,7 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 60 (02:51) — Friends & clubs panel in one language
 - Top-bar panels checked (奖励 / 好友 / 通知 / 账户 / 设置). The friends + clubs panel mixed Chinese and English in almost every line (placeholders, buttons, tips, toasts, confirm dialog); rewritten to follow the language setting (25 strings). Account 'Music On' → 开. sw lv-v137. Tests 90/90.
+
+## Round 61 (03:03) — Rules hub, Responsible play, Support, roadmap labels: one language
+- Source scan for strings that hard-code Chinese + English together. Rewritten to follow the language setting: rules hub (中文 shows the Chinese list, English the English summary, 双语 both), Responsible-play panel incl. confirm dialog, Support tickets panel, roadmap section labels / LOG / NEW SHOE / cut-card notice, shared-table result banner. Rules text no longer points at the removed ? badge (长按下注格).
+- sw lv-v139. Tests 90/90.

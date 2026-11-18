@@ -1,20 +1,21 @@
 // © 2026 万泰游戏开发 Wantai Game Development. All rights reserved.
 // 客服中心 Support: players open a ticket and read staff replies.
 (function () {
+  const T = (zh, en) => { const L = (window.LVLang && LVLang.get()) || 'bi'; return L === 'zh' ? zh : L === 'en' ? en : zh + ' ' + en; };
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   async function open() {
-    if (typeof API === 'undefined' || API.mode !== 'server' || !API.user) { toast('请先登录 · Please log in'); return; }
+    if (typeof API === 'undefined' || API.mode !== 'server' || !API.user) { toast(T('请先登录', 'Please log in')); return; }
     let o = document.getElementById('spOv'); if (!o) { o = document.createElement('div'); o.id = 'spOv'; document.body.appendChild(o); o.onclick = e => { if (e.target === o || e.target.closest('.sp-x')) o.classList.remove('show'); }; }
-    o.classList.add('show'); o.innerHTML = '<div class="sp-box"><button class="sp-x">✕</button><h2>🎧 客服中心 Support</h2><p>加载中…</p></div>';
+    o.classList.add('show'); o.innerHTML = '<div class="sp-box"><button class="sp-x">✕</button><h2>🎧 ' + T('客服中心', 'Support') + '</h2><p>' + T('加载中…', 'Loading…') + '</p></div>';
     const r = await API.call('/api/support'); if (!r || r.err) return;
     const box = o.querySelector('.sp-box');
-    box.innerHTML = '<button class="sp-x">✕</button><h2>🎧 客服中心 Support</h2>' +
-      '<div class="sp-new"><select id="spCat">' + Object.entries(r.cats).map(([k, v]) => '<option value="' + k + '">' + v + '</option>').join('') + '</select><input id="spRef" placeholder="订单号等（可选）Order ID (optional)" maxlength="60">' +
-      '<textarea id="spText" rows="4" maxlength="2000" placeholder="请描述你遇到的问题 · Describe the problem"></textarea><button id="spSend">提交 Send</button></div>' +
-      '<h3>我的工单 My tickets</h3>' + (r.tickets.length ? r.tickets.map(t => '<div class="sp-t"><div class="sp-h">#' + t.id + ' · ' + esc(r.cats[t.cat] || t.cat) + ' <span class="st ' + t.status + '">' + ({ open: '处理中 Open', answered: '已回复 Answered', closed: '已关闭 Closed' }[t.status] || t.status) + '</span></div>' +
-        t.msgs.map(m => '<p class="' + m.from + '"><b>' + (m.from === 'staff' ? '客服 Support' : '我 Me') + '</b> <small>' + new Date(m.t).toLocaleString() + '</small><br>' + esc(m.text).replace(/\n/g, '<br>') + '</p>').join('') +
-        (t.status !== 'closed' ? '<div class="sp-add"><input data-add="' + t.id + '" placeholder="补充说明 Add a message"><button data-addb="' + t.id + '">发送</button></div>' : '') + '</div>').join('') : '<p class="sp-e">还没有工单 · No tickets yet</p>');
-    box.querySelector('#spSend').onclick = async () => { const x = await API.call('/api/support', { cat: box.querySelector('#spCat').value, ref: box.querySelector('#spRef').value, text: box.querySelector('#spText').value }); if (x && x.err) toast(x.msg || x.err); else { toast('已提交，客服会尽快回复 · Sent'); open(); } };
+    box.innerHTML = '<button class="sp-x">✕</button><h2>🎧 ' + T('客服中心', 'Support') + '</h2>' +
+      '<div class="sp-new"><select id="spCat">' + Object.entries(r.cats).map(([k, v]) => '<option value="' + k + '">' + v + '</option>').join('') + '</select><input id="spRef" placeholder="' + T('订单号等（可选）', 'Order ID (optional)') + '" maxlength="60">' +
+      '<textarea id="spText" rows="4" maxlength="2000" placeholder="' + T('请描述你遇到的问题', 'Describe the problem') + '"></textarea><button id="spSend">' + T('提交', 'Send') + '</button></div>' +
+      '<h3>' + T('我的工单', 'My tickets') + '</h3>' + (r.tickets.length ? r.tickets.map(t => '<div class="sp-t"><div class="sp-h">#' + t.id + ' · ' + esc(r.cats[t.cat] || t.cat) + ' <span class="st ' + t.status + '">' + ({ open: T('处理中', 'Open'), answered: T('已回复', 'Answered'), closed: T('已关闭', 'Closed') }[t.status] || t.status) + '</span></div>' +
+        t.msgs.map(m => '<p class="' + m.from + '"><b>' + (m.from === 'staff' ? T('客服', 'Support') : T('我', 'Me')) + '</b> <small>' + new Date(m.t).toLocaleString() + '</small><br>' + esc(m.text).replace(/\n/g, '<br>') + '</p>').join('') +
+        (t.status !== 'closed' ? '<div class="sp-add"><input data-add="' + t.id + '" placeholder="' + T('补充说明', 'Add a message') + '"><button data-addb="' + t.id + '">' + T('发送', 'Send') + '</button></div>' : '') + '</div>').join('') : '<p class="sp-e">' + T('还没有工单', 'No tickets yet') + '</p>');
+    box.querySelector('#spSend').onclick = async () => { const x = await API.call('/api/support', { cat: box.querySelector('#spCat').value, ref: box.querySelector('#spRef').value, text: box.querySelector('#spText').value }); if (x && x.err) toast(x.msg || x.err); else { toast(T('已提交，客服会尽快回复', 'Sent — we will reply soon')); open(); } };
     box.querySelectorAll('[data-addb]').forEach(b => b.onclick = async () => { const i = box.querySelector('[data-add="' + b.dataset.addb + '"]'); const x = await API.call('/api/support', { id: +b.dataset.addb, text: i.value }); if (x && x.err) toast(x.msg || x.err); else open(); });
   }
   const st = document.createElement('style'); st.textContent = '#spOv{position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:14px}#spOv.show{display:flex}' +

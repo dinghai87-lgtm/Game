@@ -92,7 +92,7 @@
     const base = opt.askW ? bigCols(h.filter(e => !e.ask)) : null;
     [[1, bw, 6 * U, 2 * R, 'ring'], [2, bw, 9 * U, R, 'dot'], [3, bw + R * U / 2, 9 * U, R, 'slash']].forEach(([n, x0, y0, cn, st]) => { const d = derived(cols, n); drawD(d, x0, y0, cn, st, base && derived(base, n).length < d.length); });
     // faint section labels
-    const lbl = tag(bw - 3, H - 3, '珠盘路') + tag(W - 3, 6 * U - 3, '大路 Big Road') + tag(W - 3, 9 * U - 3, '大眼仔 Big Eye') + tag(bw + R * U / 2 - 3, H - 3, '小路 Small') + tag(W - 3, H - 3, '曱甴路 Cockroach');
+    const lbl = tag(bw - 3, H - 3, L.EN ? 'Bead' : '珠盘路') + tag(W - 3, 6 * U - 3, L.EN ? 'Big Road' : '大路') + tag(W - 3, 9 * U - 3, L.EN ? 'Big Eye' : '大眼仔') + tag(bw + R * U / 2 - 3, H - 3, L.EN ? 'Small' : '小路') + tag(W - 3, H - 3, L.EN ? 'Cockroach' : '曱甴路');
     return '<svg class="rm-svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet">' + g + lbl + m + '</svg>';
   }
   // "ask road": the next mark each derived road would get if the next hand were B / P
@@ -104,7 +104,7 @@
   function xstats(h, dt) { const keys = dt ? ['stie'] : ['st', 'bt', 'sd', 'bd', 'd7', 'p8', 'nat']; const c = {}; keys.forEach(k => c[k] = 0); h.forEach(e => (e.x || []).forEach(t => { if (t in c) c[t]++; }));
     return '<div class="rm-x">' + keys.map(k => '<span style="--xc:' + XT[k][2] + '"><i>' + xtag(k) + '</i>' + xname(k) + ' <b>' + c[k] + '</b></span>').join('') + '</div>'; }
   // every hand of the shoe, newest first
-  function logHTML(h, L) { if (!h.length) return '<div class="rm-empty">本靴还没有记录 · no hands yet</div>';
+  function logHTML(h, L) { if (!h.length) return '<div class="rm-empty">' + (L.EN ? 'No hands yet' : '本靴还没有记录') + '</div>';
     return '<table><tr><th>#</th><th>结果</th><th>' + L.zp + '</th><th>' + L.zb + '</th><th>记录</th></tr>' + h.map((e, i) => [e, i]).reverse().map(([e, i]) => {
       const res = e.w === 'B' ? '<b class="b">' + L.zb + '</b>' : e.w === 'P' ? '<b class="p">' + L.zp + '</b>' : '<b class="t">和</b>';
       const side = (cs, pt) => (cs || []).map(cardTxt).join(' ') + (pt != null ? ' <em>' + pt + '点</em>' : '');
@@ -120,8 +120,8 @@
     const pill = (cls, t, n) => '<span class="' + cls + '">' + t + ' <b>' + n + '</b>' + (cls !== 'n' && cls.length === 1 && h.length ? '<em>' + pct(n) + '</em>' : '') + '</span>';
     el.innerHTML = '<div class="rm-top"><div class="rm-stats">' + pill('b', EN ? L.B : L.zb + ' ' + L.B, cnt.B) + pill('p', EN ? L.P : L.zp + ' ' + L.P, cnt.P) + pill('t', EN ? 'Tie' : '和 Tie', cnt.T) +
       (labels.pairs !== false ? pill('bb', EN ? 'B Pair' : L.zb + '对', cnt.bp) + pill('pp', EN ? 'P Pair' : L.zp + '对', cnt.pp) : '') + (info ? (EN ? '<span class="n">Shoe <b>' + info.no + '</b> · Hand <b>' + h.length + '</b></span>' : '<span class="n">第 <b>' + info.no + '</b> 靴 · 局 <b>' + h.length + '</b></span>') + '<span class="n sh" title="8 副牌 · 切牌在倒数 ' + info.cutAt + ' 张 · 烧牌 ' + (info.burn || []).join(' ') + '">' + (EN ? '<b>' + info.left + '</b>/' + info.total + ' left' : '剩 <b>' + info.left + '</b>/' + info.total + ' 张') + '</span>' : '<span class="n">局 <b>' + h.length + '</b></span>') + '</div>' +
-      '<div class="rm-ask">' + askBtn(h, 'B', L) + askBtn(h, 'P', L) + '</div><button class="rm-log">记录 LOG</button>' + (info && info.live ? '' : '<button class="rm-new">新靴 NEW SHOE</button>') + '</div>' +
-      (info && info.end ? '<div class="rm-end">切牌已出 · 本靴结束，下一局自动换新靴 · Cut card out — new shoe next hand</div>' : '') + '<div class="rm-body">' + board(h, L, opt) + '</div>' + xstats(h, dt) + '<div class="rm-list"' + (el.dataset.log === '1' ? '' : ' hidden') + '>' + logHTML(h, L) + '</div>';
+      '<div class="rm-ask">' + askBtn(h, 'B', L) + askBtn(h, 'P', L) + '</div><button class="rm-log">' + (L.EN ? 'LOG' : '记录') + '</button>' + (info && info.live ? '' : '<button class="rm-new">' + (L.EN ? 'NEW SHOE' : '新靴') + '</button>') + '</div>' +
+      (info && info.end ? '<div class="rm-end">' + (L.EN ? 'Cut card out — new shoe next hand' : '切牌已出 · 本靴结束，下一局自动换新靴') + '</div>' : '') + '<div class="rm-body">' + board(h, L, opt) + '</div>' + xstats(h, dt) + '<div class="rm-list"' + (el.dataset.log === '1' ? '' : ' hidden') + '>' + logHTML(h, L) + '</div>';
     const lb = el.querySelector('.rm-log'), ls = el.querySelector('.rm-list'); lb.classList.toggle('on', !ls.hidden); lb.onclick = e => { e.stopPropagation(); ls.hidden = !ls.hidden; el.dataset.log = ls.hidden ? '0' : '1'; lb.classList.toggle('on', !ls.hidden); if (!ls.hidden) ls.scrollTop = 0; };
     // 问路: tap (or hover) to preview where the next Banker / Player hand would land on every road
     el.querySelectorAll('.ask').forEach(b => { const w = b.dataset.ask; let t = 0;

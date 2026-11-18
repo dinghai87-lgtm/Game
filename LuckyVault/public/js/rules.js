@@ -6,7 +6,7 @@
       ['Beat the dealer without going over 21: wins pay 1:1, blackjack pays 3:2.', 'Hit, stand, double, split; some tables allow surrender or insurance.', 'Side bets: Perfect Pairs and 21+3.']],
     roulette: ['轮盘 Roulette', ['选择号码或区域下注，小球停在哪个号码即开奖。', '单号 35:1 · 两号 17:1 · 三号 11:1 · 四号 8:1 · 六号 5:1 · 打/列 2:1 · 红黑/单双/大小 1:1。', '欧式 37 格（一个 0），美式 38 格（0 和 00），法式开 0 时外围注退一半。', 'Lucky Strike：每局 1–5 个幸运号码带 50–500 倍。'],
       ['Bet on numbers or areas; the ball decides.', 'Straight 35:1, split 17:1, street 11:1, corner 8:1, six line 5:1, dozens/columns 2:1, even-money 1:1.']],
-    baccarat: ['百家乐 Baccarat', ['押闲 (Player)、庄 (Banker) 或和 (Tie)，点数最接近 9 的一方赢；10、J、Q、K 为 0 点，A 为 1 点，点数只取个位。', '前两张 8 或 9 点为"例牌"，直接开牌；否则按固定补牌规则补第三张。', '闲赢赔 1:1；庄赢赔 0.95:1（免佣桌赔 1:1，但庄 6 点赢只赔一半；EZ 桌庄三张 7 点赢退本金）；和赔 8:1，和局时庄闲注退回。', '每局只能押庄或闲其中一边。', '边注：庄对/闲对 11:1、龙宝、小龙 16:1、大龙 33:1、小老虎 23:1、大老虎 54:1、龙7 40:1、熊猫8 25:1。点下注格的 ? 看每一注的说明。', '牌从真实的 8 副牌靴发出，切牌出现后换新靴；牌路记录本靴每一手。'],
+    baccarat: ['百家乐 Baccarat', ['押闲 (Player)、庄 (Banker) 或和 (Tie)，点数最接近 9 的一方赢；10、J、Q、K 为 0 点，A 为 1 点，点数只取个位。', '前两张 8 或 9 点为"例牌"，直接开牌；否则按固定补牌规则补第三张。', '闲赢赔 1:1；庄赢赔 0.95:1（免佣桌赔 1:1，但庄 6 点赢只赔一半；EZ 桌庄三张 7 点赢退本金）；和赔 8:1，和局时庄闲注退回。', '每局只能押庄或闲其中一边。', '边注：庄对/闲对 11:1、龙宝、小龙 16:1、大龙 33:1、小老虎 23:1、大老虎 54:1、龙7 40:1、熊猫8 25:1。长按下注格可看每一注的说明。', '牌从真实的 8 副牌靴发出，切牌出现后换新靴；牌路记录本靴每一手。'],
       ['Bet Player, Banker or Tie; closest to 9 wins. Tens and faces count 0, aces 1.', 'Player 1:1, Banker 0.95:1 (no-commission: 1:1, Banker 6 pays half), Tie 8:1.', 'Dealt from a real 8-deck shoe; the scoreboard records the shoe.']],
     mbacc: ['多人百家乐 Shared Baccarat', ['和其他玩家同桌：所有人看同一副牌靴、同一手牌、同一条牌路。', '倒计时内放筹码并按"确认下注"，可多次加注；倒计时结束停止下注，未确认的筹码会退回。', '开牌后按百家乐规则结算，结果、余额自动更新；可以看到在线人数和其他玩家的下注。', '赔率与普通百家乐相同（庄 0.95:1），每局只能押庄或闲其中一边。'],
       ['Everyone at the table shares the same shoe, hand and scoreboard.', 'Place chips and press BET during the countdown; you can add more until it ends.']],
@@ -54,15 +54,18 @@
   R.mroul = ['多人轮盘 Shared Roulette', ['和其他玩家同桌（欧式单 0 轮盘），大家押同一次开奖；倒计时内下注并按"确认下注"。'].concat(R.roulette[1]), R.roulette[2]];
   R.mbacc[1].push('咪牌：本局押庄或闲金额最大的玩家负责咪牌，其他人围观，咪完后大家一起开牌。', '桌上可以发快捷短语 💬 和其他玩家互动。');
   const COPY = '© 2026 万泰游戏开发 Wantai Game Development · 版权所有 All rights reserved.';
-  function html(tk, extra) { const r = R[tk]; if (!r) return '';
-    return '<div class="rz"><h3>' + r[0] + '</h3><ul>' + r[1].map(x => '<li>' + x + '</li>').join('') + '</ul><div class="rz-en">' + r[2].map(x => '<p>' + x + '</p>').join('') + '</div>' + (extra ? '<p class="rz-x">' + extra + '</p>' : '') + '</div>'; }
+  const LG = () => (window.LVLang && LVLang.get()) || 'bi', RT = (zh, en) => LG() === 'zh' ? zh : LG() === 'en' ? en : zh + ' · ' + en;
+  // title "中文 English" → one side; zh shows the Chinese list, en the English summary, 双语 both (as before)
+  const ttl = t => { const m = String(t).match(/^([^A-Za-z]+?)\s+([A-Za-z].*)$/); return !m ? t : LG() === 'zh' ? m[1] : LG() === 'en' ? m[2] : t; };
+  function html(tk, extra) { const r = R[tk]; if (!r) return ''; const L = LG();
+    return '<div class="rz"><h3>' + ttl(r[0]) + '</h3>' + (L !== 'en' ? '<ul>' + r[1].map(x => '<li>' + x + '</li>').join('') + '</ul>' : '') + (L !== 'zh' ? '<div class="rz-en' + (L === 'en' ? ' only' : '') + '">' + r[2].map(x => '<p>' + x + '</p>').join('') + '</div>' : '') + (extra ? '<p class="rz-x">' + extra + '</p>' : '') + '</div>'; }
   function show(tk, extra) { let o = document.getElementById('rulesOv'); if (!o) { o = document.createElement('div'); o.id = 'rulesOv'; document.body.appendChild(o); o.onclick = e => { if (e.target === o || e.target.closest('.rz-close')) o.classList.remove('show'); }; }
-    const all = !tk; o.innerHTML = '<div class="rz-box"><button class="rz-close">✕</button><h2>' + (all ? '规则中心 · Game rules' : '玩法规则 · How to play') + '</h2>' +
-      (all ? Object.keys(R).map(k => html(k)).join('') : html(tk, extra)) + (all ? '' : '<p class="rz-more"><a href="#" id="rzAll">查看全部游戏规则 · All game rules</a></p>') + '<p class="rz-c">' + COPY + '</p></div>';
+    const all = !tk; o.innerHTML = '<div class="rz-box"><button class="rz-close">✕</button><h2>' + (all ? RT('规则中心', 'Game rules') : RT('玩法规则', 'How to play')) + '</h2>' +
+      (all ? Object.keys(R).map(k => html(k)).join('') : html(tk, extra)) + (all ? '' : '<p class="rz-more"><a href="#" id="rzAll">' + RT('查看全部游戏规则', 'All game rules') + '</a></p>') + '<p class="rz-c">' + (LG() === 'zh' ? '© 2026 万泰游戏开发 · 版权所有' : LG() === 'en' ? '© 2026 Wantai Game Development · All rights reserved.' : COPY) + '</p></div>';
     o.classList.add('show'); const a = o.querySelector('#rzAll'); if (a) a.onclick = e => { e.preventDefault(); show(null); }; }
   const st = document.createElement('style'); st.textContent = '#rulesOv{position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:14px}#rulesOv.show{display:flex}' +
     '.rz-box{position:relative;max-width:640px;width:100%;max-height:86vh;overflow:auto;background:linear-gradient(#1b1030,#0d0818);border:2px solid #ffd60a;border-radius:16px;padding:18px 20px;color:#eee;font:14px/1.6 "Microsoft YaHei","PingFang SC",Arial,sans-serif}' +
-    '.rz-box h2{margin:0 0 10px;color:#ffd60a;font-size:20px}.rz h3{margin:14px 0 4px;color:#ffd60a;font-size:16px}.rz ul{margin:0;padding-left:20px}.rz li{margin:3px 0}.rz-en{opacity:.65;font-size:12px;margin-top:4px}.rz-en p{margin:2px 0}.rz-x{opacity:.75;font-size:12px}' +
+    '.rz-box h2{margin:0 0 10px;color:#ffd60a;font-size:20px}.rz h3{margin:14px 0 4px;color:#ffd60a;font-size:16px}.rz ul{margin:0;padding-left:20px}.rz li{margin:3px 0}.rz-en{opacity:.65;font-size:12px;margin-top:4px}.rz-en p{margin:2px 0}.rz-en.only{opacity:1;font-size:14px}.rz-x{opacity:.75;font-size:12px}' +
     '.rz-close{position:sticky;float:right;top:0;border:0;background:#ffd60a;color:#1a1200;border-radius:50%;width:30px;height:30px;font-weight:900;cursor:pointer}.rz-more a{color:#ffd60a}.rz-c{opacity:.5;font-size:11px;margin-top:14px}';
   document.head.appendChild(st);
   window.LVRules = { show, R };

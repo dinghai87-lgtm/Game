@@ -18,7 +18,7 @@
       const pts = cs => cs.reduce((a, c) => a + ({ A: 1, T: 0, J: 0, Q: 0, K: 0 }[c[0]] ?? +c[0]), 0) % 10;
       o.querySelector('#rpA').textContent = pts(v.P.slice(0, 2)); o.querySelector('#rpB').textContent = pts(v.B.slice(0, 2)); await wait(500);
       if (v.P[2]) { await add(L, v.P[2]); o.querySelector('#rpA').textContent = v.pt; } if (v.B[2]) { await add(Rr, v.B[2]); o.querySelector('#rpB').textContent = v.bt; } }
-    const W = { player: '闲赢 PLAYER WINS', banker: '庄赢 BANKER WINS', tie: '和局 TIE', dragon: '龙赢 DRAGON WINS', tiger: '虎赢 TIGER WINS' };
+    const LG = (window.LVLang && LVLang.get()) || 'bi', W0 = { player: ['闲赢', 'PLAYER WINS'], banker: ['庄赢', 'BANKER WINS'], tie: ['和局', 'TIE'], dragon: ['龙赢', 'DRAGON WINS'], tiger: ['虎赢', 'TIGER WINS'] }, W = {}; for (const k in W0) W[k] = LG === 'zh' ? W0[k][0] : LG === 'en' ? W0[k][1] : W0[k].join(' ');
     o.querySelector('#rpRes').textContent = W[v.win] || v.win;
   }
   const st = document.createElement('style'); st.textContent = '#rpOv{position:fixed;inset:0;z-index:9600;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:14px}#rpOv.show{display:flex}' +

@@ -588,3 +588,6 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 67 (04:06) — Gamble (博倍) and daily reward screens in Chinese
 - Won on Lucky 777, opened 博倍 and played it: the whole gamble card screen was English in 中文 mode (instructions, RED/BLACK x2, COLLECT, "5 gambles left…", win/lose lines) → translated. Daily-reward dialog (title, streak note, Day N, Collect N / come back tomorrow) translated too. sw lv-v148. Tests 90/90.
+
+## Round 68 (04:13) — Source sweep for untranslated UI text
+- Wrote a checker that pulls every English UI string out of the slot / feature / lobby / account code and runs it through the 中文 dictionary. ~110 strings had no translation; added them (feature banners MYSTERY! / WILD REELS! / PICK BONUS! / wheel names, out-of-coins dialog, ante/turbo toasts, autoplay stop reasons, account email/phone verification, password reset, delete-account, notifications, first-run tour, reality-check reminder, lobby search/empty states). Re-ran the feature buy flow, auth and dock panels: no errors. sw lv-v149. Tests 90/90.

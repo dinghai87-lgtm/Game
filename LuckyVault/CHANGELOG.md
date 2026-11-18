@@ -603,3 +603,7 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## Round 72 (04:44) — Lobby animations pause while you play
 - The hidden lobby kept ~60 animations running behind every game and table (marquee bulbs, sign flicker, hero sparkles, dock pulse). They now pause while a game/table is open and resume on return (61 → 7 while playing → 62 back in lobby). Less battery and smoother reels on phones. sw lv-v154. Tests 90/90.
+
+## Round 73 (04:58) — Reels at 60 fps on a slowed phone
+- Profiled spins on a 3× pixel-density phone with the CPU slowed 6×. Three costs found: the win-particle canvas was sized at 3× pixel density over the whole board (millions of pixels cleared every frame) → capped at 1.5×; its size was re-measured on every burst (forced layout) → cached with a ResizeObserver; the hidden lobby's hero carousel kept auto-scrolling behind the game → paused while playing; the new tile observer no longer rescans on every reel change.
+- Result: median frame while spinning 50 ms → 17 ms (60 fps) on Lucky 777, Thunder Temple and Dragon Fortune Link; worst long task down ~40%. Visuals unchanged. sw lv-v156. Tests 90/90.

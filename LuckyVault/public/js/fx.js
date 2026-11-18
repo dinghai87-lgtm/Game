@@ -63,7 +63,9 @@
   // ---------- particles over the board ----------
   const wrap = document.getElementById('boardWrap'); const cv = document.createElement('canvas'); cv.id = 'fxCv'; wrap.appendChild(cv); const cx = cv.getContext('2d');
   const P = []; let running = false;
-  function sizeCv() { const w = wrap.offsetWidth + 120, h = wrap.offsetHeight + 120, d = devicePixelRatio || 1; if (cv.width !== w * d) { cv.width = w * d; cv.height = h * d; cv.style.width = w + 'px'; cv.style.height = h + 'px'; } }
+  const CDPR = () => Math.min(1.5, devicePixelRatio || 1);   // particle canvas: sharp enough, far cheaper than 3x on phones
+  let WS = null; if ('ResizeObserver' in window) new ResizeObserver(es => { const r = es[0].contentRect; WS = [Math.round(r.width), Math.round(r.height)]; }).observe(wrap);   // cached size: no forced layout on every burst
+  function sizeCv() { const w = (WS ? WS[0] : wrap.offsetWidth) + 120, h = (WS ? WS[1] : wrap.offsetHeight) + 120, d = CDPR(); if (cv.width !== w * d) { cv.width = w * d; cv.height = h * d; cv.style.width = w + 'px'; cv.style.height = h + 'px'; } }
   function burst(x, y, n, hue) {
     if (RM) return; sizeCv();
     for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, sp = 1.5 + Math.random() * 4.5; P.push({ x: x + 60, y: y + 60, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 1.5, life: 1, decay: .012 + Math.random() * .02, r: 1.5 + Math.random() * 3, h: hue == null ? 40 + Math.random() * 20 : hue, star: Math.random() < .35 }); }
@@ -71,7 +73,7 @@
   }
   function star(x, y, r) { cx.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, rr = i % 2 ? r * .35 : r * 1.6; cx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } cx.closePath(); cx.fill(); }
   function loop() {
-    const d = devicePixelRatio || 1; cx.setTransform(d, 0, 0, d, 0, 0); cx.clearRect(0, 0, cv.width, cv.height); cx.globalCompositeOperation = 'lighter';
+    const d = CDPR(); cx.setTransform(d, 0, 0, d, 0, 0); cx.clearRect(0, 0, cv.width, cv.height); cx.globalCompositeOperation = 'lighter';
     for (let i = P.length - 1; i >= 0; i--) { const p = P[i]; p.x += p.vx; p.y += p.vy; p.vy += .08; p.vx *= .985; p.life -= p.decay; if (p.life <= 0) { P.splice(i, 1); continue; }
       cx.fillStyle = 'hsla(' + p.h + ',100%,' + (60 + p.life * 30) + '%,' + p.life + ')'; if (p.star) star(p.x, p.y, p.r); else { cx.beginPath(); cx.arc(p.x, p.y, p.r * p.life + .5, 0, 7); cx.fill(); } }
     cx.globalCompositeOperation = 'source-over';
@@ -151,7 +153,7 @@
     const cur = () => { let best = 0, bd = 1e9; [...heros.children].forEach((h, i) => { const d = Math.abs(h.offsetLeft - 14 - heros.scrollLeft); if (d < bd) { bd = d; best = i; } }); return best; };
     heros.addEventListener('scroll', () => { const c = cur(); [...dots.children].forEach((d, i) => d.classList.toggle('on', i === c)); }, { passive: true });
     dots.children[0] && dots.children[0].classList.add('on');
-    setInterval(() => { if (Date.now() < hold || heros.offsetParent === null || document.hidden) return; if (heros.scrollWidth <= heros.clientWidth + 20) return; go((cur() + 1) % n); }, 5000);
+    setInterval(() => { if (Date.now() < hold || heros.offsetParent === null || document.hidden || document.querySelector('#game.show,#table.show')) return; if (heros.scrollWidth <= heros.clientWidth + 20) return; go((cur() + 1) % n); }, 5000);
   }
 })();
 
@@ -159,4 +161,5 @@
 (function () { if (!('IntersectionObserver' in window)) { document.documentElement.classList.add('noio'); return; }
   const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('onscr', e.isIntersecting)), { rootMargin: '60px' });
   const seen = new WeakSet(); const scan = () => document.querySelectorAll('.tile, #vgSky').forEach(t => { if (!seen.has(t)) { seen.add(t); io.observe(t); } });
-  new MutationObserver(() => scan()).observe(document.body, { childList: true, subtree: true }); scan(); })();
+  let q = 0; const lob = document.getElementById('lobby') || document.body;
+  new MutationObserver(() => { if (q) return; q = setTimeout(() => { q = 0; scan(); }, 300); }).observe(lob, { childList: true, subtree: true }); scan(); })();

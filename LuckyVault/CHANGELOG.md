@@ -387,3 +387,6 @@ Platform release: everything on the "do all of these" list except the public dep
 
 ## Round 19 (18:55) — Space / robot group de-duplicated
 - 5 games shared the same rocket lows and purple enemy ships. Each now has its own low set (painted space gems / player ships) and its own ship colour (sprite animations recoloured too) + new covers. sw lv-v75. Tests 90/90.
+
+## Round 20 (19:00) — Cosmic Candy & Mayan Mystery own sets
+- Cosmic Candy shared 9/11 with Candy Carnival -> lollipops / ice-cream set. Mayan Mystery shared 9/11 with Aztec Treasure Link -> stone-age ritual set (skull, fire pit, horn, roots, berries, mushrooms, herbs). New covers. sw lv-v76. Tests 90/90.

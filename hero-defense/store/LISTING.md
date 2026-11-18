@@ -42,6 +42,9 @@
 • 无尽模式与每周排行，和全球玩家比拼
 • 每日签到、离线收益、任务和成就，碎片时间也能成长
 • 伤害统计面板，看清每座塔和每位英雄的贡献
+• 英雄羁绊与合击：两位搭档同场，战斗中放出双人大招
+• 每日首领讨伐、每周三岛远征、9 道残局解谜，还能自己做关卡发给朋友挑战
+• 英雄天赋、宠物伙伴、巅峰塔合体、塔的熟练度，养成路线丰富
 • 支持简体中文、繁體中文、English、日本語、한국어、Español
 
 无需联网也能游玩；联网后自动云端备份存档。
@@ -67,6 +70,8 @@
 • 無盡模式與每週排行
 • 每日簽到、離線收益、任務和成就
 • 傷害統計面板
+• 英雄羈絆與合擊、每日首領討伐、每週遠征、殘局解謎、自製關卡分享
+• 英雄天賦、寵物夥伴、巔峰塔合體
 • 支援簡體中文、繁體中文、English、日本語、한국어、Español
 
 無需連網也能遊玩；連網後自動雲端備份存檔。
@@ -92,6 +97,9 @@ In Hero Defense you build towers along the road, send heroes to the front line a
 • Endless mode with weekly leaderboards
 • Daily sign-in, offline earnings, quests and achievements
 • Damage stats panel showing what every tower and hero contributed
+• Bond Combos: pair the right heroes and unleash a two-hero ultimate
+• Daily Boss Raid, weekly 3-island Odyssey, Last Stand puzzles — and build your own stages to share with friends
+• Hero talents, pet companions, Paragon tower merges and tower mastery
 • Languages: English, 简体中文, 繁體中文, 日本語, 한국어, Español
 
 Play offline any time; your progress is backed up to the cloud when you're online.
@@ -117,6 +125,8 @@ Play offline any time; your progress is backed up to the cloud when you're onlin
 • エンドレスモードと週間ランキング
 • 毎日ログインボーナス、放置報酬、クエスト、実績
 • ダメージ統計パネル
+• 絆の合体技、毎日のボス討伐、週替わり遠征、詰め防衛、自作ステージの共有
+• 英雄の天賦、ペット、極致タワー合体
 • 対応言語：日本語、English、简体中文、繁體中文、한국어、Español
 
 オフラインでもプレイ可能。オンライン時はクラウドに自動バックアップ。
@@ -142,6 +152,8 @@ Play offline any time; your progress is backed up to the cloud when you're onlin
 • 무한 모드와 주간 랭킹
 • 매일 출석, 오프라인 보상, 퀘스트와 업적
 • 피해 통계 패널
+• 인연 합격, 매일 보스 토벌, 주간 원정, 퍼즐, 자작 스테이지 공유
+• 영웅 특성, 펫, 정점 탑 합체
 • 지원 언어: 한국어, English, 简体中文, 繁體中文, 日本語, Español
 
 오프라인에서도 플레이 가능, 온라인일 때 클라우드에 자동 백업됩니다.
@@ -167,6 +179,8 @@ Construye torres a lo largo del camino, envía héroes al frente y lanza sus hab
 • Modo infinito con clasificación semanal
 • Recompensa diaria, ganancias sin conexión, misiones y logros
 • Panel de estadísticas de daño
+• Combos de vínculo, asalto diario al jefe, odisea semanal, puzles y fases propias para compartir
+• Talentos de héroes, mascotas y fusión de torres Paragón
 • Idiomas: Español, English, 简体中文, 繁體中文, 日本語, 한국어
 
 Juega sin conexión cuando quieras; tu progreso se guarda en la nube al conectarte.

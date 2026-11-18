@@ -208,6 +208,10 @@ Object.assign(I18N.en,{"速建令":"Insta Tower","获得速建令":"Insta Towers
 Object.assign(I18N.ja,{"速建令":"即建令","获得速建令":"即建令を獲得","建塔时选中这种塔，点「使用速建令」直接放下高等级塔":"建設時にその塔を選び「即建令を使う」で高レベルの塔を即配置","使用速建令":"即建令を使う","随机速建令 Lv4 ×2":"ランダム即建令 Lv4 ×2","库存 {n} 张，建塔时可直接用":"在庫 {n} 枚、建設時に使用可能"});
 Object.assign(I18N.ko,{"速建令":"즉시 건설권","获得速建令":"즉시 건설권 획득","建塔时选中这种塔，点「使用速建令」直接放下高等级塔":"건설 시 해당 탑을 고르고 「즉시 건설권 사용」으로 고레벨 탑 바로 배치","使用速建令":"즉시 건설권 사용","随机速建令 Lv4 ×2":"랜덤 즉시 건설권 Lv4 ×2","库存 {n} 张，建塔时可直接用":"보유 {n}장, 건설 시 사용 가능"});
 Object.assign(I18N.es,{"速建令":"Torre instantánea","获得速建令":"Torres instantáneas obtenidas","建塔时选中这种塔，点「使用速建令」直接放下高等级塔":"Al construir, elige esa torre y toca «Usar torre instantánea» para colocarla ya mejorada","使用速建令":"Usar torre instantánea","随机速建令 Lv4 ×2":"2 torres instantáneas al azar (Nv4)","库存 {n} 张，建塔时可直接用":"{n} en reserva: úsalas al construir"});
+Object.assign(I18N.en,{"更多":"More","更多设置":"More Settings","英雄台词":"Hero lines","终结慢镜头":"Finishing slow-mo","下雪特效":"Snow effect","粒子特效":"Particle effects","震动":"Vibration"});
+Object.assign(I18N.ja,{"更多":"その他","更多设置":"その他の設定","英雄台词":"英雄のセリフ","终结慢镜头":"とどめのスロー演出","下雪特效":"雪のエフェクト","粒子特效":"パーティクル演出","震动":"振動"});
+Object.assign(I18N.ko,{"更多":"더보기","更多设置":"추가 설정","英雄台词":"영웅 대사","终结慢镜头":"마무리 슬로모션","下雪特效":"눈 효과","粒子特效":"파티클 효과","震动":"진동"});
+Object.assign(I18N.es,{"更多":"Más","更多设置":"Más ajustes","英雄台词":"Frases de héroes","终结慢镜头":"Cámara lenta final","下雪特效":"Efecto de nieve","粒子特效":"Partículas","震动":"Vibración"});
 
 'use strict';
 // ====================== 基础 ======================
@@ -2981,7 +2985,7 @@ let winterPop=false;
 (function(){
   const kl=killEnemy;killEnemy=function(e){const was=!e.dead;kl(e);try{if(was&&wOn()&&Math.random()<(e.D.boss?1:e.aff?.25:.04)){const n=e.D.boss?5:1;wSave().candy+=n;G.candyRun=(G.candyRun||0)+n;floatText('🍬+'+n,e.x,e.y-70,'#ff9bd2',.8)}}catch(_){}};
   const eb=endBattle;endBattle=function(win){const first=G&&!G.over;eb(win);try{if(first&&win&&wOn()){wSave().candy+=5;G.candyRun=(G.candyRun||0)+5;save();setTimeout(()=>{try{showToast('❄ '+TR('冬日庆典')+'  🍬+'+G.candyRun)}catch(_){}},2200)}}catch(_){}};
-  const be=battleExtra;battleExtra=function(t){be(t);try{if(!wOn()||scene!=='battle'||LOWQ)return;const T=performance.now()/1000;ctx.save();ctx.fillStyle='rgba(255,255,255,.75)';for(let i=0;i<46;i++){const sx=(i*137.5+T*(18+i%5*6))%(W+40)-20,sy=(i*71.3+T*(40+i%7*9))%(H+20)-10;ctx.beginPath();ctx.arc(sx+Math.sin(T+i)*8,sy,1.4+i%3*.7,0,7);ctx.fill()}ctx.restore()}catch(_){}};
+  const be=battleExtra;battleExtra=function(t){be(t);try{if(!wOn()||scene!=='battle'||LOWQ||SAVE.snowOff)return;const T=performance.now()/1000;ctx.save();ctx.fillStyle='rgba(255,255,255,.75)';for(let i=0;i<46;i++){const sx=(i*137.5+T*(18+i%5*6))%(W+40)-20,sy=(i*71.3+T*(40+i%7*9))%(H+20)-10;ctx.beginPath();ctx.arc(sx+Math.sin(T+i)*8,sy,1.4+i%3*.7,0,7);ctx.fill()}ctx.restore()}catch(_){}};
   const ml=metaLevels;metaLevels=function(){ml.apply(this,arguments);try{if(!wOn())return;const x=140,y=(SAVE.installHide||isStandalone())?124:164,w=200,h=36,t=performance.now()/1000;ctx.save();ctx.shadowColor='#9be7ff';ctx.shadowBlur=8+6*Math.sin(t*2.4);ctx.fillStyle='rgba(20,60,110,.92)';rr(x,y,w,h,12);ctx.fill();ctx.restore();ctx.strokeStyle='#cfefff';ctx.lineWidth=1.5;rr(x,y,w,h,12);ctx.stroke();
     fitTxt('❄ '+TR('冬日庆典')+'  🍬 '+wSave().candy,x+w/2,y+h/2+.5,14,w-14,'#fff','center',2);hit(x,y,w,h,()=>{winterPop=true;AUD.sfx('open')})}catch(e){console.error(e)}};
   if(window.__api)Object.assign(window.__api,{killEnemy,endBattle});
@@ -3238,6 +3242,18 @@ function instaUse(i,t){const l=instaBest(t);if(!l)return;const S=instaSave(),k=i
   if(window.__api)Object.assign(window.__api,{update,killEnemy});
 })();
 
+// ====================== 更多设置：新加的演出效果都可以单独开关 ======================
+let morePop=false;
+const FX_OPT=[['barkOff','英雄台词',true],['slowOff','终结慢镜头',true],['snowOff','下雪特效',true],['kfxOff','粒子特效',true],['vib','震动',false]];
+const optOn=(k,inv)=>inv?!SAVE[k]:SAVE[k]!==false;
+(function(){
+  const ds=drawSettings;drawSettings=function(){ds.apply(this,arguments);try{const x=W/2-260,y=H/2-300,w=520;button(TR('更多')+' ▸',x+w-150,y+52,120,38,()=>{morePop=true;AUD.sfx('open')},{style:'blue',size:15});if(morePop)drawMore()}catch(e){console.error(e)}};
+  const kf=kfx;kfx=function(){if(SAVE.kfxOff)return;return kf.apply(this,arguments)};
+  const up=update;update=function(dt){if(SAVE.slowOff&&G&&G.slowmo>0){G.slowmo=0;G.slowFx=null}return up(dt)};
+})();
+function drawMore(){ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(0,0,W,H);hit(0,0,W,H,()=>{morePop=false});const w=460,h=110+FX_OPT.length*62,x=W/2-w/2,y=H/2-h/2;panel(x,y,w,h,TR('更多设置'));hit(x,y,w,h,()=>{});
+  FX_OPT.forEach(([k,n,inv],i)=>{const yy=y+90+i*62,on=optOn(k,inv);fitTxt(TR(n),x+50,yy,19,220,'#fff','left',3);button(on?TR('开'):TR('关'),x+w-170,yy-22,120,44,()=>{if(inv)SAVE[k]=!SAVE[k];else SAVE[k]=SAVE[k]===false?true:false;save();AUD.sfx('click')},{style:on?'green':'gray',size:17})})}
+
 // ====================== 内测后台（Supabase） ======================
 // 匿名登录：每台设备一个匿名账号，不需要玩家注册。
 // 存档备份 / 反馈 / 无尽排行榜 / 数据统计。
@@ -3280,7 +3296,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1794981141';
+const BUILD_VER='1794981279';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

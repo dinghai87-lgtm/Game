@@ -18,5 +18,7 @@ distribution or commercial use without written permission.
 - Sonniss #GameAudioGDC 2026 Bundle（洗牌机、烟花、人群欢呼、酒吧人声、魔法铃声、金币声、彩纸、进入游戏提示、咪牌刮擦声、成就/成功提示、错误提示、头奖魔法音效）— Sonniss 免版税授权，可商用、无需署名；不得单独转售或分发音效文件、不得用于 AI 训练
 - OpenGameArt.org「Win Jingle」（6 段中奖乐句）— CC0 1.0 公共领域
 - CraftPix.net 老虎机与赌场素材包 — 已购买商业授权
+- 老虎机主题背景音乐（15 首）：Abstraction / Tallbeard Studios「Music Loop Bundle」— CC0 1.0 公共领域，可商用、无需署名
+- 部分老虎机图案、存钱猪/礼包图标：CraftPix.net 会员素材 — 商业授权
 Some sound and art assets come from third parties and are used under their own licences; they remain
 the property of their authors (e.g. Kenney sound packs, CC0 1.0).

@@ -359,3 +359,4 @@ Platform release: everything on the "do all of these" list except the public dep
 - High-limit bets now unlock with level (500@L3, 1,000@L5, 2,000@L8, 5,000@L10), enforced server-side; locked + button shows 🔒.
 - New: lobby big-win ticker (wins ≥2,000 and ≥20× bet, names masked, tap to open the game).
 - New: welcome-back gift — away 3+ days → 2,000 coins (+500/day, max 5,000), once a week; server-side, ledger type 'comeback'.
+- Theme music: 15 slot families now use real composed loops (Abstraction/Tallbeard Music Loop Bundle, CC0), loudness-normalised.

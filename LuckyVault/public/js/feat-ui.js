@@ -4,6 +4,9 @@
    and the double-up gamble. The server decides every outcome; this file only animates it. */
 (function () {
   'use strict';
+  // wild-reel stamps stay until the reels move again
+  const clrWS = () => document.querySelectorAll('.reel.wildstay').forEach(r => r.classList.remove('wildstay'));
+  document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#spin')) clrWS(); }, true);
   const css = document.createElement('style');
   css.textContent = `
 .myst .in{background:linear-gradient(145deg,#5b21b6,#1e1b4b)!important;box-shadow:inset 0 0 0 2px #c4b5fd,inset 0 0 0 4px #4c1d95,0 0 14px rgba(167,139,250,.7)!important;color:#fde68a;font-family:Anton,Impact,"Arial Black",sans-serif;font-size:calc(var(--cell)*.6)!important;text-shadow:0 3px 0 #000}
@@ -12,7 +15,7 @@
 .wx{position:absolute;right:4%;top:4%;background:linear-gradient(#ff4d6d,#9d0208);color:#fff;font:900 calc(var(--cell)*.17)/1 Anton,Impact,"Arial Black",sans-serif;padding:3px 5px;border-radius:7px;box-shadow:0 0 0 2px #ffd447,0 2px 6px #000;z-index:4}
 .cell.grow .in{animation:growW .45s cubic-bezier(.3,1.6,.5,1)}
 @keyframes growW{0%{transform:scale(.2);opacity:.2}100%{transform:scale(1);opacity:1}}
-.reel.wildglow{box-shadow:0 0 0 3px #ffd447,0 0 30px 8px rgba(255,200,61,.8);transition:box-shadow .2s}
+.reel.wildglow{box-shadow:0 0 0 3px #ffd447,0 0 30px 8px rgba(255,200,61,.8);transition:box-shadow .2s}.reel.wildstay{box-shadow:0 0 0 3px #ffd447,0 0 22px 4px rgba(255,200,61,.6)}#board .reel.wildstay::after{content:attr(data-wl)!important;position:absolute;inset:4px;z-index:5;display:flex;align-items:center;justify-content:center;white-space:pre;text-align:center;line-height:1.05;font:900 calc(var(--cell) * .42)/1.05 'Lilita One','Arial Black',sans-serif;color:#ffe27a;-webkit-text-stroke:2px #6b3a00;paint-order:stroke fill;text-shadow:0 0 12px rgba(255,190,40,.9);background:linear-gradient(rgba(255,200,60,.28),rgba(255,140,0,.16) 50%,rgba(255,200,60,.28));border-radius:6px;pointer-events:none;animation:wsIn .35s ease-out}@keyframes wsIn{from{opacity:0;transform:scaleY(.6)}to{opacity:1;transform:none}}
 .cell.sticky .in{box-shadow:inset 0 0 0 3px #22d3ee,0 0 16px rgba(34,211,238,.9)!important}
 .cell.sticky .in::before{content:"STICKY";position:absolute;top:4%;left:0;right:0;text-align:center;font:900 calc(var(--cell)*.11)/1 "Arial Black",sans-serif;color:#cffafe;text-shadow:0 1px 2px #000;background:none!important;height:auto!important;z-index:5}
 .bolt{position:absolute;pointer-events:none;z-index:8;width:6px;background:linear-gradient(#fff,#a5f3fc,#fff);box-shadow:0 0 12px #a5f3fc,0 0 30px #fff;transform-origin:top;animation:bolt .35s ease-out forwards}
@@ -130,7 +133,7 @@ body.lowfx .cell.win .in::after{animation:none!important;display:none!important}
       for (const [c, r] of f.cells) { const p = v.cellPos(c, r); const b = document.createElement('div'); b.className = 'bolt'; b.style.left = (p[0] + 1) + 'px'; b.style.top = '-40px'; b.style.height = (p[1] + 44) + 'px'; wrap.appendChild(b); setTimeout(() => b.remove(), 400); setCell(v, c, r, fin[c][r], 'grow'); if (window.LVFX) LVFX.burst(p[0] + 4, p[1] + 4, 14, 190); await wait(tb ? 60 : 160); }
       await wait(tb ? 200 : 500);
     }
-    else if (f.t === 'wildreel') { floatTxt('WILD REELS!', 1100); sfx.mult(); for (const c of f.reels) { if (v.reels && v.reels[c]) v.reels[c].r.classList.add('wildglow'); for (let r = 0; r < fin[c].length; r++) setCell(v, c, r, fin[c][r], 'grow'); await wait(tb ? 120 : 300); } await wait(tb ? 200 : 600); (v.reels || []).forEach(x => x.r.classList.remove('wildglow')); }
+    else if (f.t === 'wildreel') { floatTxt('WILD REELS!', 1100); sfx.mult(); for (const c of f.reels) { if (v.reels && v.reels[c]) v.reels[c].r.classList.add('wildglow'); for (let r = 0; r < fin[c].length; r++) setCell(v, c, r, fin[c][r], 'grow'); await wait(tb ? 120 : 300); } await wait(tb ? 200 : 600); (v.reels || []).forEach(x => x.r.classList.remove('wildglow')); const zh = !window.LVLang || LVLang.get() !== 'en'; for (const c of f.reels) if (v.reels && v.reels[c]) { const r = v.reels[c].r; r.dataset.wl = zh ? '百\n搭' : 'W\nI\nL\nD'; r.classList.add('wildstay'); } }
     else if (f.t === 'expand') { sfx.mult(); floatTxt('EXPANDING WILD!', 900); for (const c of f.reels) { if (v.reels && v.reels[c]) v.reels[c].r.classList.add('wildglow'); for (let r = 0; r < fin[c].length; r++) setCell(v, c, r, fin[c][r], 'grow'); await wait(tb ? 100 : 250); } await wait(tb ? 150 : 400); (v.reels || []).forEach(x => x.r.classList.remove('wildglow')); }
     else if (f.t === 'wmult') { for (const [c, r] of f.cells) { setCell(v, c, r, fin[c][r], 'grow'); sfx.pop(); await wait(tb ? 60 : 180); } }
     else if (f.t === 'colossal') {

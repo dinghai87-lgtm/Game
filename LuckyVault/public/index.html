@@ -713,7 +713,7 @@ async function detectServer(){API.base=(window.LV_CONFIG&&LV_CONFIG.server||'').
 function setUser(me){API.user=me.user;S.bal=me.user.bal;S.fs=me.user.fs||null;if(me.user.xp!=null)S.xp=me.user.xp;setBal();renderAuth();paintLevel()}
 function needLogin(){if(API.mode==='server'&&!API.user){openAuth();return true}return false}
 
-async function doSpin(buy){if(T.busy||!T.g)return;if(T.pend&&window.LVF)LVF.collect(true);const g=T.g,m=E.MATH[g.mk||g.e];
+async function doSpin(buy){if(T.busy||!T.g)return;document.querySelectorAll(".reel.wildstay").forEach(r=>r.classList.remove("wildstay"));if(T.pend&&window.LVF)LVF.collect(true);const g=T.g,m=E.MATH[g.mk||g.e];
  T.busy=true;T.quick=false;updUI();clearHL();clearInterval(T.lineTimer);
  if(!T.fs)while(S.bi>0&&!betOk(S.bi))S.bi--;const ante=!buy&&!!S.ante&&!!m.ante;let r;try{r=await API.spin(g.id,BETS[S.bi],!!buy,ante)}catch(err){r={err:'net',msg:'Connection lost. Please retry.'}}
  if(r.err){T.busy=false;T.auto=0;updUI();if(r.err==='funds')outOfCredits();else toast(r.msg||r.err);return}

@@ -695,7 +695,7 @@ function updUI(){setBal();document.body.classList.toggle('spinning',!!(T.g&&T.bu
  const fb=$('#fsBanner');fb.classList.toggle('show',!!T.fs);
  const hw=T.g.e==='holdwin';$('#hwBar').classList.toggle('show',hw);if(hw){document.querySelectorAll('#hwBar .lkn').forEach(e=>e.textContent=LKN(e.dataset.k));$('#jpG').textContent=shortN(E.JP.GRAND*bet);$('#jpMa').textContent=shortN(E.JP.MAJOR*bet);$('#jpMi').textContent=shortN(E.JP.MINOR*bet);$('#jpMn').textContent=shortN(E.JP.MINI*bet);}
  if(T.fs){$('#fsLeft').textContent=T.fs.left;$('#fsWin').textContent=fmt(T.fs.total);const showM=T.g.e!=='reel';$('#fsMult').textContent=T.fs.mult?'x'+T.fs.mult:'—';
-  $('#fsMultBox').style.display=(T.g.e==='tumble'||T.g.e==='cluster')?'':'none';if(T.g.e==='lines'||T.g.e==='ways'){$('#fsMultBox').style.display='';$('#fsMult').textContent='x'+m.fsMult}}}
+  $('#fsMultBox').style.display=(T.g.e==='tumble'||T.g.e==='cluster')?'':'none';if((T.g.e==='lines'||T.g.e==='ways')&&(T.fs.mult||m.fsMult)>1){$('#fsMultBox').style.display='';$('#fsMult').textContent='x'+(T.fs.mult||m.fsMult)}}}
 
 // ===================== BACKEND (server or local demo) =====================
 function devId(){try{let d=localStorage.getItem('lv_dev');if(!d){d=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2));localStorage.setItem('lv_dev',d)}return d}catch(e){return''}}

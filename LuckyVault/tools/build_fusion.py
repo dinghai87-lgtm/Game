@@ -103,12 +103,19 @@ G = {
  'lucky-panda-link': dict(src=P(MK, 28, 30, 32, 3, 11, 33, 31, 8, 5) + [None, None], tile=(185, 28, 28), glow=(255, 120, 90)),
  # Sun God Ra: 5/9 identical to pharaoh-gold -> gold sun amulet, chalice and gold bands
  'sun-god-ra': dict(src=P(MT, 4) + P(RG, 1) + P(MT, 8) + P(RG, 5) + [None] * 7, glow=(255, 170, 70)),
+ # ---- batch 5 ----
+ # Thor's Hammer: lows shared with viking-raid -> stone-age catch & trophies (dried fish, pelt, tusks, tooth, log)
+ 'thor-s-hammer': dict(src=[None] * 4 + P(SA, 47, 12, 10, 49, 11) + [None, None], glow=(120, 170, 255)),
+ # Titans Colossal: 5 dragon-loot icons shared with golden-dragon -> colossal beast parts (demon, spiked tail, dragon claw, horn)
+ 'titans-colossal': dict(src=P(CLAW, 12, 43, 17, 11) + [None] * 7, glow=(255, 140, 60)),
+ # Diamond Strike: lows shared with star-gems -> raw crystal clusters
+ 'diamond-strike': dict(src=[None] * 4 + P(HQ, 23, 49, 46) + [None] * 4, glow=(220, 230, 255)),
 }
 todo = sys.argv[1:] or list(G)
 for slug in todo:
     g = G[slug]; d = A + 'games/' + slug + '/'; e = man['games'][slug]
     for k, s in zip(K, g['src']):
-        if not s: continue
+        if not s or 'sym_' + k not in e: continue
         (tile(s, d + k + '.webp', g['tile']) if g.get('tile') else sym(s, d + k + '.webp')); e['sym_' + k] = k + '.webp'
         if k.startswith('h'): e.pop('anim_' + k, None); e.pop('animN_' + k, None)
     if g.get('hue'):

@@ -62,6 +62,7 @@ def hue(dst, deg):
     im = Image.open(dst).convert('RGBA'); a = im.split()[3]; h, s_, v = im.convert('RGB').convert('HSV').split()
     h = h.point(lambda x: (x + int(deg * 255 / 360)) % 256); out = Image.merge('HSV', (h, s_, v)).convert('RGB').convert('RGBA'); out.putalpha(a); out.save(dst, 'WEBP', quality=90)
 SA = CP + 'rpg-stone-age-game-512x512-icons/PNG/without background/'
+FR = CP + 'fruits-berries-vegetables-icon-512x512-set/PNG/without background/'
 MK = CP + 'rpg-monk-skill-game-icons/PNG/'
 FL = CP + 'fairy-loot-game-icons/PNG/without_shadow/'
 K = ['h1', 'h2', 'h3', 'h4', 'l1', 'l2', 'l3', 'l4', 'l5', 'W', 'S']
@@ -110,6 +111,9 @@ G = {
  'titans-colossal': dict(src=P(CLAW, 12, 43, 17, 11) + [None] * 7, glow=(255, 140, 60)),
  # Diamond Strike: lows shared with star-gems -> raw crystal clusters
  'diamond-strike': dict(src=[None] * 4 + P(HQ, 23, 49, 46) + [None] * 4, glow=(220, 230, 255)),
+ # ---- batch 6: classic fruit trio shared one kit (7/9 identical) -> 7+BAR recoloured, fruits from the 512 painted set ----
+ 'vegas-wheel-7s': dict(src=[None, None] + P(FR, 43, 13, 15, 29, 46) + [None] * 4, hue=(230, ['h1', 'h2']), glow=(150, 160, 255)),
+ 'triple-fortune-wilds': dict(src=[None, None] + P(FR, 44, 16, 30, 31, 35) + [None] * 4, hue=(140, ['h1', 'h2']), glow=(120, 255, 190)),
 }
 todo = sys.argv[1:] or list(G)
 for slug in todo:

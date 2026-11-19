@@ -1,0 +1,24 @@
+{
+ "name": "VANTAX POKER 万泰扑克 免费娱乐版",
+ "short_name": "万泰扑克",
+ "start_url": "/poker/",
+ "scope": "/poker/",
+ "display": "standalone",
+ "background_color": "#0b1728",
+ "theme_color": "#0b1728",
+ "lang": "zh-CN",
+ "icons": [
+  {
+   "src": "/poker/vp-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any maskable"
+  },
+  {
+   "src": "/poker/vp-logo-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}

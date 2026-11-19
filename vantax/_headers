@@ -12,3 +12,16 @@
   Cache-Control: public, max-age=31536000, immutable
 /img/*
   Cache-Control: public, max-age=604800
+/poker/
+  Cache-Control: no-cache
+/poker/club/
+  Cache-Control: no-cache
+/poker/assets.js
+  Content-Type: application/javascript
+  Cache-Control: public, max-age=31536000, immutable
+/poker/sw.js
+  Content-Type: application/javascript
+  Cache-Control: no-cache
+/poker/*.webmanifest
+  Content-Type: application/manifest+json
+  Cache-Control: no-cache

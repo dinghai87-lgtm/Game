@@ -203,17 +203,17 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .J1::before,.J2::before,.J3::before,.J4::before,.J5::before{border-radius:inherit;inset:10% 18% 45% 18%;background:linear-gradient(rgba(255,255,255,.6),rgba(255,255,255,0))}
 
 .coinc .in{border-radius:50%;width:84%;height:84%;background:radial-gradient(circle at 35% 30%,#fff6c2,#ffd447 35%,#e09b00 70%,#8a5200);box-shadow:inset 0 0 0 3px #ffe9a3,inset 0 0 0 6px #c27c0e,0 0 14px rgba(255,200,61,.8);font-family:Anton,Impact,"Arial Black",sans-serif;font-size:calc(var(--cell) * .24);color:#5a2d00;text-shadow:0 1px 0 #fff3}
-.coinc.jp .in{background:radial-gradient(circle at 35% 30%,#fff,#ff8fa3 35%,#d90429 72%,#5a0010);color:#fff;text-shadow:0 1px 2px #000;font-size:calc(var(--cell) * .17)}
-.coinc.jp-MINOR .in{background:radial-gradient(circle at 35% 30%,#fff,#8fd3ff 35%,#0077ff 72%,#002a66)}
+.coinc.jp .in{background:radial-gradient(circle at 35% 30%,#fff3e0,#e8a66a 35%,#a0521d 72%,#3d1a05);color:#fff;text-shadow:0 1px 2px #000;font-size:calc(var(--cell) * .17)}
+.coinc.jp-MINOR .in{background:radial-gradient(circle at 35% 30%,#fff,#e6ebf2 35%,#8a96a8 72%,#2c3440)}
 .coinc.jp-MAJOR .in{background:radial-gradient(circle at 35% 30%,#fff,#d3a8ff 35%,#7b2ff7 72%,#2a0060)}
 .empty .in{background:rgba(0,0,0,.35);box-shadow:inset 0 0 12px rgba(0,0,0,.6)}
 .coinc.new .in{animation:cpop .45s cubic-bezier(.3,1.6,.5,1)}
 @keyframes cpop{from{transform:scale(0) rotate(-90deg)}}
 #hwBar{display:none;gap:6px;margin-bottom:8px;flex-wrap:wrap;justify-content:center}
-#hwBar.show{display:flex}@media(max-width:600px){#hwBar{flex-wrap:nowrap;gap:4px;width:calc(100% - 20px);margin:0 auto 6px;box-sizing:border-box}#hwBar div{padding:2px 5px;font-size:10px;white-space:nowrap;flex:0 1 auto}#hwBar .hwl{white-space:normal;max-width:52px;line-height:1.05;font-size:9px!important;padding:0!important;text-align:right}}#back{white-space:nowrap}
+#hwBar.show{display:flex}@media(max-width:600px){#hwBar{flex-wrap:nowrap;gap:4px;width:calc(100% - 20px);margin:0 auto 6px;box-sizing:border-box}#hwBar div{padding:2px 5px;font-size:10px;white-space:nowrap;flex:0 1 auto}#hwBar .hwl{display:none!important;white-space:normal;max-width:52px;line-height:1.05;font-size:9px!important;padding:0!important;text-align:right}}#back{white-space:nowrap}
 #hwBar div{border-radius:10px;padding:4px 10px;font-weight:900;font-size:12px;text-transform:uppercase;background:#000a;border:1px solid rgba(255,255,255,.25)}
-#hwBar .g{color:#ffd60a;border-color:#ffd60a}#hwBar .ma{color:#c77dff}#hwBar .mi{color:#4cc9f0}#hwBar .mn{color:#ff6b81}
-#hwBar .rs{background:#ffd60a;color:#000}
+#hwBar .g{color:#ffd60a;border-color:#ffd60a}#hwBar .ma{color:#c77dff}#hwBar .mi{color:#d8dee9}#hwBar .mn{color:#e8a66a}
+#hwBar .rs{background:#ffd60a;color:#000}#hwBar i{font-style:normal}@media(max-width:600px){html:not(.lang-zh):not(.lang-bi) #hwBar div{font-size:9px;padding:2px 4px;letter-spacing:-.2px}html:not(.lang-zh):not(.lang-bi) #hwBar{gap:3px}html:not(.lang-zh):not(.lang-bi) #hwBar .rsl{font-size:0}html:not(.lang-zh):not(.lang-bi) #hwBar .rsl::before{content:'↻';font-size:11px}}
 
 .feat{display:flex;gap:6px}
 #anteBtn{line-height:1.05;font-size:11px}
@@ -433,7 +433,7 @@ button:focus-visible,input:focus-visible,.tile:focus-visible{outline:3px solid #
     <button class="ib emo" id="sndBtn" title="Sound" aria-label="Toggle sound">🔊</button>
   </div>
   <div id="stage">
-    <div id="hwBar"><div class="hwl" style="background:none;border:0;color:#cfd3dc;font-size:10px;opacity:.85">金币奖 · Link prizes</div><div class="g" data-zh1>Grand <b id="jpG"></b></div><div class="ma" data-zh1>Major <b id="jpMa"></b></div><div class="mi" data-zh1>Minor <b id="jpMi"></b></div><div class="mn" data-zh1>Mini <b id="jpMn"></b></div><div class="rs" id="hwRs" style="display:none">Respins <b id="hwRsN">3</b></div></div>
+    <div id="hwBar"><div class="hwl" style="background:none;border:0;color:#cfd3dc;font-size:10px;opacity:.85">金币奖 · Link prizes</div><div class="g" data-noi18n><i class="lkn" data-k="GRAND"></i> <b id="jpG"></b></div><div class="ma" data-noi18n><i class="lkn" data-k="MAJOR"></i> <b id="jpMa"></b></div><div class="mi" data-noi18n><i class="lkn" data-k="MINOR"></i> <b id="jpMi"></b></div><div class="mn" data-noi18n><i class="lkn" data-k="MINI"></i> <b id="jpMn"></b></div><div class="rs" id="hwRs" style="display:none"><span class="rsl" data-zh1>Respins</span> <b id="hwRsN">3</b></div></div>
     <div id="gLogo"><span class="ic emo" id="gLogoIc"></span><span class="nm" id="gLogoNm"></span></div>
     <div id="fsBanner"><div>Free spins <b id="fsLeft">0</b></div><div>Win <b id="fsWin">0.00</b></div><div id="fsMultBox">Multi <b id="fsMult">x0</b></div></div>
     <div id="frame"><div class="lights"></div>
@@ -491,6 +491,8 @@ button:focus-visible,input:focus-visible,.tile:focus-visible{outline:3px solid #
 <script>
 
 const ROYAL=['A','K','Q','J','10'];
+// Link prize tiers get their own names so they never clash with the lobby's fixed GRAND/MAJOR/MINOR/MINI jackpots
+function LKN(k){const z=!window.LVLang||LVLang.get()!=='en';return ({GRAND:z?'满格':'FULL',MAJOR:z?'紫金':'ROYAL',MINOR:z?'银币':'SILVER',MINI:z?'铜币':'BRONZE'})[k]||k}
 const ENGNAME={tumble:'Tumble · Multipliers',cluster:'Cluster Pays',lines:'20 Lines',ways:'243 Ways',classic3:'Classic 3-Reel · 5 Lines',holdwin:'Hold & Win · Jackpots'};
 const CATNAME={video:'Video Slots',jackpot:'Jackpot Slots',classic:'Classic Slots',blackjack:'Blackjack',roulette:'Roulette',baccarat:'Baccarat',dice:'Dice',videopoker:'Video Poker',poker:'Table Poker',instant:'Instant Win'};
 const gsub=g=>g.slot?(g.id>=100&&E.MATH[g.mk]?E.MATH[g.mk].label:ENGNAME[g.e]):CATNAME[g.cat];
@@ -585,7 +587,7 @@ function shortN(v){return v>=1e6?(v/1e6).toFixed(v>=1e7?0:1)+'M':v>=1e3?(v/1e3).
 function txCls(t){return t==='7'?'seven':t==='BAR'?'bar':t==='10'?'T':t}
 function cellEl(g,o){const d=document.createElement('div');d.className='cell';let cls,html,cls0='';const s=o.s;
  if(s==='M'){cls='mult'+(o.v>=50?' m-top':o.v>=10?' m-hi':'');html='x'+o.v}
- else if(s==='C'){cls='coinc'+(o.j?' jp jp-'+o.j:'');html=o.j?'<b>'+o.j+'</b>':'<b>'+shortN(o.v*curBet())+'</b>'}
+ else if(s==='C'){cls='coinc'+(o.j?' jp jp-'+o.j:'');html=o.j?'<b data-noi18n>'+LKN(o.j)+'</b>':'<b>'+shortN(o.v*curBet())+'</b>'}
  else if(s==='X'){cls='empty';html=''}
  else{const t=g.glyph[s];const isTx=/^(7|BAR|A|K|Q|J|10)$/.test(t);html=/^[GJ][1-5]$/.test(t)?'<span class="gm '+t+'"></span>':isTx?'<span class="tx tx-'+txCls(t)+'">'+t+'</span>':t;{const im=window.LVX&&LVX.assetFor&&LVX.assetFor(g,'sym_'+s);if(im){html='<img class="symimg" src="'+im+'" alt="">';const an=LVX.assetFor(g,'anim_'+s);if(an){const gm=LVX.assets.games[g.slug]||{};html+='<i class="sanim" style="background-image:url('+an+');--n:'+(gm['animN_'+s]||10)+'"></i>';cls0=' hasanim'}}}
   if(s==='W'){cls='wild';html+='<small>WILD</small>'}else if(s==='S'){cls='scat';html+='<small>'+(E.MATH[g.mk||g.e].type==='reel'?'BONUS':'SCATTER')+'</small>'}
@@ -688,7 +690,7 @@ function updUI(){setBal();document.body.classList.toggle('spinning',!!(T.g&&T.bu
  if(T.auto>0){sp.classList.add('stop');sp.innerHTML='STOP<br>'+T.auto}else{sp.classList.remove('stop');sp.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="#04140b" stroke-width="3" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg>'}
  $('#autoBtn').classList.toggle('on',T.auto>0);$('#turboBtn').classList.toggle('on',!!S.turbo);$('#sndBtn').textContent=S.snd?'🔊':'🔇';
  const fb=$('#fsBanner');fb.classList.toggle('show',!!T.fs);
- const hw=T.g.e==='holdwin';$('#hwBar').classList.toggle('show',hw);if(hw){$('#jpG').textContent=shortN(E.JP.GRAND*bet);$('#jpMa').textContent=shortN(E.JP.MAJOR*bet);$('#jpMi').textContent=shortN(E.JP.MINOR*bet);$('#jpMn').textContent=shortN(E.JP.MINI*bet);}
+ const hw=T.g.e==='holdwin';$('#hwBar').classList.toggle('show',hw);if(hw){document.querySelectorAll('#hwBar .lkn').forEach(e=>e.textContent=LKN(e.dataset.k));$('#jpG').textContent=shortN(E.JP.GRAND*bet);$('#jpMa').textContent=shortN(E.JP.MAJOR*bet);$('#jpMi').textContent=shortN(E.JP.MINOR*bet);$('#jpMn').textContent=shortN(E.JP.MINI*bet);}
  if(T.fs){$('#fsLeft').textContent=T.fs.left;$('#fsWin').textContent=fmt(T.fs.total);const showM=T.g.e!=='reel';$('#fsMult').textContent='x'+(T.fs.mult||0);
   $('#fsMultBox').style.display=(T.g.e==='tumble'||T.g.e==='cluster')?'':'none';if(T.g.e==='lines'||T.g.e==='ways'){$('#fsMultBox').style.display='';$('#fsMult').textContent='x'+m.fsMult}}}
 
@@ -793,7 +795,7 @@ function openInfo(){if(!T.g)return;const g=T.g,m=E.MATH[g.mk||g.e],bet=curBet();
  h+='<h3>Features</h3><ul>';
  const ib=x=>box(x).replace('class="g"','class="g" style="display:inline-block;vertical-align:middle;width:30px;height:30px;--cell:30px"');
  if(g.e==='classic3'){h+='<li>5 fixed lines across 3 reels (3 rows + 2 diagonals). Wins pay left to right.</li><li>'+ib('W')+' <b>WILD</b> substitutes for every symbol and <b>doubles</b> the win (two wilds = x4). Three wilds pay '+fmt(m.pay.W[2]*m.k*bet/5)+'.</li><li>Cherries pay with just 2 on a line.</li>'}
- else if(g.e==='holdwin'){h+='<li>20 fixed lines. '+ib('W')+' <b>WILD</b> on reels 2-4 substitutes for all symbols except coins.</li><li><b>HOLD &amp; WIN:</b> land 6 or more coins to trigger. Coins lock in place and you get 3 respins. Every new coin resets the respins to 3.</li><li>Coins show credit prizes or a jackpot: <b>MINI</b> '+fmt(E.JP.MINI*bet)+', <b>MINOR</b> '+fmt(E.JP.MINOR*bet)+', <b>MAJOR</b> '+fmt(E.JP.MAJOR*bet)+'. Fill all 15 positions to also win the <b>GRAND</b> '+fmt(E.JP.GRAND*bet)+'.</li>'}
+ else if(g.e==='holdwin'){h+='<li>20 fixed lines. '+ib('W')+' <b>WILD</b> on reels 2-4 substitutes for all symbols except coins.</li><li><b>HOLD &amp; WIN:</b> land 6 or more coins to trigger. Coins lock in place and you get 3 respins. Every new coin resets the respins to 3.</li><li>Coins show credit prizes or a jackpot: <b data-noi18n>'+LKN('MINI')+'</b> '+fmt(E.JP.MINI*bet)+', <b data-noi18n>'+LKN('MINOR')+'</b> '+fmt(E.JP.MINOR*bet)+', <b data-noi18n>'+LKN('MAJOR')+'</b> '+fmt(E.JP.MAJOR*bet)+'. Fill all 15 positions to also win the <b data-noi18n>'+LKN('GRAND')+'</b> '+fmt(E.JP.GRAND*bet)+'.</li>'}
  else if(m.type==='reel'){if(m.fdesc)h+='<li><b>FEATURE:</b> '+m.fdesc+'</li>';h+='<li>'+box('W').replace('class="g"','class="g" style="display:inline-block;vertical-align:middle;width:30px;height:30px;--cell:30px"')+' <b>WILD</b> appears on reels 2, 3 and 4 and substitutes for all symbols except BONUS.</li>';
   h+='<li><b>BONUS</b> pays anywhere: 3 = '+m.scat[3]+'x, 4 = '+m.scat[4]+'x, 5 = '+m.scat[5]+'x total bet, and awards '+m.fs[3]+' / '+m.fs[4]+' / '+m.fs[5]+' free spins.</li><li>During free spins all wins are multiplied by <b>x'+m.fsMult+'</b>. Free spins can be retriggered.</li>';
   h+=g.e==='lines'?'<li>Wins pay left to right on 20 fixed lines. Only the highest win per line is paid.</li>':'<li>243 ways: matching symbols on adjacent reels from the leftmost reel pay, in any row position. Win = pay × number of ways.</li>'}

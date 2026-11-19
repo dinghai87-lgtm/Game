@@ -136,7 +136,8 @@ body.ingame #hovDock{display:none}
   function setJP(p) { if (!p) return; JP = Object.assign({}, p); JPshow = JP; paintJP(); }
   function paintJP() { if (!JP) return; document.querySelectorAll('[data-jp]').forEach(el => { const v = JP[el.dataset.jp]; const t = v != null ? Math.round(v).toLocaleString('en-US') : '—'; if (el.textContent !== t) el.textContent = t; }); }
   setInterval(paintJP, 1000);
-  async function pollJP() { try { const r = await fetch((window.LV_CONFIG && LV_CONFIG.server || '') + '/api/jackpots').then(r => r.json()); setJP(r.jackpots); } catch (e) {} }
+  async function pollJP() { if (!srv()) return; try {   // demo mode has no server: the fixed amounts are already shown (no failing request every minute)
+    const r = await fetch((window.LV_CONFIG && LV_CONFIG.server || '') + '/api/jackpots').then(r => r.json()); setJP(r.jackpots); } catch (e) {} }
   setInterval(pollJP, 60000);
 
   // ---------------- daily wheel (replaces the daily reward panel) ----------------

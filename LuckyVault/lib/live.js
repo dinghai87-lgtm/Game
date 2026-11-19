@@ -27,6 +27,7 @@ function install(ctx) {
   const roomOf = (gid, code) => { const g = GAMES[gid]; if (!g || !KINDS[g.kind]) return null; code = code ? String(code).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) : ''; const key = code ? gid + ':' + code : String(gid);
     if (code && !PRIV.has(key)) return null; let r = rooms.get(key); if (!r) { r = { key, code, priv: code ? PRIV.get(key) : null, gid, g, K: KINDS[g.kind], sq: null, opened: false, phase: 'idle', ends: 0, round: 0, shoe: null, bets: new Map(), subs: new Set(), feed: [], last: null, results: new Map(), timer: null, lastSeen: now() }; rooms.set(key, r); } return r; };
   const shoeKey = k => 'shoe:room:' + k;
+  const betKey = (room, uid) => 'livebet:' + room.key + ':' + uid;
 
   // ---- push ----
   function totals(room) { const t = {}; let n = 0; room.bets.forEach(e => { n++; for (const k in e.b) t[k] = r2((t[k] || 0) + e.b[k]); }); return { t, n }; }
@@ -65,6 +66,7 @@ function install(ctx) {
           u.bal = r2(u.bal + win); const r = { cost: e.total, win, bet: e.total, wins };
           await afterRound(u, room.g, r, {}, t);
           await repo().roundInsert({ t: now(), uid, name: u.name, gid: room.gid, bet: e.total, cost: e.total, win, table: true, bal: u.bal }, t);
+          await repo().kvDel(betKey(room, uid), t);   // settled: the stake is now in the round history
           room.results.set(uid, { wins, win, bal: u.bal, lvl: r.lvl || null, xp: u.xp, bet: e.total });
         });
       } catch (err) { console.error('live settle', uid, err); }
@@ -82,15 +84,19 @@ function install(ctx) {
 
   // ---- HTTP ----
   // EventSource cannot send headers, so the session token comes in the query string (same token as the API)
+  // open streams per player: a few tabs are fine, thousands from one account would tie up the server
+  const MAX_STREAMS = 4, conns = new Map();
   async function stream(req, res, q) {
     const room = roomOf(+q.get('gid'), q.get('room')); if (!room) { res.writeHead(404); return res.end(); }
     const s = await session(String(q.get('t') || '')); if (!s) { res.writeHead(401); return res.end(); }
+    const suid = Number(s.uid); if ((conns.get(suid) || 0) >= MAX_STREAMS) { res.writeHead(429, { 'Content-Type': 'text/plain' }); return res.end('Too many open tables'); }
+    conns.set(suid, (conns.get(suid) || 0) + 1);
     res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache, no-transform', Connection: 'keep-alive', 'X-Accel-Buffering': 'no' });
-    const sub = { uid: Number(s.uid), res }; room.subs.add(sub); wake(room);
+    const sub = { uid: suid, res }; room.subs.add(sub); wake(room);
     res.write('retry: 3000\n\n'); res.write('event: state\ndata: ' + JSON.stringify(snapshot(room, sub.uid)) + '\n\n');
     push(room, 'online', () => ({ online: room.subs.size }));
     const ka = setInterval(() => { try { res.write(': ka\n\n'); } catch (e) {} }, 20000);
-    req.on('close', () => { clearInterval(ka); room.subs.delete(sub); room.lastSeen = now(); push(room, 'online', () => ({ online: room.subs.size })); });
+    req.on('close', () => { clearInterval(ka); room.subs.delete(sub); room.lastSeen = now(); const n = (conns.get(suid) || 1) - 1; if (n > 0) conns.set(suid, n); else conns.delete(suid); push(room, 'online', () => ({ online: room.subs.size })); });
   }
   R['POST /api/live/bet'] = userRoute(async ({ uid, b }) => {
     const room = roomOf(+b.gid, b.room); if (!room) return [400, { err: 'game', msg: 'Room unavailable' }];
@@ -110,6 +116,8 @@ function install(ctx) {
       if (u.bal < addTotal - 1e-9) { out = [400, { err: 'funds', msg: 'Not enough coins' }]; return { skip: true }; }
       if (room.phase !== 'bet') { out = [400, { err: 'closed', msg: '停止下注 · Betting closed for this hand' }]; return { skip: true }; }
       u.bal = r2(u.bal - addTotal); room.bets.set(uid, { name: u.name, b: merged, total });
+      // the stake is kept on disk until the hand settles, so a restart or crash during the betting window refunds it (see recover)
+      await repo().kvSet(betKey(room, uid), { uid, total, b: merged, room: room.key, round: room.round, at: now() }, t);
       out = [200, { bal: u.bal, mine: merged, total }];
     });
     if (out[0] === 200) { const nm = room.bets.get(uid).name; for (const k in add) room.feed.push({ n: nm, k, a: add[k] }); room.feed = room.feed.slice(-30); room.lastSeen = now(); pushStateSoon(room); }
@@ -128,10 +136,28 @@ function install(ctx) {
     if (limited('priv:' + uid, 5, 600e3)) return [429, { err: 'rate', msg: 'Slow down a little' }];
     const u = await repo().userById(uid); let code; do { code = Array.from({ length: 6 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join(''); } while (PRIV.has(gid + ':' + code));
     PRIV.set(gid + ':' + code, { owner: uid, ownerName: u.name, created: now() }); return [200, { gid, code }]; });
-  R['GET /api/live/private'] = async ({ q }) => { const code = String(q.get('code') || '').toUpperCase(); for (const [k, v] of PRIV) if (k.endsWith(':' + code)) { const gid = +k.split(':')[0]; return [200, { gid, code, host: v.ownerName, name: GAMES[gid].name }]; } return [404, { err: 'nf', msg: '房间号不存在或已关闭 · Room not found' }]; };
+  R['GET /api/live/private'] = async ({ q, ip }) => { if (limited('privq:' + ip, 20)) return [429, { err: 'rate', msg: 'Slow down a little' }]; const code = String(q.get('code') || '').toUpperCase(); for (const [k, v] of PRIV) if (k.endsWith(':' + code)) { const gid = +k.split(':')[0]; return [200, { gid, code, host: v.ownerName, name: GAMES[gid].name }]; } return [404, { err: 'nf', msg: '房间号不存在或已关闭 · Room not found' }]; };
   setInterval(() => { for (const [k, v] of PRIV) { const r = rooms.get(k); const idle = r ? (r.subs.size === 0 && now() - r.lastSeen > 2 * 3600e3) : now() - v.created > 2 * 3600e3; if (idle && !(r && r.bets.size)) { PRIV.delete(k); if (r) { clearTimeout(r.timer); rooms.delete(k); } } } }, 300e3).unref();
   const KIND_LIST = Object.keys(KINDS);
   const pendingOf = uid => { let s = 0; rooms.forEach(r => { const e = r.bets.get(uid); if (e && r.phase === 'bet') s += e.total; }); return r2(s); };
-  return { stream, rooms, pendingOf, KINDS: KIND_LIST };
+  // At start-up no hand is in play, so any stake still on disk belongs to a hand the last process never dealt: give it back.
+  // Two ledger rows (stake -X, refund +X) keep the history readable and the balance audit exact.
+  async function recover() {
+    const rows = await repo().d.all("SELECT k,v FROM kv WHERE k LIKE 'livebet:%'"); let n = 0, coins = 0;
+    for (const row of rows) {
+      let e = null; try { e = JSON.parse(row.v); } catch (x) {}
+      await repo().tx(async t => {
+        const u = e && e.total > 0 ? await repo().userById(e.uid, t, true) : null;
+        if (u) { const ref = (e.room || '') + ' #' + (e.round || 0) + ' not dealt (server restart)';
+          await repo().txInsert({ t: now(), uid: u.id, name: u.name, type: 'live_stake', amount: -r2(e.total), bal: u.bal, ref }, t);
+          u.bal = r2(u.bal + e.total); await repo().saveUser(u, t);
+          await repo().txInsert({ t: now(), uid: u.id, name: u.name, type: 'live_refund', amount: r2(e.total), bal: u.bal, ref }, t); n++; coins = r2(coins + e.total); }
+        await repo().kvDel(row.k, t);
+      });
+    }
+    if (n) console.log('Shared tables: refunded ' + n + ' stake(s), ' + coins + ' coins, from hands that were not dealt before the restart.');
+    return { refunded: n, coins };
+  }
+  return { stream, rooms, pendingOf, recover, KINDS: KIND_LIST };
 }
 module.exports = { install };

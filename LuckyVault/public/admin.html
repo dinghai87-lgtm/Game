@@ -152,7 +152,7 @@ const R={
   m.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{if(!confirm('Delete '+b.dataset.del+'?'))return;await api('/api/admin/admins',{user:b.dataset.del,remove:true});render()})},
  async me(m){const o=await api('/api/admin/me');
   m.innerHTML='<h1>我的账号 My account</h1><div class="box"><p><b>'+esc(o.user)+'</b> · '+esc(o.roleName)+'</p><h2>两步验证 Two-factor login</h2>'+(o.has2fa?'<p>✅ 已开启。登录时需要输入验证器 App 里的 6 位数字。</p><button class="btn" id="off2">关闭 Turn off</button>':'<p>用 Google Authenticator / Microsoft Authenticator 等 App 扫描或输入密钥，然后输入 6 位验证码确认。</p><button class="btn p" id="on2">开启 Turn on</button><div id="s2"></div>')+'</div>';
-  if($('#off2'))$('#off2').onclick=async()=>{if(!confirm('关闭两步验证？'))return;await api('/api/admin/me/2fa',{off:true});render()};
+  if($('#off2'))$('#off2').onclick=async()=>{const c=prompt('关闭两步验证：请输入验证器 App 里当前的 6 位数字\nTurn off 2FA: enter the current 6-digit code');if(!c)return;const x=await api('/api/admin/me/2fa',{off:true,code:c.trim()});if(x.ok){toast('两步验证已关闭 2FA off');render()}};
   if($('#on2'))$('#on2').onclick=async()=>{const r=await api('/api/admin/me/2fa',{});$('#s2').innerHTML='<p>密钥 Secret: <code style="font-size:16px;letter-spacing:2px">'+r.secret+'</code></p><p><a href="'+r.uri+'">在手机上打开 Open in authenticator app</a></p><div class="form"><label>6 位验证码</label><input id="c2" inputmode="numeric"><span></span><button class="btn p" id="ok2">确认 Confirm</button></div>';
    $('#ok2').onclick=async()=>{const x=await api('/api/admin/me/2fa',{secret:r.secret,code:$('#c2').value});if(x.ok){toast('两步验证已开启 2FA on');render()}}}},
  async tx(m){const o=await api('/api/admin/tx');

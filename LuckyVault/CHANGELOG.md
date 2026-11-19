@@ -794,3 +794,9 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 ## Round 116 (01:42) 回归
 - 老虎机全量 200 次 0 问题；桌台 ui_smoke 106 次 0 问题；单元测试 90/90
 - 本地已提交 6 个改动，未上线，等明天统一推送
+
+## Round 117 — architecture audit (lv-v210, local only)
+- Server: receipt claimed inside the crediting transaction (no double credit); shared-table stakes persisted and refunded after restart; password change signs out other devices; admin 2FA off needs a code; push endpoints limited to real push services; 4 live streams per player; responsible-play break also blocks the gamble; order rate limit; crypto RNG for all outcomes; session tokens stored as SHA-256; account deletion scrubs IPs/names/push/notes; no admin123 fallback in production; Permissions-Policy, page CSP, HSTS (Caddy), dot-files blocked
+- Maths: lines_wheel tuned to 96.0%; Money Wheel back to the classic 54 segments (tests added); volatility labels from measured spread
+- Front end: lobby not rendered under an open game (half the main-thread work per spin); deep-link LVX error fixed; demo mode no longer polls jackpots; SW caches only complete 200 responses
+- New tools: deep_probe.py, maths_audit.cjs, perf_audit.py

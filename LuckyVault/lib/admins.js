@@ -46,7 +46,11 @@ function install({ ADMIN, repo, A, now, ownerUser, ownerPass, tokens }) {
     return [200, { user: admin.user, role: admin.role, roleName: ROLES[admin.role].name, has2fa, roles: Object.fromEntries(Object.entries(ROLES).filter(([k]) => k !== 'owner').map(([k, v]) => [k, v.name])) }]; };
   // two-factor setup for the logged-in admin: step 1 get a secret, step 2 confirm a code from the app
   ADMIN['POST /api/admin/me/2fa'] = async ({ admin, b }) => {
-    if (b.off) { if (admin.role === 'owner') { await repo().kvSet('admin_owner', {}); } else { const L = await load(); const a = L.find(x => x.user === admin.user); if (a) { delete a.totp; await save(L); } } await repo().audit('admin_2fa_off', admin.user); return [200, { ok: true, has2fa: false }]; }
+    if (b.off) {
+      // switching 2FA off needs a current code from the app: a stolen admin token alone cannot remove the second factor
+      const cur = admin.role === 'owner' ? (((await repo().kvGet('admin_owner', {})) || {}).totp) : ((await load()).find(x => x.user === admin.user) || {}).totp;
+      if (cur && !totpOk(cur, b.code)) return [400, { err: 'code', msg: '请输入当前的两步验证码 · Enter your current 2FA code to turn it off', need2fa: true }];
+      if (admin.role === 'owner') { await repo().kvSet('admin_owner', {}); } else { const L = await load(); const a = L.find(x => x.user === admin.user); if (a) { delete a.totp; await save(L); } } await repo().audit('admin_2fa_off', admin.user); return [200, { ok: true, has2fa: false }]; }
     if (!b.secret) { const secret = b32enc(crypto.randomBytes(20)); return [200, { secret, uri: 'otpauth://totp/LuckyVault:' + encodeURIComponent(admin.user) + '?secret=' + secret + '&issuer=LuckyVault' }]; }
     if (!totpOk(b.secret, b.code)) return [400, { err: 'code', msg: '验证码不对，请再试一次 Code does not match' }];
     if (admin.role === 'owner') await repo().kvSet('admin_owner', { totp: b.secret }); else { const L = await load(); const a = L.find(x => x.user === admin.user); if (a) { a.totp = b.secret; await save(L); } }

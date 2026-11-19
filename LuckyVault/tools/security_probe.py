@@ -23,7 +23,7 @@ def reg():
     return json.loads(b).get('token'), n
 
 PUBLIC = {'GET /api/health', 'GET /api/ping', 'GET /api/jackpots', 'GET /api/leaderboard', 'GET /api/tournaments', 'GET /api/store', 'GET /api/live/rooms', 'GET /api/hov',
-          'POST /api/register', 'POST /api/login', 'POST /api/auth/forgot', 'POST /api/auth/reset', 'POST /api/auth/google', 'POST /api/auth/apple', 'POST /api/logout'}
+          'GET /api/wins', 'GET /api/live/private', 'POST /api/register', 'POST /api/login', 'POST /api/auth/forgot', 'POST /api/auth/reset', 'POST /api/auth/google', 'POST /api/auth/apple', 'POST /api/logout'}
 import os, re, glob
 _root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 _src = ''.join(open(f, encoding='utf8').read() for f in [os.path.join(_root, 'server.js')] + glob.glob(os.path.join(_root, 'lib', '*.js')) + glob.glob(os.path.join(_root, 'srv', 'server.js')) + glob.glob(os.path.join(_root, 'srv', 'lib', '*.js')) if os.path.exists(f))

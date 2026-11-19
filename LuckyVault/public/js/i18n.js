@@ -451,7 +451,9 @@
   }
   const NAMES = { zh: '中文', en: 'English', bi: '双语 Bilingual' };
   window.LVLang = {
-    get: () => mode, name: () => NAMES[mode], zhOf: (t) => tr(t) || '',   // Chinese name for search (works in every language mode) tr: (t) => (mode === 'en' ? t : (tr(t) || t)),
+    get: () => mode, name: () => NAMES[mode],
+    zhOf: (t) => tr(t) || '',   // Chinese name for search (works in every language mode)
+    tr: (t) => (mode === 'en' ? t : (tr(t) || t)),
     next() { const order = ['zh', 'en', 'bi']; const n = order[(order.indexOf(mode) + 1) % 3]; try { localStorage.setItem(KEY, n); } catch (e) {} location.reload(); },
     set(n) { try { localStorage.setItem(KEY, n); } catch (e) {} location.reload(); },
   };

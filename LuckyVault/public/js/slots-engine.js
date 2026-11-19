@@ -58,7 +58,7 @@ V('lines_lightning','lines',{k:0.988,w:Object.assign({},LW,{W:2.2,S:1.4}),feat:{
 V('lines_colossal','lines',{k:1.551,w:Object.assign({},LW,{W:2.2,S:1.4}),feat:{colossal:[.035,.1]},fsMult:2,fsMultInit:2,label:'20 Lines · Colossal Symbols',vol:'High',fdesc:'A giant 3x3 symbol can land on reels 2, 3 and 4.'});
 V('lines_collect','lines',{k:4.55,w:Object.assign({},LW,{C:2.2,S:1.4}),wfs:Object.assign({},LW,{W:1.2,C:3.2,S:1.2}),feat:{collect:1,collectK:3.5},fsMult:1,fsMultInit:1,fs:{3:10,4:15,5:20},label:'20 Lines · Cash Collect',vol:'High',fdesc:'Cash symbols show a prize. In free spins every collector WILD grabs every prize on screen. Every 4 wilds collected: +10 spins and x2, x3, then x10 prizes.'});
 V('lines_pick','lines',{k:2.264,w:Object.assign({},LW,{W:2.6,S:1.5}),feat:{bonus:'pick'},label:'20 Lines · Pick Bonus',vol:'Medium',fdesc:'3+ BONUS symbols start the treasure pick: open chests until COLLECT. 4 and 5 BONUS multiply the prizes by x2 and x3.'});
-V('lines_wheel','lines',{k:2.45,w:Object.assign({},LW,{W:2.6,S:1.5}),feat:{bonus:'wheel'},label:'20 Lines · Wheel Bonus',vol:'Medium-High',fdesc:'3+ BONUS symbols spin the prize wheel. Land UPGRADE to move to a bigger wheel — up to 1,000x. 5 BONUS doubles the prize.'});
+V('lines_wheel','lines',{k:2.473,w:Object.assign({},LW,{W:2.6,S:1.5}),feat:{bonus:'wheel'},label:'20 Lines · Wheel Bonus',vol:'Medium-High',fdesc:'3+ BONUS symbols spin the prize wheel. Land UPGRADE to move to a bigger wheel — up to 1,000x. 5 BONUS doubles the prize.'});
 V('lines_choose','lines',{k:2.564,w:Object.assign({},LW,{W:2.6,S:1.4}),feat:{},choose:null,fsMult:2,fsMultInit:2,label:'20 Lines · Choose Your Bonus',vol:'Medium-High',fdesc:'When free spins trigger, pick: 20 spins x1, 10 spins x2, 7 spins x3 or 4 spins x5.'});
 MATH.lines_choose.feat={choose:[[20,1],[10,2],[7,3],[4,5]]};
 const WW={h1:2,h2:3,h3:4,h4:4,l1:6,l2:6,l3:7,l4:7,l5:8};
@@ -73,6 +73,13 @@ V('ways_lightning','ways',{k:0.336,w:Object.assign({},WW,{W:2.2,S:1.4}),feat:{li
 const CW={h1:1,h2:2,h3:3,h4:4,l1:5,l2:6,l3:6};
 V('classic3_mw','classic3',{k:0.611,w:Object.assign({},CW,{W:1.1}),wv:[[2,60],[3,30],[5,10]],label:'Classic 3-Reel · 2x 3x 5x Wilds',vol:'Medium-High',fdesc:'WILDS carry x2, x3 or x5. Two or three wilds on a line multiply together — up to x125.'});
 V('classic3_wheel','classic3',{k:0.624,w:Object.assign({},CW,{W:1.1,S:0.9}),sOnly:2,wheel:[[2,22],[3,18],[4,14],[5,12],[8,9],[10,8],[15,5],[20,4],[25,3],[50,1.5],[100,.6],[250,.15],[500,.05]],label:'Classic 3-Reel · Bonus Wheel',vol:'Medium',fdesc:'A WHEEL symbol on the centre of reel 3 spins the bonus wheel for up to 500x your bet.'});
+// Volatility shown to players = measured swing per spin (standard deviation in bets, 3M+ spins each, tools/maths_audit.cjs):
+// under 3.4 Low · 3.4–4.5 Low-Medium · 4.5–5.5 Medium · 5.5–6.5 Medium-High · 6.5–10 High · over 10 Very High
+const VOL_MEASURED={classic3:'Low-Medium',holdwin:'Very High',lines:'Low',ways:'Low-Medium',tumble:'High',cluster:'Medium-High',lines_hi:'Medium',ways_hi:'Medium-High',
+ lines_expand:'Medium',lines_sticky:'Medium-High',lines_walk:'Low',lines_wmult:'High',lines_wildreel:'Medium-High',lines_mystery:'Low',lines_lightning:'Medium-High',
+ lines_colossal:'High',lines_collect:'Very High',lines_pick:'Low-Medium',lines_wheel:'Low-Medium',lines_choose:'Low',ways_4096:'Low-Medium',ways_expand:'Medium-High',
+ ways_sticky:'Medium-High',ways_walk:'Low',ways_wildreel:'High',ways_mystery:'Low-Medium',ways_lightning:'Medium-High',classic3_mw:'Medium',classic3_wheel:'Low-Medium'};
+for(const k in VOL_MEASURED)if(MATH[k])MATH[k].vol=VOL_MEASURED[k];
 const VAR={};function setVariants(list){list.forEach((x,i)=>{const gid=Array.isArray(x[1])?x[0]:i,t=Array.isArray(x[1])?x[1]:x;if(t[10]&&MATH[t[1]+'_'+t[10]])VAR[gid]=t[1]+'_'+t[10]})}
 function mathKey(gid,e){return VAR[gid]||e}
 function table(p){return{a:p,tot:p.reduce((s,x)=>s+x[1],0)}}

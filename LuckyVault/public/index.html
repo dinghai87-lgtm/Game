@@ -33,7 +33,9 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .bal button{background:var(--acc);border:0;color:#04140b;font-weight:900;border-radius:8px;height:30px;padding:0 10px;font-size:13px}
 
 /* ---------- lobby ---------- */
-#lobby{max-width:1280px;margin:0 auto;padding-bottom:30px}
+#lobby{max-width:1280px;margin:0 auto;padding-bottom:30px;contain-intrinsic-size:auto 4000px}
+/* while a game or table covers the screen the lobby underneath is not drawn at all (about half the work per spin on phones); it keeps its last size, so the scroll position survives */
+body.ingame #lobby{content-visibility:hidden}
 .hero{margin:14px;border-radius:16px;padding:22px 20px;background:linear-gradient(115deg,#1e3a8a 0%,#7c3aed 45%,#db2777 100%);position:relative;overflow:hidden;min-height:130px}
 .hero h1{font-size:26px;font-weight:900;line-height:1.1;max-width:60%}
 .hero p{margin-top:8px;opacity:.9;font-size:14px;max-width:60%}
@@ -669,7 +671,7 @@ function layout(){if(!T.g)return;const m=E.MATH[T.g.mk||T.g.e];const reel=m.type
  const svg=$('#lines');const bw=reel?m.cols*CELL+gaps:m.cols*CELL;svg.setAttribute('width',bw);svg.setAttribute('height',m.rows*(reel?CELLH:CELL));
  if(T.view&&T.view.b&&!reel){T.view.b.style.width=m.cols*CELL+'px';T.view.b.style.height=m.rows*CELL+'px'}}
 
-function openGame(id){if(needLogin())return;try{sfx.enter&&sfx.enter()}catch(e){}if(GAMES[id]&&!vis(GAMES[id])&&hasArt!==undefined&&LVX&&LVX.assets&&Object.keys(LVX.assets.games).length){toast('This game is coming soon');return}{const g0=GAMES[id];if(g0&&!g0.slot){if(g0.off){toast('This game is under maintenance');return}S.recent=[id].concat(S.recent.filter(x=>x!==id)).slice(0,12);save();if(location.hash!=='#'+g0.slug)history.pushState({g:id},'','#'+g0.slug);openTable(g0);return}}if(S.fs&&S.fs.gid!==id&&GAMES[S.fs.gid]){toast('You have unfinished free spins');id=S.fs.gid}
+function openGame(id){if(needLogin())return;try{sfx.enter&&sfx.enter()}catch(e){}if(GAMES[id]&&!vis(GAMES[id])&&hasArt!==undefined&&window.LVX&&LVX.assets&&Object.keys(LVX.assets.games).length){toast('This game is coming soon');return}{const g0=GAMES[id];if(g0&&!g0.slot){if(g0.off){toast('This game is under maintenance');return}S.recent=[id].concat(S.recent.filter(x=>x!==id)).slice(0,12);save();if(location.hash!=='#'+g0.slug)history.pushState({g:id},'','#'+g0.slug);openTable(g0);return}}if(S.fs&&S.fs.gid!==id&&GAMES[S.fs.gid]){toast('You have unfinished free spins');id=S.fs.gid}
  const g=GAMES[id];if(g.off){toast('This game is under maintenance');return}T.g=g;setTimeout(()=>sfx.preload(),0);T.fs=(S.fs&&S.fs.gid===id)?S.fs:null;T.auto=0;T.busy=false;clearTimers();
  S.recent=[id].concat(S.recent.filter(x=>x!==id)).slice(0,12);save();
  const gm=$('#game');gm.style.setProperty('--c1',g.c1);gm.style.setProperty('--c2',g.c2);gm.classList.add('show');gm.dataset.e=g.e;{const bgi=window.LVX&&LVX.assetFor&&LVX.assetFor(g,'bg');$('#bgArt').style.backgroundImage=bgi?'url("'+bgi+'")':'';$('#bgArt').classList.toggle('img',!!bgi)}{const pool=[g.icon,g.glyph.h1,g.glyph.h2,g.glyph.h3,g.glyph.h4].filter(x=>x&&!/^(7|BAR|A|K|Q|J|10)$/.test(x));const P=[[4,8,90],[78,6,120],[10,62,110],[82,58,80],[45,82,70],[60,20,60],[25,35,50]];$('#bgArt').innerHTML=P.map((p,i)=>'<span style="left:'+p[0]+'%;top:'+p[1]+'%;font-size:'+p[2]+'px;animation-delay:-'+(i*2)+'s">'+pool[i%pool.length]+'</span>').join('')}

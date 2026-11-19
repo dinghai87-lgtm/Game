@@ -1,5 +1,6 @@
 'use strict';
 // Data access for Lucky Vault. Every method takes an optional executor (a transaction handle); default = pool/driver.
+const TH = t => require('crypto').createHash('sha256').update(String(t || '')).digest('hex');
 const r2 = x => Math.round(x * 100) / 100;
 const J = s => { try { return JSON.parse(s); } catch (e) { return null; } };
 const dayKey = t => { const d = new Date(t || Date.now()); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
@@ -17,6 +18,7 @@ class Repo {
     return this.next(k, start, t);
   }
   async kvGet(k, def, t) { const r = await this.x(t).get('SELECT v FROM kv WHERE k=?', [k]); return r ? J(r.v) : def; }
+  async kvDel(k, t) { await this.x(t).run('DELETE FROM kv WHERE k=?', [k]); }
   async kvSet(k, v, t) { await this.x(t).run('INSERT INTO kv(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v', [k, JSON.stringify(v)]); }
 
   // ---- users ----
@@ -47,11 +49,13 @@ class Repo {
   async userIdsWhere(sql, p, t) { return (await this.x(t).all('SELECT id FROM users WHERE ' + sql, p)).map(r => Number(r.id)); }
 
   // ---- sessions ----
-  async sessionNew(token, uid, t) { const n = Date.now(); await this.x(t).run('INSERT INTO sessions(token,uid,created,seen) VALUES(?,?,?,?)', [token, uid, n, n]); }
-  async session(token) { return this.d.get('SELECT token,uid,created,seen FROM sessions WHERE token=?', [token]); }
-  async sessionTouch(token) { await this.d.run('UPDATE sessions SET seen=? WHERE token=?', [Date.now(), token]); }
-  async sessionDel(token) { await this.d.run('DELETE FROM sessions WHERE token=?', [token]); }
+  // Only a SHA-256 of each login token is stored: a copied database or backup cannot be used to sign in as a player.
+  async sessionNew(token, uid, t) { const n = Date.now(); await this.x(t).run('INSERT INTO sessions(token,uid,created,seen) VALUES(?,?,?,?)', [TH(token), uid, n, n]); }
+  async session(token) { return this.d.get('SELECT token,uid,created,seen FROM sessions WHERE token=?', [TH(token)]); }
+  async sessionTouch(token) { await this.d.run('UPDATE sessions SET seen=? WHERE token=?', [Date.now(), TH(token)]); }
+  async sessionDel(token) { await this.d.run('DELETE FROM sessions WHERE token=?', [TH(token)]); }
   async sessionsDelUser(uid, t) { await this.x(t).run('DELETE FROM sessions WHERE uid=?', [uid]); }
+  async sessionsDelOthers(uid, keep, t) { await this.x(t).run('DELETE FROM sessions WHERE uid=? AND token<>?', [uid, TH(keep)]); }
   async sessionsPrune(maxAgeMs) { await this.d.run('DELETE FROM sessions WHERE seen<?', [Date.now() - maxAgeMs]); }
 
   // ---- games ----
@@ -112,6 +116,22 @@ class Repo {
   async devicesOf(uid) { return this.d.all('SELECT fp,ip,first,last FROM devices WHERE uid=? ORDER BY last DESC', [uid]); }
   async usersOnDevice(fp) { return (await this.d.all('SELECT uid FROM devices WHERE fp=?', [fp])).map(r => Number(r.uid)); }
 
+  // ---- account deletion: remove what identifies the person, keep the money history under the account number ----
+  async scrubUser(uid, label) {
+    return this.tx(async t => {
+      await t.run('UPDATE devices SET ip=NULL WHERE uid=?', [uid]);   // the device id stays (it limits welcome bonuses per device), the network address goes
+      await t.run('DELETE FROM push_subs WHERE uid=?', [uid]); await t.run('DELETE FROM notes WHERE uid=?', [uid]);
+      for (const k of ['verify:', 'reset:', 'phone:']) await t.run('DELETE FROM codes WHERE k=?', [k + uid]);
+      await t.run('UPDATE scores SET name=? WHERE uid=?', [label, uid]);
+      const tables = ['rounds', 'tx', 'orders']; try { await t.get('SELECT 1 FROM tickets LIMIT 1'); tables.push('tickets'); } catch (e) {}
+      for (const tb of tables) for (const r of await t.all('SELECT id,data FROM ' + tb + ' WHERE uid=?', [uid])) { const d = J(r.data); if (d && d.name !== undefined && d.name !== label) { d.name = label; await t.run('UPDATE ' + tb + ' SET data=? WHERE id=?', [JSON.stringify(d), r.id]); } }
+      const C = await this.kvGet('clubs', null, t); let ch = false;
+      if (C) { for (const id in C) { const c = C[id]; if (!c.members.includes(uid)) continue; ch = true; c.members = c.members.filter(x => x !== uid);
+        if (!c.members.length) delete C[id]; else if (c.owner === uid) { c.owner = c.members[0]; const o = await this.userById(c.owner, t); c.ownerName = o ? o.name : '?'; } }
+        if (ch) await this.kvSet('clubs', C, t); }
+    });
+  }
+
   // ---- verification codes ----
   async codeSet(k, hash, exp, data) { await this.d.run('INSERT INTO codes(k,hash,exp,tries,data) VALUES(?,?,?,0,?) ON CONFLICT(k) DO UPDATE SET hash=excluded.hash, exp=excluded.exp, tries=0, data=excluded.data', [k, hash, exp, JSON.stringify(data || null)]); }
   async codeGet(k) { const r = await this.d.get('SELECT * FROM codes WHERE k=?', [k]); return r ? { hash: r.hash, exp: Number(r.exp), tries: Number(r.tries), data: J(r.data) } : null; }
@@ -124,7 +144,7 @@ class Repo {
   async notesUnseen(uid) { return Number((await this.d.get('SELECT COUNT(*) AS n FROM notes WHERE uid=? AND seen=0', [uid])).n); }
   async notesSeen(uid) { await this.d.run('UPDATE notes SET seen=1 WHERE uid=?', [uid]); }
   async pushAdd(uid, sub) { await this.d.run('INSERT INTO push_subs(endpoint,uid,data,created) VALUES(?,?,?,?) ON CONFLICT(endpoint) DO UPDATE SET uid=excluded.uid, data=excluded.data', [sub.endpoint, uid, JSON.stringify(sub), Date.now()]); }
-  async pushDel(endpoint) { await this.d.run('DELETE FROM push_subs WHERE endpoint=?', [endpoint]); }
+  async pushDel(endpoint, uid) { if (uid) await this.d.run('DELETE FROM push_subs WHERE endpoint=? AND uid=?', [endpoint, uid]); else await this.d.run('DELETE FROM push_subs WHERE endpoint=?', [endpoint]); }
   async pushOf(uid) { return (await this.d.all('SELECT data FROM push_subs WHERE uid=?', [uid])).map(r => J(r.data)); }
   async pushCount() { return Number((await this.d.get('SELECT COUNT(*) AS n FROM push_subs')).n); }
 

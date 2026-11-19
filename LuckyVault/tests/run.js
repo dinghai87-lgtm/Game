@@ -32,7 +32,17 @@ function maths() {
   }
   E.setVariants(SLOT_LIST); let bad = 0; SLOT_LIST.forEach(([id, t]) => { if (!E.MATH[E.mathKey(id, t[1])]) bad++; }); ok(!bad, 'all ' + SLOT_LIST.length + ' slots map to a valid maths profile');
 }
+function exactTables() {
+  // games whose return can be worked out exactly (no strategy): the published figures must hold
+  const c = {}; TE.WHEEL.forEach(s => c[s] = (c[s] || 0) + 1);
+  ok(TE.WHEEL.length === 54 && c['1'] === 24 && c['2'] === 15 && c['5'] === 7 && c['10'] === 4 && c['20'] === 2 && c.J === 1 && c.L === 1, 'money wheel has the classic 54 segments (1×24, 2×15, 5×7, 10×4, 20×2, Joker, Logo): ' + JSON.stringify(c));
+  const comb = (n, k) => { let r = 1; for (let i = 0; i < k; i++) r = r * (n - i) / (i + 1); return r; };
+  for (const v of ['classic', 'power']) { const T = TE.KENO[v]; const bad = []; for (let n = 1; n <= 10; n++) { let ev = 0; for (const h in T[n]) ev += comb(20, +h) * comb(60, n - h) / comb(80, n) * T[n][h] * (v === 'power' ? 1 + 3 * h / 20 : 1); if (ev < 0.90 || ev > 0.945) bad.push(n + ':' + (ev * 100).toFixed(1)); }
+    ok(!bad.length, 'keno ' + v + ': every pick count returns 90–94.5% (exact) ' + bad.join(' ')); }
+  const sc = TE.SCR_P.reduce((a, [m, p]) => a + m * p, 0); ok(Math.abs(sc - 0.92) < 0.005, 'scratch cards return 92% (exact ' + (sc * 100).toFixed(2) + '%)');
+}
 function tables() {
+  exactTables();
   console.log('\n2. Table games (every game deals and settles)');
   const BETS = { blackjack: { main: 10 }, roulette: { red: 10 }, baccarat: { banker: 10 }, dragontiger: { tiger: 5 }, sicbo: { big: 5 }, craps: { pass: 5 }, videopoker: { coins: 5, denom: 1 }, tcp: { ante: 5, pairplus: 1 }, holdem: { ante: 5 }, caribbean: { ante: 5 }, war: { main: 5 }, reddog: { main: 5 }, wheel: { '5': 5 }, keno: { main: 2 }, scratch: { main: 2 }, uth: { ante: 5, blind: 5, trips: 1 }, letitride: { main: 5 }, mstud: { ante: 5 }, fourcard: { ante: 5, acesup: 1 }, hcf: { ante: 5 }, paigow: { main: 5, fortune: 1 }, paigowtiles: { main: 5 }, crash: { main: 5 } };
   TABLE_LIST.forEach(([gid, t]) => {

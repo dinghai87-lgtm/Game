@@ -11,6 +11,7 @@
  * The server is authoritative: every spin and card is generated here.
  */
 const http = require('http'), fs = require('fs'), path = require('path'), os = require('os');
+require('./lib/rng.js').install();   // every spin, card and dice roll uses crypto randomness (must run before the engines load)
 const DB = require('./lib/db.js');
 const { Repo, dayKey, r2 } = require('./lib/repo.js');
 const A = require('./lib/auth.js');
@@ -31,7 +32,10 @@ const ADMIN_PASS = process.env.ADMIN_PASS || (() => {
   const dir = path.join(__dirname, 'data'), f = path.join(dir, 'admin-pass.txt');
   try { const v = fs.readFileSync(f, 'utf8').trim(); if (v) return v; } catch (e) {}
   const v = require('crypto').randomBytes(12).toString('base64').replace(/[+/=]/g, 'x');
-  try { fs.mkdirSync(dir, { recursive: true }); fs.writeFileSync(f, v + '\n', { mode: 0o600 }); } catch (e) { return 'admin123'; }
+  try { fs.mkdirSync(dir, { recursive: true }); fs.writeFileSync(f, v + '\n', { mode: 0o600 }); } catch (e) {
+    // a live server never falls back to a guessable password: stop and ask for ADMIN_PASS instead
+    if (process.env.NODE_ENV === 'production') { console.error('Cannot write data/admin-pass.txt and ADMIN_PASS is not set. Set ADMIN_PASS (a long password) and start again.'); process.exit(1); }
+    return 'admin123'; }
   return v;
 })();
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map(x => x.trim()).filter(Boolean);
@@ -209,6 +213,7 @@ R['POST /api/auth/email/verify'] = userRoute(async ({ uid, b }) => {
   const r = await A.checkCode(repo, 'verify:' + uid, b.code); if (!r.ok) return [400, { err: 'code', msg: r.msg }];
   let out; await repo.withUser(uid, async (u, t) => {
     if (r.data && r.data.email !== u.email) { out = [400, { err: 'code', msg: 'Email changed — request a new code' }]; return { skip: true }; }
+    { const other = await repo.userByEmail(u.email, t); if (other && other.id !== u.id) { out = [409, { err: 'email_taken', msg: 'That email was just verified on another account' }]; return { skip: true }; } }
     u.emailVerified = true; let bonus = 0; if (!u.verifyBonusPaid && SET.verifyBonus) { u.verifyBonusPaid = true; bonus = SET.verifyBonus; u.bal = r2(u.bal + bonus); await addTx(u, 'verify_bonus', bonus, 'email', t); }
     out = [200, { user: pubUser(u), bonus }];
   });
@@ -229,12 +234,15 @@ R['POST /api/auth/reset'] = async ({ b, ip }) => {
   await repo.sessionsDelUser(u.id); await repo.audit('password_reset', u.name);
   return [200, { token: await newSession(u, ip, fpOf(b)), user: pubUser(await repo.userById(u.id)) }];
 };
-R['POST /api/auth/password'] = userRoute(async ({ uid, b }) => {
+R['POST /api/auth/password'] = userRoute(async ({ uid, b, req }) => {
   if (String(b.pass || '').length < 8) return [400, { err: 'pass', msg: 'New password must be at least 8 characters' }];
+  if (limited('pwchg:' + uid, 10, 900000)) return [429, { err: 'rate', msg: 'Too many attempts, try again later' }];
   let out; await repo.withUser(uid, async u => {
     if (u.hash && !A.safeEq(A.hashPass(b.old || '', u.salt), u.hash)) { out = [400, { err: 'old', msg: 'Current password is wrong' }]; return { skip: true }; }
     u.salt = A.newSalt(); u.hash = A.hashPass(b.pass, u.salt); out = [200, { ok: true }];
   });
+  // a new password signs out every other device (this one stays logged in)
+  if (out[0] === 200) await repo.sessionsDelOthers(uid, (req.headers.authorization || '').replace(/^Bearer /, ''));
   return out;
 });
 // Phone verification (SMS)
@@ -266,9 +274,10 @@ R['POST /api/account/delete'] = userRoute(async ({ uid, b }) => {
   let out; await repo.withUser(uid, async u => {
     if (u.hash && !A.safeEq(A.hashPass(b.pass || '', u.salt), u.hash)) { out = [400, { err: 'pass', msg: 'Password is wrong' }]; return { skip: true }; }
     const old = u.name; u.name = 'deleted_' + u.id; u.email = null; u.emailVerified = false; u.phone = null; u.googleSub = null; u.appleSub = null; u.hash = null; u.salt = null; u.banned = true; u.deleted = now(); u.bal = 0;
+    delete u.friends; delete u.gifts; delete u.giftSent; delete u.club; delete u.rg;
     await repo.audit('account_deleted', old + ' (#' + u.id + ')'); out = [200, { ok: true }];
   });
-  if (out && out[0] === 200) await repo.sessionsDelUser(uid);   // a wrong password must not log the player out
+  if (out && out[0] === 200) { await repo.sessionsDelUser(uid); await repo.scrubUser(uid, 'deleted_' + uid); }   // a wrong password must not log the player out
   return out;
 });
 
@@ -276,6 +285,8 @@ R['POST /api/account/delete'] = userRoute(async ({ uid, b }) => {
 function roundInfo(g, r, extra) { return Object.assign({ gid: g.id, engine: g.e, table: !g.slot, cost: r.cost, win: r.win, bet: r.bet || r.cost, ev: r.ev, hold: !!(r.res && r.res.hold), grand: !!(r.res && r.res.hold && r.res.hold.grand), inFS: !!r.inFS }, extra || {}); }
 async function afterRound(u, g, r, info, t) {
   u.last = now();
+  // play time is also measured from the rounds themselves (gaps under 2 minutes), so a client that stops sending heartbeats cannot dodge a time limit
+  { const rg = rgDay(u); const gap = rg.lastAct ? now() - rg.lastAct : 0; if (gap > 0 && gap < 120e3) rg.rsecs = Math.round(((rg.rsecs || 0) + gap / 1000) * 10) / 10; rg.lastAct = now(); }
   const gs = { spins: info.newRound ? 1 : 0, bet: r.cost, win: info.done === false ? 0 : r.win, fs: r.ev === 'start' ? 1 : 0 };
   await repo.gameStat(g.id, gs, t); await repo.daily('bet', r.cost, t); if (gs.win) await repo.daily('win', gs.win, t);
   if (info.newRound) { await repo.daily('rounds', 1, t); await repo.dailyPlayer(u.id, t); await repo.gameDaily(g.id, u.id, 1, 0, t); }
@@ -312,7 +323,7 @@ R['POST /api/spin'] = userRoute(async ({ uid, b }) => {
       { const rb = rgBlock(u); if (rb && !u.fs) { out = [403, rb]; return { skip: true }; } }   // free spins already won may still be played
       const bet = typeof b.bet === 'number' ? b.bet : NaN; if (!(u.fs && (u.fs.left > 0 || u.fs.choose)) && (!BETS.includes(bet) || bet > SET.maxBet)) { out = [400, { err: 'bad_bet', msg: 'Max bet is ' + SET.maxBet }]; return { skip: true }; }
       if (!(u.fs && (u.fs.left > 0 || u.fs.choose)) && BET_LV[bet] && E.levelOf(u.xp || 0) < BET_LV[bet]) { out = [400, { err: 'bet_level', msg: 'Reach level ' + BET_LV[bet] + ' to unlock this bet', need: BET_LV[bet] }]; return { skip: true }; }
-      const r = E.round(u, gid, g.e, bet, !!b.buy, !!b.ante, { choice: b.choice }); if (r.err) { out = [400, r]; return { skip: true }; }
+      const r = E.round(u, gid, g.e, bet, !!b.buy, !!b.ante, { choice: Number.isInteger(b.choice) ? b.choice : undefined }); if (r.err) { out = [400, r]; return { skip: true }; }
       if (r.chosen) { out = [200, r]; return; }
       await afterRound(u, g, r, roundInfo(g, r, { newRound: true }), t);
       await repo.roundInsert({ t: now(), uid, name: u.name, gid, bet: r.bet, cost: r.cost, win: r.win, fs: r.inFS, buy: r.buy, ante: r.ante, ev: r.ev, bal: u.bal }, t);
@@ -325,10 +336,13 @@ R['POST /api/spin'] = userRoute(async ({ uid, b }) => {
 // Lowering a limit or starting a break is immediate; raising/removing a limit only takes effect 24 h later.
 function rgBlock(u) { const rg = u.rg || {}; const t = now();
   if (rg.until && rg.until > t) return { err: 'rg_pause', msg: '账号暂停中，至 ' + new Date(rg.until).toLocaleString() + ' · Your break lasts until then', until: rg.until };
-  const lim = rgLimit(u); if (lim && rg.day === dayKey(t) && (rg.secs || 0) >= lim * 60) return { err: 'rg_limit', msg: '今天的游戏时间已达上限（' + lim + ' 分钟）· Daily play-time limit reached' };
+  const lim = rgLimit(u); if (lim && rg.day === dayKey(t) && rgSecs(rg) >= lim * 60) return { err: 'rg_limit', msg: '今天的游戏时间已达上限（' + lim + ' 分钟）· Daily play-time limit reached' };
   return null; }
+// today's play time: the larger of the client heartbeats and the server's own measurement from rounds
+const rgSecs = rg => Math.max(rg.secs || 0, rg.rsecs || 0);
+function rgDay(u) { const rg = u.rg = u.rg || {}; const d = dayKey(now()); if (rg.day !== d) { rg.day = d; rg.secs = 0; rg.rsecs = 0; } return rg; }
 function rgLimit(u) { const rg = u.rg || {}; if (rg.pend && rg.pend.at <= now()) { rg.limit = rg.pend.limit; delete rg.pend; } return rg.limit || 0; }
-function rgView(u) { const rg = u.rg || {}; const d = dayKey(now()); return { limit: rgLimit(u), pending: rg.pend || null, until: rg.until && rg.until > now() ? rg.until : 0, todayMin: rg.day === d ? Math.floor((rg.secs || 0) / 60) : 0 }; }
+function rgView(u) { const rg = u.rg || {}; const d = dayKey(now()); return { limit: rgLimit(u), pending: rg.pend || null, until: rg.until && rg.until > now() ? rg.until : 0, todayMin: rg.day === d ? Math.floor(rgSecs(rg) / 60) : 0 }; }
 const XWIN = ['stiger', 'btiger', 'sdragon', 'bdragon', 'dragon7', 'panda8'];
 R['POST /api/table'] = userRoute(async ({ uid, b }) => {
   const gid = +b.gid, g = GAMES[gid];
@@ -370,6 +384,8 @@ R['POST /api/gamble'] = userRoute(async ({ uid, b }) => {
   if (busy.has(uid)) return [429, { err: 'busy' }]; busy.add(uid);
   try {
     let out; await repo.withUser(uid, async (u, t) => {
+      if (!u || u.banned) { out = [403, { err: 'banned', msg: 'Account suspended' }]; return { skip: true }; }
+      { const rb = rgBlock(u); if (rb) { out = [403, rb]; return { skip: true }; } }   // a break or a reached time limit also stops the double-up
       const r = E.gamble(u, gid, String(b.pick || '')); if (r.err) { out = [400, r]; return { skip: true }; }
       await repo.gameStat(gid, { spins: 0, bet: r.stake, win: r.win, fs: 0 }, t); await repo.daily('bet', r.stake, t); if (r.win) await repo.daily('win', r.win, t);
       u.st.bet = r2(u.st.bet + r.stake); u.st.win = r2(u.st.win + r.win); u.last = now();
@@ -389,7 +405,7 @@ R['POST /api/heartbeat'] = userRoute(async ({ uid, b }) => { // playtime per gam
   const gid = +b.gid, secs = Math.max(0, Math.min(60, Math.round(+b.secs || 0))); if (!GAMES[gid] || !secs) return [200, { ok: true }];
   if (limited('hb:' + uid, 4, 60000)) return [200, { ok: true }];
   await repo.gamePlaytime(gid, secs); await repo.gameDaily(gid, uid, 0, secs);
-  let rg = null; await repo.withUser(uid, async u => { const d = dayKey(now()); u.rg = u.rg || {}; if (u.rg.day !== d) { u.rg.day = d; u.rg.secs = 0; } u.rg.secs += secs; rg = rgView(u); });
+  let rg = null; await repo.withUser(uid, async u => { rgDay(u).secs += secs; rg = rgView(u); });
   return [200, { ok: true, rg }];
 });
 
@@ -404,15 +420,19 @@ R['POST /api/bonus'] = userRoute(async ({ uid, ip, b }) => {
   return out;
 });
 R['POST /api/orders'] = userRoute(async ({ uid, b }) => {
+  if (limited('order:' + uid, 10, 600e3)) return [429, { err: 'rate', msg: 'Too many orders — finish or wait for the open ones' }];   // no pending-order spam
   const u = await repo.userById(uid); const p = SET.packages.find(x => x.id === b.pkg); if (!p) return [400, { err: 'pkg', msg: 'Unknown package' }];
   const lim = effLimit(u); if (lim) { const spent = await repo.monthSpend(uid); if (spent + p.price > lim + 1e-9) return [400, { err: 'limit', msg: 'This purchase would exceed your monthly spending limit of $' + lim.toFixed(2) + ' ($' + spent.toFixed(2) + ' spent this month)' }]; }
   const pr = promoActive();
   const o = { id: 'LV' + (await repo.next('order', 100000)), uid, name: u.name, pkg: p.id, price: p.price, coins: pkgCoins(p), promo: pr ? pr.label || ('+' + pr.pct + '%') : null, status: 'pending', provider: SET.sandbox ? 'sandbox' : 'store', created: now(), paidAt: null };
   await repo.orderInsert(o); return [200, { order: o }];
 });
-async function creditOrder(id, by) {
+async function creditOrder(id, by, claim) {
   return repo.tx(async t => {
     const o = await repo.order(id, t, true); if (!o || o.status !== 'pending') return null;
+    // one store transaction pays for one order only. The claim is written inside this same database transaction,
+    // so two parallel requests carrying the same receipt cannot both get through (it used to be a separate read, then write).
+    if (claim) { const ins = await t.run('INSERT INTO kv(k,v) VALUES(?,?) ON CONFLICT(k) DO NOTHING', [claim.k, JSON.stringify(claim.v)]); if (!ins.changes) return { used: true }; }
     const u = await repo.userById(o.uid, t, true); if (!u) return null;
     o.status = 'paid'; o.paidAt = now(); o.by = by; await repo.orderSave(o, t);
     u.bal = r2(u.bal + o.coins); u.st.dep = r2(u.st.dep + o.price); u.st.depCount++; await repo.saveUser(u, t);
@@ -459,8 +479,9 @@ R['POST /api/iap/verify'] = userRoute(async ({ uid, b }) => {
   let v; try { v = plat === 'ios' ? await IAP.apple(b.receipt, sku) : await IAP.google(b.token, sku); } catch (e) { return [502, { err: 'store', msg: 'Could not reach the store, please try again' }]; }
   if (!v || v.err) return [400, v || { err: 'invalid' }];
   const key = 'iaptx:' + v.txId; if (await repo.kvGet(key, null)) return [400, { err: 'used', msg: 'This purchase was already used' }];
-  await repo.kvSet(key, { order: o.id, uid, at: now(), sandbox: !!v.sandbox });
-  const r = await creditOrder(o.id, 'iap:' + plat + (v.sandbox ? ':sandbox' : '')); if (!r) return [400, { err: 'order', msg: 'Order not payable' }];
+  const r = await creditOrder(o.id, 'iap:' + plat + (v.sandbox ? ':sandbox' : ''), { k: key, v: { order: o.id, uid, at: now(), sandbox: !!v.sandbox } });
+  if (r && r.used) return [400, { err: 'used', msg: 'This purchase was already used' }];
+  if (!r) return [400, { err: 'order', msg: 'Order not payable' }];
   return [200, { user: pubUser(r.u), coins: r.o.coins, order: r.o.id }];
 });
 
@@ -508,11 +529,14 @@ R['GET /api/tournaments'] = userRoute(async ({ uid }) => {
 });
 R['GET /api/notes'] = userRoute(async ({ uid }) => [200, { notes: await repo.notes(uid) }]);
 R['POST /api/notes/seen'] = userRoute(async ({ uid }) => { await repo.notesSeen(uid); return [200, { ok: true }]; });
+// Browsers' push services only: the server POSTs to this address later, so an arbitrary URL would let a player make the
+// server call internal machines (SSRF). Extra hosts can be allowed with PUSH_HOSTS=host1,host2.
+const PUSH_HOST = new RegExp('^https:\\/\\/([a-z0-9-]+\\.)*(' + ['fcm.googleapis.com', 'android.googleapis.com', 'push.services.mozilla.com', 'notify.windows.com', 'push.apple.com'].concat((process.env.PUSH_HOSTS || '').split(',').map(x => x.trim()).filter(Boolean)).map(h => h.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')(:443)?\\/', 'i');
 R['POST /api/push/subscribe'] = userRoute(async ({ uid, b }) => {
-  const s = b.sub; if (!s || !/^https:\/\//.test(s.endpoint || '') || !s.keys || !s.keys.p256dh || !s.keys.auth) return [400, { err: 'sub', msg: 'Invalid subscription' }];
+  const s = b.sub; if (!s || !PUSH_HOST.test(String(s.endpoint || '')) || String(s.endpoint).length > 800 || !s.keys || !s.keys.p256dh || !s.keys.auth) return [400, { err: 'sub', msg: 'Invalid subscription' }];
   await repo.pushAdd(uid, { endpoint: s.endpoint, keys: { p256dh: s.keys.p256dh, auth: s.keys.auth } }); return [200, { ok: true }];
 });
-R['POST /api/push/unsubscribe'] = userRoute(async ({ b }) => { if (b.endpoint) await repo.pushDel(String(b.endpoint)); return [200, { ok: true }]; });
+R['POST /api/push/unsubscribe'] = userRoute(async ({ uid, b }) => { if (b.endpoint) await repo.pushDel(String(b.endpoint), uid); return [200, { ok: true }]; });   // only your own subscriptions
 R['POST /api/tour/done'] = userRoute(async ({ uid }) => { await repo.withUser(uid, async u => { u.tour = true; }); return [200, { ok: true }]; });
 
 // sandbox payment (dynamic path)
@@ -694,11 +718,16 @@ function serveStatic(req, res, pathname) {
   if (pathname === '/admin' || pathname === '/admin/') pathname = '/admin.html';
   if (pathname === '/privacy') pathname = '/legal/privacy.html'; if (pathname === '/terms') pathname = '/legal/terms.html';
   let f; try { f = path.normalize(path.join(PUB, decodeURIComponent(pathname))); } catch (e) { res.writeHead(400); return res.end(); }
-  if (!f.startsWith(PUB)) { res.writeHead(403); return res.end(); }
+  if (!f.startsWith(PUB + path.sep)) { res.writeHead(403); return res.end(); }   // inside public/ only (a sibling such as public-old/ must not match)
+  if (/[\\/]\.(?!well-known[\\/])/.test(f.slice(PUB.length))) { res.writeHead(404); return res.end(); }   // no dot-files or dot-folders (.git, .env); /.well-known stays reachable for app links
   fs.readFile(f, (err, data) => {
     if (err) { res.writeHead(404, { 'Content-Type': 'text/plain' }); return res.end('Not found'); }
     const ext = path.extname(f); const cache = /\/assets\//.test(f.replace(/\\/g, '/')) ? 'public, max-age=86400' : 'no-cache';
-    const H = { 'Content-Type': MIME[ext] || 'application/octet-stream', 'X-Content-Type-Options': 'nosniff', 'Cache-Control': cache, 'X-Frame-Options': 'SAMEORIGIN', 'Referrer-Policy': 'same-origin', Vary: 'Accept-Encoding' };
+    const H = { 'Content-Type': MIME[ext] || 'application/octet-stream', 'X-Content-Type-Options': 'nosniff', 'Cache-Control': cache, 'X-Frame-Options': 'SAMEORIGIN', 'Referrer-Policy': 'same-origin', Vary: 'Accept-Encoding',
+      'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=()' };
+    // pages: no plugins, no <base> hijack, only framed by ourselves (scripts stay inline-friendly: the game is one page)
+    if (ext === '.html') H['Content-Security-Policy'] = "object-src 'none'; base-uri 'self'; frame-ancestors 'self'";
+    if (process.env.HSTS === '1' || (PUBLIC_URL.startsWith('https://') && process.env.HSTS !== '0')) H['Strict-Transport-Security'] = 'max-age=31536000';
     // text files are sent gzip-compressed (cached in memory per file version) — the scripts shrink to about a quarter
     if (/\.(js|html|css|json|svg|txt|webmanifest)$/.test(ext) && /\bgzip\b/.test(req.headers['accept-encoding'] || '')) {
       fs.stat(f, (e2, st) => { const k = f + ':' + (st ? st.mtimeMs : 0); let z = GZ.get(k); if (!z) { z = zlib.gzipSync(data, { level: 7 }); GZ.set(k, z); if (GZ.size > 400) GZ.clear(); }
@@ -765,6 +794,7 @@ async function start() {
   LIVE = LIVE_MOD.install({ rgBlock, R, userRoute, repo: () => repo, TE, now, r2, GAMES, limited, session: t => t ? repo.session(t) : null, limits: () => ({ min: SET.tableMin, max: SET.tableMax }),
     afterRound: (u, g, r, info, t) => afterRound(u, g, r, roundInfo(g, r, { newRound: true, done: true, bet: r.bet, bacc: g.kind === 'mbacc' || g.kind === 'mdt', shared: true, xwin: XWIN.some(k => r.wins && r.wins[k] > 0) }), t) });
   await repo.gamesEnsure(GLIST.map(g => g.id)); await migrateJson(); await loadSettings(); await loadGames();
+  try { await LIVE.recover(); } catch (e) { logError(e, 'live-recover'); }   // stakes of shared-table hands cut off by the last restart
   await repo.sessionsPrune(SESSION_DAYS * 864e5);
   await backup(); setInterval(backup, 6 * 3600e3).unref();
   // hourly: every balance must match the ledger; alert the operator if not

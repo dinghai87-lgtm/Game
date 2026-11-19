@@ -18,8 +18,9 @@ let pass = 0, fail = 0; const fails = [];
 const ok = (c, m) => { if (c) { pass++; console.log('  ✔ ' + m); } else { fail++; fails.push(m); console.log('  ✘ ' + m); } };
 
 function slotRTP(e, n) {
-  const st = { bal: 1e12, fs: null }; let cost = 0, ret = 0;
-  for (let i = 0; i < n; i++) { const r = E.round(st, 0, e, 1); cost += r.cost; ret += r.win; let g = 0; while (st.fs && g++ < 3000) { let x = E.round(st, 0, e, 1); if (x.err === 'choose') x = E.round(st, 0, e, 1, false, false, { choice: i % 4 }); ret += x.win || 0; } }
+  const st = { bal: 1e12, fs: null }; let cost = 0, ret = 0, s2 = 0;
+  for (let i = 0; i < n; i++) { const r = E.round(st, 0, e, 1); cost += r.cost; let w = r.win; let g = 0; while (st.fs && g++ < 3000) { let x = E.round(st, 0, e, 1); if (x.err === 'choose') x = E.round(st, 0, e, 1, false, false, { choice: i % 4 }); w += x.win || 0; } ret += w; s2 += w * w; }
+  const m = ret / n; slotRTP.se = Math.sqrt(Math.max(0, s2 / n - m * m) / n) * 100;   // standard error of the measured RTP, in points
   return ret / cost * 100;
 }
 function maths() {
@@ -27,7 +28,7 @@ function maths() {
   const n = QUICK ? 150000 : 600000;
   for (const e of Object.keys(E.MATH)) {
     const wild = /High/.test(E.MATH[e].vol); // very swingy maths needs more spins and a wider band
-    const spins = wild ? n * 2 : n; const rtp = slotRTP(e, spins); const tol = (QUICK ? 3.5 : 2) + (wild ? 1 : 0);
+    const spins = wild ? n * 2 : n; const rtp = slotRTP(e, spins); const tol = +Math.max((QUICK ? 3.5 : 2) + (wild ? 1 : 0), 3.5 * slotRTP.se).toFixed(2);   // never tighter than 3.5 standard errors, so chance alone almost never fails it
     ok(Math.abs(rtp - E.MATH[e].rtp) <= tol, e.padEnd(9) + ' RTP ' + rtp.toFixed(2) + '% (target ' + E.MATH[e].rtp + '% ±' + tol + ', ' + n + ' spins)');
   }
   E.setVariants(SLOT_LIST); let bad = 0; SLOT_LIST.forEach(([id, t]) => { if (!E.MATH[E.mathKey(id, t[1])]) bad++; }); ok(!bad, 'all ' + SLOT_LIST.length + ' slots map to a valid maths profile');

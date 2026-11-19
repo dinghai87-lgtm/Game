@@ -62,6 +62,7 @@ def hue(dst, deg):
     im = Image.open(dst).convert('RGBA'); a = im.split()[3]; h, s_, v = im.convert('RGB').convert('HSV').split()
     h = h.point(lambda x: (x + int(deg * 255 / 360)) % 256); out = Image.merge('HSV', (h, s_, v)).convert('RGB').convert('RGBA'); out.putalpha(a); out.save(dst, 'WEBP', quality=90)
 SA = CP + 'rpg-stone-age-game-512x512-icons/PNG/without background/'
+MK = CP + 'rpg-monk-skill-game-icons/PNG/'
 FL = CP + 'fairy-loot-game-icons/PNG/without_shadow/'
 K = ['h1', 'h2', 'h3', 'h4', 'l1', 'l2', 'l3', 'l4', 'l5', 'W', 'S']
 def P(base, *ns): return [None if n is None else base + '%s.png' % n for n in ns]
@@ -97,6 +98,11 @@ G = {
  'holiday-gifts': dict(src=[None] * 4 + P(FL, 21, 15, 34, 42, 22) + [None, None], glow=(150, 220, 255), keepcover=True),
  # Jelly Kingdom: 8/9 identical to candy-carnival -> same candies hue-rotated to a cool jelly palette
  'jelly-kingdom': dict(src=[None] * 11, hue=(150, ['h1', 'h2', 'h3', 'h4', 'l1', 'l2', 'l3', 'l4', 'l5']), glow=(160, 220, 255)),
+ # ---- batch 4 ----
+ # Lucky Panda Link: jade jewellery shared with aztec-sun / bamboo-panda -> kung-fu tiles (red rim; panda-fortune uses the gold rim)
+ 'lucky-panda-link': dict(src=P(MK, 28, 30, 32, 3, 11, 33, 31, 8, 5) + [None, None], tile=(185, 28, 28), glow=(255, 120, 90)),
+ # Sun God Ra: 5/9 identical to pharaoh-gold -> gold sun amulet, chalice and gold bands
+ 'sun-god-ra': dict(src=P(MT, 4) + P(RG, 1) + P(MT, 8) + P(RG, 5) + [None] * 7, glow=(255, 170, 70)),
 }
 todo = sys.argv[1:] or list(G)
 for slug in todo:

@@ -134,6 +134,15 @@ G = {
  'fortune-god': dict(src=[None] + P(ELX, 13, 8, 45) + [None] + P(ELX, 16) + [None] * 5, glow=(255, 200, 90)),
  # Star Burst: 5 gems shared with neon-nights -> star crystals and shards
  'star-burst': dict(src=[None] + P(MG, 45, 39) + [None, None, None] + P(MG, 38, 37, 27) + [None, None], glow=(255, 150, 230)),
+ # ---- batch 10 ----
+ # Carnival Spin: h4,l1,l3,l4 shared with cosmic-candy -> those four sweets hue-rotated
+ 'carnival-spin': dict(src=[None] * 11, hue=(170, ['h4', 'l1', 'l3', 'l4']), glow=(255, 160, 220)),
+ # Gem Mine: h1,h2,h4 shared with neon-nights -> those gems hue-rotated
+ 'gem-mine': dict(src=[None] * 11, hue=(110, ['h1', 'h2', 'h4']), glow=(150, 255, 170)),
+ # Koi Pond: h3,l1,l2 shared with ocean-pearl-link -> red koi, lily-pad clover, green coral (sea-loot)
+ 'koi-pond': dict(src=[None, None] + P(SEA, 35) + [None] + P(SEA, 47, 26) + [None] * 5, glow=(255, 150, 110)),
+ # Jungle King: h2,h3,h4 shared with jungle-reels -> blueberries, pineapple, wild strawberry (512 painted; h1 is already a dragon fruit)
+ 'jungle-king': dict(src=[None] + P(FR, 39, 45, 26) + [None] * 7, glow=(160, 255, 120)),
 }
 todo = sys.argv[1:] or list(G)
 for slug in todo:

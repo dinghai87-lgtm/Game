@@ -659,3 +659,12 @@ Frame-by-frame phone QA (idle, bet, deal x8, result, squeeze) in 中文 and Engl
 
 ## 打包 (08:49)
 - v5.12 打包（lv-v175），已发送并写入 claude导出；ui-smoke 测试截图已从仓库移除并加入 .gitignore
+
+## Round 89 (15:59) 素材融合第 1 批
+- 用 CraftPix 会员素材替换 6 款主题不符/重复的老虎机（工具 tools/build_fusion.py）：
+  - 龙之财富 Link：整套换成龙蛋（与金龙等共用的龙系图标分开）
+  - 宙斯闪电：换成闪电法师图（金边），背景换成云海
+  - 药水实验室：换成彩绘药水瓶
+  - 吸血鬼城堡：血色心脏、面具、魔眼、骷髅 + 红色药剂
+  - 狼月之谜：兽爪套图（不再和另外 3 款共用月亮图）
+  - 冰雪王国：背景换成雪山

@@ -108,6 +108,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .wild .in{padding-bottom:12%}.scat .in{padding-bottom:12%}
 .mult .in{border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0,#ffe066 18%,#ff8800 55%,#9a2c00 100%);box-shadow:0 0 16px rgba(255,150,0,.9),inset 0 -4px 8px rgba(0,0,0,.35);color:#fff;font-family:Anton,Impact,"Arial Black",sans-serif;font-size:calc(var(--cell) * .3);text-shadow:0 2px 0 #7a1d00,0 0 6px #000;width:82%;height:82%}
 .mult.m-hi .in{background:radial-gradient(circle at 35% 30%,#fff 0,#7df9ff 18%,#7b2ff7 55%,#2a0060 100%);box-shadow:0 0 18px rgba(123,47,247,.95)}
+.mult .in{font-size:calc(var(--cell) * .34)!important;font-weight:900!important;font-family:"Lilita One","Arial Black",Impact,sans-serif!important;-webkit-text-stroke:calc(var(--cell) * .018) #5a1500;paint-order:stroke fill;text-shadow:0 2px 0 #5a1500,0 0 8px rgba(0,0,0,.6)!important}
 .mult.m-top .in{background:radial-gradient(circle at 35% 30%,#fff 0,#ff9aa2 18%,#ff0040 55%,#5a0010 100%);box-shadow:0 0 22px rgba(255,0,64,1)}
 .cell.win{z-index:2}
 .cell.win .in{animation:pulse .45s ease-in-out infinite alternate;box-shadow:0 0 0 2px var(--gold),0 0 20px var(--gold)}
@@ -435,7 +436,7 @@ button:focus-visible,input:focus-visible,.tile:focus-visible{outline:3px solid #
   <div id="stage">
     <div id="hwBar"><div class="hwl" style="background:none;border:0;color:#cfd3dc;font-size:10px;opacity:.85">金币奖 · Link prizes</div><div class="g" data-noi18n><i class="lkn" data-k="GRAND"></i> <b id="jpG"></b></div><div class="ma" data-noi18n><i class="lkn" data-k="MAJOR"></i> <b id="jpMa"></b></div><div class="mi" data-noi18n><i class="lkn" data-k="MINOR"></i> <b id="jpMi"></b></div><div class="mn" data-noi18n><i class="lkn" data-k="MINI"></i> <b id="jpMn"></b></div><div class="rs" id="hwRs" style="display:none"><span class="rsl" data-zh1>Respins</span> <b id="hwRsN">3</b></div></div>
     <div id="gLogo"><span class="ic emo" id="gLogoIc"></span><span class="nm" id="gLogoNm"></span></div>
-    <div id="fsBanner"><div>Free spins <b id="fsLeft">0</b></div><div>Win <b id="fsWin">0.00</b></div><div id="fsMultBox">Multi <b id="fsMult">x0</b></div></div>
+    <div id="fsBanner"><div>Free spins <b id="fsLeft">0</b></div><div>Win <b id="fsWin">0.00</b></div><div id="fsMultBox"><span class="fsmL">Multiplier</span> <b id="fsMult">x0</b></div></div>
     <div id="frame"><div class="lights"></div>
       <div id="boardWrap"><div id="board"></div><svg id="lines"></svg><div id="float"></div><div id="symTip"></div></div>
     </div>
@@ -691,7 +692,7 @@ function updUI(){setBal();document.body.classList.toggle('spinning',!!(T.g&&T.bu
  $('#autoBtn').classList.toggle('on',T.auto>0);$('#turboBtn').classList.toggle('on',!!S.turbo);$('#sndBtn').textContent=S.snd?'🔊':'🔇';
  const fb=$('#fsBanner');fb.classList.toggle('show',!!T.fs);
  const hw=T.g.e==='holdwin';$('#hwBar').classList.toggle('show',hw);if(hw){document.querySelectorAll('#hwBar .lkn').forEach(e=>e.textContent=LKN(e.dataset.k));$('#jpG').textContent=shortN(E.JP.GRAND*bet);$('#jpMa').textContent=shortN(E.JP.MAJOR*bet);$('#jpMi').textContent=shortN(E.JP.MINOR*bet);$('#jpMn').textContent=shortN(E.JP.MINI*bet);}
- if(T.fs){$('#fsLeft').textContent=T.fs.left;$('#fsWin').textContent=fmt(T.fs.total);const showM=T.g.e!=='reel';$('#fsMult').textContent='x'+(T.fs.mult||0);
+ if(T.fs){$('#fsLeft').textContent=T.fs.left;$('#fsWin').textContent=fmt(T.fs.total);const showM=T.g.e!=='reel';$('#fsMult').textContent=T.fs.mult?'x'+T.fs.mult:'—';
   $('#fsMultBox').style.display=(T.g.e==='tumble'||T.g.e==='cluster')?'':'none';if(T.g.e==='lines'||T.g.e==='ways'){$('#fsMultBox').style.display='';$('#fsMult').textContent='x'+m.fsMult}}}
 
 // ===================== BACKEND (server or local demo) =====================

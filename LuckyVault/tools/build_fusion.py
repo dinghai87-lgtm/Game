@@ -127,6 +127,13 @@ G = {
  'wolf-moon-link': dict(src=P(CLAW, 24, 48, 9, 5, 22, 23, 14, 42, 36, None, None), glow=(150, 140, 255)),
  # Dragon Hoard: h1,h4,l3,l5 shared with gold-rush -> jewelled dragon eggs + mossy sunken coins and ring
  'dragon-hoard': dict(src=P(EGG, 31) + [None, None] + P(EGG, 39) + [None, None] + P(SEA, 4) + [None] + P(SEA, 29) + [None, None], glow=(255, 190, 90)),
+ # ---- batch 9 ----
+ # Bamboo Panda: h1-h4 identical to aztec-sun's jade jewellery (jade stays with the Aztec game) -> lantern bottle, clay jar, leaf-wrapped orange flask, blue gourd (first try of 3 brown jars read as one colour)
+ 'bamboo-panda': dict(src=P(ELX, 48, 28, 1, 10) + [None] * 7, glow=(150, 255, 150)),
+ # Fortune God: h2,h3,h4,l2 shared with pharaoh-gold -> labelled tonic jars, golden chalice
+ 'fortune-god': dict(src=[None] + P(ELX, 13, 8, 45) + [None] + P(ELX, 16) + [None] * 5, glow=(255, 200, 90)),
+ # Star Burst: 5 gems shared with neon-nights -> star crystals and shards
+ 'star-burst': dict(src=[None] + P(MG, 45, 39) + [None, None, None] + P(MG, 38, 37, 27) + [None, None], glow=(255, 150, 230)),
 }
 todo = sys.argv[1:] or list(G)
 for slug in todo:

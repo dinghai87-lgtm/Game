@@ -58,6 +58,11 @@ def realbg(src, dst, bright=0.8):
     im = Image.open(src).convert('RGB'); r = max(1600 / im.size[0], 900 / im.size[1]); im = im.resize((int(im.size[0] * r) + 1, int(im.size[1] * r) + 1), Image.LANCZOS)
     x = (im.size[0] - 1600) // 2; y = (im.size[1] - 900) // 2; ImageEnhance.Brightness(im.crop((x, y, x + 1600, y + 900))).enhance(bright).save(dst, 'WEBP', quality=80)
 
+def hue(dst, deg):
+    im = Image.open(dst).convert('RGBA'); a = im.split()[3]; h, s_, v = im.convert('RGB').convert('HSV').split()
+    h = h.point(lambda x: (x + int(deg * 255 / 360)) % 256); out = Image.merge('HSV', (h, s_, v)).convert('RGB').convert('RGBA'); out.putalpha(a); out.save(dst, 'WEBP', quality=90)
+SA = CP + 'rpg-stone-age-game-512x512-icons/PNG/without background/'
+FL = CP + 'fairy-loot-game-icons/PNG/without_shadow/'
 K = ['h1', 'h2', 'h3', 'h4', 'l1', 'l2', 'l3', 'l4', 'l5', 'W', 'S']
 def P(base, *ns): return [None if n is None else base + '%s.png' % n for n in ns]
 G = {
@@ -85,6 +90,13 @@ G = {
  'lucky-mystery': dict(src=P(MT, 1, 5) + P(RG, 4, 10) + P(RG, 2, 6, 7, 9) + P(MT, 10) + [None, None], glow=(240, 140, 255)),
  # Alien Invasion: 4th hue-shift of the shared spaceship sprites -> creature set: tentacle, alien egg, membrane wing, alien fungus (non-round so they stand out from the orb lows)
  'alien-invasion': dict(src=P(HQ, 17, 16, 14, 21) + [None] * 7, glow=(160, 255, 140)),
+ # ---- batch 3 (duplicate audit: average-hash match across symbol sets) ----
+ # Aztec Treasure Link: 7/9 identical to aztec-sun -> tribal mask + stone-age weapons and relics (numbers unused by aztec-expanding / mayan-mystery)
+ 'aztec-treasure-link': dict(src=P(MT, 6) + P(SA, 8, 39, 40, 5, 3, 7, 17, 24) + [None, None], glow=(110, 255, 190)),
+ # Holiday Gifts: 6 lows shared with cosmic-candy -> wreath, bouquet, teapot, cookie jar, gold ring (brighter than the first woollens try, which vanished on the red reels) (vector fairy-loot)
+ 'holiday-gifts': dict(src=[None] * 4 + P(FL, 21, 15, 34, 42, 22) + [None, None], glow=(150, 220, 255), keepcover=True),
+ # Jelly Kingdom: 8/9 identical to candy-carnival -> same candies hue-rotated to a cool jelly palette
+ 'jelly-kingdom': dict(src=[None] * 11, hue=(150, ['h1', 'h2', 'h3', 'h4', 'l1', 'l2', 'l3', 'l4', 'l5']), glow=(160, 220, 255)),
 }
 todo = sys.argv[1:] or list(G)
 for slug in todo:
@@ -93,7 +105,10 @@ for slug in todo:
         if not s: continue
         (tile(s, d + k + '.webp', g['tile']) if g.get('tile') else sym(s, d + k + '.webp')); e['sym_' + k] = k + '.webp'
         if k.startswith('h'): e.pop('anim_' + k, None); e.pop('animN_' + k, None)
+    if g.get('hue'):
+        for k in g['hue'][1]: hue(d + k + '.webp', g['hue'][0])
     if g.get('bg'): realbg(g['bg'], d + 'bg.webp', g.get('bright', 0.8))
+    if g.get('keepcover'): print('fused', slug, '(cover kept)'); continue
     cs = [d + k + '.webp' for k in ('h1', 'h2', 'h3', 'h4')]
     cover(d + 'bg.webp', cs, d + 'cover.webp', g['glow'])
     im = Image.open(d + 'cover.webp').convert('RGB'); im.thumbnail((300, 400), Image.LANCZOS); im.save(d + 'thumb.webp', 'WEBP', quality=74, method=6)

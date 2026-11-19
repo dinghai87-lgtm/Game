@@ -728,7 +728,7 @@ async function doSpin(buy){if(T.busy||!T.g)return;document.querySelectorAll(".re
  if(win>0){if(win>=bet*15&&!inFS){setWin('<span>Win</span><b>'+fmt(win)+'</b>');await bigWin(win,bet)}else{sfx.coins();await countWin(win,inFS?'Free spin win':'Win')}if(!inFS&&window.LVF)LVF.offerGamble(r)}
  else if(!inFS)setWin('');
  if(r.ev==='retrigger'){T.fs=r.fs;updUI();await fsPopup('RETRIGGER!',res.fsAward,'Extra free spins added',1600)}
- else if(r.ev==='start'){await fsPopup('FREE SPINS',res.fsAward,fsDesc(g),0);T.fs=r.fs;if(r.fs&&r.fs.choose&&window.LVF){const c=await LVF.choose(g,r.fs.choose);if(c&&c.fs){T.fs=c.fs;r.fs=c.fs}}relayout(res.steps[res.steps.length-1].grid);updUI()}
+ else if(r.ev==='start'){if(!(r.fs&&r.fs.choose&&window.LVF))await fsPopup('FREE SPINS',res.fsAward,fsDesc(g),0);else{floatTxt(LVLang&&LVLang.get()==='en'?'FREE SPINS!':'免费旋转！',1200);await wait(1200)}T.fs=r.fs;if(r.fs&&r.fs.choose&&window.LVF){const c=await LVF.choose(g,r.fs.choose);if(c&&c.fs){T.fs=c.fs;r.fs=c.fs}}relayout(res.steps[res.steps.length-1].grid);updUI()}
  T.busy=false;T.grid=res.steps[res.steps.length-1].grid;updUI();if(r.lvl){T.auto=0;onLevel(r);setBal()}
  if(r.ev==='end'){T.fs=null;relayout();updUI();await fsEnd(r.fsTotal,bet)}
  else if(T.fs&&T.fs.left>0){T.timers.push(setTimeout(()=>doSpin(),S.turbo?450:900));return}

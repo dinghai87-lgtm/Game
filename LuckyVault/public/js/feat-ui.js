@@ -36,7 +36,7 @@
 .chest:hover:not(:disabled){transform:translateY(-3px) scale(1.04)}
 .chest.open{background:radial-gradient(circle,#fde68a,#b45309);font:900 clamp(16px,4.5vw,22px) Anton,Impact,"Arial Black",sans-serif;color:#3b0d00;animation:growW .4s}
 .chest.end{background:radial-gradient(circle,#86efac,#166534);color:#fff}
-.chest.dim{opacity:.35}.chest img{width:78%;height:78%;object-fit:contain;filter:drop-shadow(0 3px 3px rgba(0,0,0,.6));pointer-events:none}.chest:not(.open):hover img{transform:scale(1.06)}
+.chest.dim{opacity:.35}.choices .cm{display:block;margin-top:6px;font-style:normal;font-weight:900;font-size:15px;color:#1a0b00;background:linear-gradient(#ffe27a,#f5a524);border-radius:999px;padding:2px 10px;width:max-content;margin-left:auto;margin-right:auto}.chest img{width:78%;height:78%;object-fit:contain;filter:drop-shadow(0 3px 3px rgba(0,0,0,.6));pointer-events:none}.chest:not(.open):hover img{transform:scale(1.06)}
 .ftot{font:900 26px Anton,Impact,"Arial Black",sans-serif;color:#fde68a;text-shadow:0 2px 0 #000}
 .wheelwrap{position:relative;width:min(340px,80vw);aspect-ratio:1;margin:6px auto 12px}
 .wheelwrap svg{width:100%;height:100%;transition:transform 4.2s cubic-bezier(.12,.6,.1,1);filter:drop-shadow(0 8px 20px rgba(0,0,0,.6))}
@@ -220,7 +220,8 @@ body.lowfx .cell.win .in::after{animation:none!important;display:none!important}
   window.LVF = {
     choose(g, options) {
       return new Promise(res => {
-        box().innerHTML = '<h2>CHOOSE YOUR BONUS</h2><p>Same expected value — pick your style: more spins or bigger multipliers.</p><div class="choices">' + options.map((o, i) => '<button data-i="' + i + '"><b>' + o[0] + '</b>free spins · x' + o[1] + '</button>').join('') + '</div>';
+        const zh = !window.LVLang || LVLang.get() !== 'en';
+        box().innerHTML = '<h2>' + (zh ? '选择你的奖励' : 'CHOOSE YOUR BONUS') + '</h2><p>' + (zh ? '期望价值相同，选你喜欢的方式：次数更多，或倍数更大。' : 'Same expected value — pick your style: more spins or bigger multipliers.') + '</p><div class="choices" data-noi18n>' + options.map((o, i) => '<button data-i="' + i + '"><b>' + o[0] + '</b>' + (zh ? '次免费旋转' : 'free spins') + '<i class="cm">x' + o[1] + (zh ? ' 倍数' : ' multiplier') + '</i></button>').join('') + '</div>';
         ov.classList.add('show'); sfx.scatter(); let done = false;
         const go = async i => { if (done) return; done = true; const r = await API.spin(g.id, curBet(), false, false, { choice: i }); ov.classList.remove('show'); if (r.err) { toast(r.msg || r.err); res(null); return; } if (API.mode === 'server') S.fs = r.fs; res(r); };
         box().querySelectorAll('[data-i]').forEach(b => b.onclick = () => go(+b.dataset.i));

@@ -120,6 +120,13 @@ G = {
  'monkey-business': dict(src=P(FR, 27, 11) + [None] + P(FR, 14) + [None] + P(FR, 13) + [None] * 5, glow=(200, 255, 110)),
  # Shark Hunter: 6 keys shared with ocean-treasure / ocean-wilds -> sea loot (shark, tentacle, scallop, starfish, pearls, oyster)
  'shark-hunter': dict(src=[None] + P(SEA, 31, 21) + [None] + P(SEA, 14, 19, 12) + [None] + P(SEA, 10) + [None, None], glow=(110, 210, 255)),
+ # ---- batch 8 ----
+ # Space Odyssey: 3rd copy of the spaceship sprites (robot-factory / robot-walkers) -> star crystal, fire shard, ice shard, alien skull + gems (first pick of monolith/void orb was too dark on the space bg)
+ 'space-odyssey': dict(src=P(MG, 21, 14, 16, 41, 25, 32, 33, 40, 48, None, None), glow=(150, 140, 255)),
+ # Wolf Moon Link: moon tiles shared with moon-wolf -> night-beast claws (wolf-moon-mystery uses the other claw numbers)
+ 'wolf-moon-link': dict(src=P(CLAW, 24, 48, 9, 5, 22, 23, 14, 42, 36, None, None), glow=(150, 140, 255)),
+ # Dragon Hoard: h1,h4,l3,l5 shared with gold-rush -> jewelled dragon eggs + mossy sunken coins and ring
+ 'dragon-hoard': dict(src=P(EGG, 31) + [None, None] + P(EGG, 39) + [None, None] + P(SEA, 4) + [None] + P(SEA, 29) + [None, None], glow=(255, 190, 90)),
 }
 todo = sys.argv[1:] or list(G)
 for slug in todo:

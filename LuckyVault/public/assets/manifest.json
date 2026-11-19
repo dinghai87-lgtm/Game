@@ -1868,18 +1868,10 @@
    "bg": "bg.webp",
    "cover": "cover.webp",
    "skin": "light",
-   "animN_h1": 12,
-   "animN_h2": 12,
-   "animN_h3": 12,
-   "animN_h4": 12,
    "logo": "logo.webp",
    "autologo": true,
    "snd": "space",
-   "thumb": "thumb.webp",
-   "anim_h1": "a_h1.webp",
-   "anim_h2": "a_h2.webp",
-   "anim_h3": "a_h3.webp",
-   "anim_h4": "a_h4.webp"
+   "thumb": "thumb.webp"
   },
   "cosmic-choice": {
    "sym_h1": "h1.webp",

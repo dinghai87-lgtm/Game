@@ -11,6 +11,9 @@ CLAW = CP + 'claw-loot-vector-game-icons/PNG/without_shadow/'
 ELX = CP + 'rpg-elixir-icons/PNG/without background/'
 HQ = CP + 'high-quality-rpg-loot-icons/PNG/without background/'
 LT = CP + 'lightning-mage-skills-icon-pack/PNG/'
+MG = CP + 'magic-gems-vector-icons/PNG/without_shadow/'
+RG = CP + 'premium-game-icons-of-fantasy-rings-pack-9/Premium-Game-Icons-of-Fantasy-Rings-Pack-9/PNG/'
+MT = CP + 'premium-game-icons-of-fantasy-magic-things-pack-8/Premium-Game-Icons-of-Fantasy-Magic-Things-Pack-8/PNG/'
 SNOW = CP + 'snowy-2d-game-backgrounds/_PNG/%02d/snowy%02d_preview-01.png'
 
 def sym(src, dst, size=256):
@@ -71,6 +74,17 @@ G = {
  'wolf-moon-mystery': dict(src=P(CLAW, 20, 10, 46, 30, 47, 4, 39, 26, 15, None, None), glow=(180, 130, 255)),
  # Frozen Kingdom: background shared with holiday-gifts -> layered snowy mountain scene
  'frozen-kingdom': dict(src=[None] * 11, bg=SNOW % (3, 3), glow=(160, 210, 255)),
+ # ---- batch 2 ----
+ # Cosmic Choice: hue-shifted copy of the shared spaceship sprites -> alien crystal / planet-orb set
+ 'cosmic-choice': dict(src=P(MG, 4, 28, 30, 29, 13, 16, 21, 27, 14, None, None), glow=(140, 255, 200)),
+ # Buffalo Thunder Link: 5/6 symbols identical to buffalo-stampede -> prairie hunting trophies (pelts, horn, tooth, feathers)
+ 'buffalo-thunder-link': dict(src=P(HQ, 7, 32, 1, 13, 2, 18, 39, 33, 38, None, None), glow=(255, 190, 100)),
+ # Frozen Peaks: crown + earrings shared with frozen-kingdom -> frost rings
+ 'frozen-peaks': dict(src=P(RG, 8, 3) + [None] * 9, glow=(140, 220, 255)),
+ # Lucky Mystery: Egypt jewelry pack (same as 5 Egypt games) -> premium magic rings + mystic charms
+ 'lucky-mystery': dict(src=P(MT, 1, 5) + P(RG, 4, 10) + P(RG, 2, 6, 7, 9) + P(MT, 10) + [None, None], glow=(240, 140, 255)),
+ # Alien Invasion: 4th hue-shift of the shared spaceship sprites -> creature set: tentacle, alien egg, membrane wing, alien fungus (non-round so they stand out from the orb lows)
+ 'alien-invasion': dict(src=P(HQ, 17, 16, 14, 21) + [None] * 7, glow=(160, 255, 140)),
 }
 todo = sys.argv[1:] or list(G)
 for slug in todo:

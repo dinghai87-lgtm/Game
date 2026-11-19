@@ -120,7 +120,7 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 @keyframes mg{to{transform:scale(1.25) rotate(8deg)}}
 #lines{position:absolute;left:4px;top:4px;pointer-events:none;overflow:visible;z-index:3}
 #lines polyline{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 4px rgba(0,0,0,.9))}
-#float{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.6);opacity:0;font-family:Anton,Impact,"Arial Black",sans-serif;font-size:42px;color:var(--gold);text-shadow:0 3px 0 #7a4b00,0 0 20px rgba(0,0,0,.9);pointer-events:none;z-index:5;white-space:nowrap;transition:transform .25s cubic-bezier(.3,1.6,.6,1),opacity .2s}
+#float{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.6);opacity:0;font-family:Anton,Impact,"Arial Black",sans-serif;font-size:min(42px,9vw);color:var(--gold);text-shadow:0 3px 0 #7a4b00,0 0 20px rgba(0,0,0,.9);pointer-events:none;z-index:5;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:clip;transition:transform .25s cubic-bezier(.3,1.6,.6,1),opacity .2s}
 #float.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
 #winbar{height:40px;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;font-weight:900;font-size:18px;color:#fff;text-transform:uppercase;text-shadow:0 2px 4px #000;font-variant-numeric:tabular-nums}
 #winbar b{color:var(--gold);font-size:24px}@media(min-width:700px){#winbar{padding-bottom:22px;box-sizing:content-box}}

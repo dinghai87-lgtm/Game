@@ -72,7 +72,7 @@ G = {
  # Dragon Fortune Link: was 11/11 dragon-loot icons shared with golden-dragon family -> a dragon-egg hatchery set
  'dragon-fortune-link': dict(src=P(EGG, 22, 4, 32, 12, 15, 20, 26, 2, 1, 47, None), glow=(255, 120, 80)),
  # Zeus Lightning: crowns/goblets had no storm feel -> unused lightning-mage tiles with a gold rim (storm-chaser = blue rim)
- 'zeus-lightning': dict(src=P(LT, 1, 14, 26, 7, 9, 10, 31, 22, 17, 6, 19), tile=(212, 175, 55), glow=(255, 220, 120),
+ 'zeus-lightning': dict(src=P(LT, 1, 14, 26, 7, 37, 41, 33, 22, 17, 6, 48), tile=(212, 175, 55), glow=(255, 220, 120),
    bg='/tmp/packs/cartoon-sky-game-backgrounds/PNG/BG_03/Layers/Sky.png', bright=0.75),  # cloud deck above Olympus (was the dragon forest bg)
  # Potion Lab: generic orbs -> painted elixir bottles (numbers not used by ice-queen / bamboo-panda)
  'potion-lab': dict(src=P(ELX, 2, 14, 7, 40, 4, 23, 26, 39, 31, 34, None), glow=(210, 140, 255)),

@@ -21,3 +21,16 @@ if (fs.existsSync(plist)) {
   fs.writeFileSync(plist, p);
   console.log('iOS: landscape + fullscreen');
 }
+// 版本号：对外版本 = package.json 的 version（如 1.0.0）；内部编号 = 网页版构建号/10（只增不减，商店要求每次上传都更大）
+try {
+  const ver = require('./package.json').version;
+  let build = 1; try { build = Math.floor(+JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'version.json'), 'utf8')).v / 10) || 1 } catch (e) {}
+  const gr = path.join(__dirname, 'android/app/build.gradle');
+  if (fs.existsSync(gr)) { let g = fs.readFileSync(gr, 'utf8');
+    g = g.replace(/versionCode\s+\d+/, 'versionCode ' + build).replace(/versionName\s+"[^"]*"/, 'versionName "' + ver + '"');
+    fs.writeFileSync(gr, g); console.log('Android: version ' + ver + ' (' + build + ')') }
+  const pbx = path.join(__dirname, 'ios/App/App.xcodeproj/project.pbxproj');
+  if (fs.existsSync(pbx)) { let x = fs.readFileSync(pbx, 'utf8');
+    x = x.replace(/MARKETING_VERSION = [^;]+;/g, 'MARKETING_VERSION = ' + ver + ';').replace(/CURRENT_PROJECT_VERSION = [^;]+;/g, 'CURRENT_PROJECT_VERSION = ' + build + ';');
+    fs.writeFileSync(pbx, x); console.log('iOS: version ' + ver + ' (' + build + ')') }
+} catch (e) { console.warn('version patch skipped: ' + e.message) }

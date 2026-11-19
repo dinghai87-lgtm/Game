@@ -18,16 +18,18 @@
 - 分类：游戏 › 策略（Strategy）；副分类：休闲
 - 价格：免费，App 版暂无应用内购买、无广告
 - 年龄分级：Apple 9+（偶尔/轻微的卡通或幻想暴力）；Google Play IARC 问卷按「卡通幻想暴力、无赌博、无内购、无用户互动聊天」作答，预计 PEGI 7 / ESRB E10+
-- 隐私政策：https://dinghai87-lgtm.github.io/Game/hero-defense/privacy.html
-- 支持网址：https://dinghai87-lgtm.github.io/Game/hero-defense/ （有自己的域名后改为 https://game.eleronzentechnology.com）
-- 支持邮箱：ding.hai87@gmail.com
+- 隐私政策：https://eleronzentechnology.com/hero-defense/privacy.html
+- 支持网址：https://eleronzentechnology.com/hero-defense/
+- 支持邮箱：info@eleronzentechnology.com
+- 营销网址（App Store 可选）：https://vantaxgame.com
+- 用户协议：https://eleronzentechnology.com/hero-defense/terms.html
 - 版权：© 2026 万泰游戏开发
 
 ---
 
 ## 简体中文
 **名称**（30 字内）：英雄塔防 - Q版武侠守城
-**副标题**（App Store，30 字内）：12 位英雄 · 12 张地图 · 试炼之塔
+**副标题**（App Store，30 字内）：13 位英雄 · 12 张地图 · 试炼之塔
 **简短描述**（Google Play，80 字内）：放置防御塔、召唤英雄、释放技能，守住每一关！离线也能玩的奇幻塔防。
 
 **完整描述**：
@@ -35,7 +37,7 @@
 
 在《英雄塔防》里，你要在路线两旁建造防御塔，派出英雄冲到前线，在关键时刻释放技能扭转战局。
 
-• 12 位个性英雄：骑士、法师、弓手、刺客……每人都有专属技能和语音，组出你的最强阵容
+• 13 位个性英雄：骑士、法师、弓手、刺客……每人都有专属技能和语音，组出你的最强阵容
 • 12 张风格各异的地图：森林、雪原、沙漠、火山、夜城、秋谷、血月、极光……
 • 多种防御塔，可升级、可点天赋，还能换上金辉、霜晶、暗影、翡翠、血焰等外观皮肤，皮肤附带属性加成
 • 试炼之塔：每层随机词缀（急行、重甲、精英、双 Boss……），越爬越难，挑战你的极限
@@ -55,7 +57,7 @@
 
 ## 繁體中文
 **名稱**：英雄塔防 - Q版武俠守城
-**副標題**：12 位英雄 · 12 張地圖 · 試煉之塔
+**副標題**：13 位英雄 · 12 張地圖 · 試煉之塔
 **簡短說明**：放置防禦塔、召喚英雄、施放技能，守住每一關！離線也能玩的奇幻塔防。
 
 **完整說明**：
@@ -63,7 +65,7 @@
 
 在《英雄塔防》裡，你要在路線兩旁建造防禦塔，派出英雄衝到前線，在關鍵時刻施放技能扭轉戰局。
 
-• 12 位個性英雄，每人都有專屬技能和語音
+• 13 位個性英雄，每人都有專屬技能和語音
 • 12 張風格各異的地圖：森林、雪原、沙漠、火山、夜城、秋谷、血月、極光……
 • 多種防禦塔，可升級、可點天賦，還能換上外觀皮膚，皮膚附帶屬性加成
 • 試煉之塔：每層隨機詞綴，越爬越難
@@ -82,7 +84,7 @@
 
 ## English
 **App name** (max 30): Hero Defense: Tower Heroes
-**Subtitle** (max 30): 12 Heroes, 12 Maps, Trial Tower
+**Subtitle** (max 30): 13 Heroes, 12 Maps, Trial Tower
 **Short description** (max 80): Build towers, summon heroes and unleash skills to hold every gate. Plays offline.
 
 **Full description**:
@@ -90,7 +92,7 @@ The monster horde is at the gates — and you are the last line of defense!
 
 In Hero Defense you build towers along the road, send heroes to the front line and fire off skills at exactly the right moment to turn the battle.
 
-• 12 distinct heroes — knights, mages, archers, assassins and more — each with signature skills and voice lines
+• 13 distinct heroes — knights, mages, archers, assassins and more — each with signature skills and voice lines
 • 12 hand-crafted maps: forest, snowfield, desert, volcano, night city, autumn valley, blood moon, aurora…
 • Upgradeable towers, a talent tree, and tower skins (Gold, Frost, Shadow, Jade, Blood) that add stat bonuses
 • Trial Tower: random modifiers on every floor — swift, armored, elite, twin bosses — how high can you climb?
@@ -110,7 +112,7 @@ Play offline any time; your progress is backed up to the cloud when you're onlin
 
 ## 日本語
 **アプリ名**：ヒーローディフェンス - 英雄タワー防衛
-**サブタイトル**：12人の英雄・12のマップ・試練の塔
+**サブタイトル**：13人の英雄・12のマップ・試練の塔
 **簡単な説明**：タワーを建て、英雄を呼び、スキルで門を守り抜け！オフラインでも遊べる。
 
 **詳しい説明**：
@@ -118,7 +120,7 @@ Play offline any time; your progress is backed up to the cloud when you're onlin
 
 道の両側にタワーを建て、英雄を前線に送り、ここぞという瞬間にスキルを放って戦況をひっくり返そう。
 
-• 個性あふれる12人の英雄。専用スキルとボイス付き
+• 個性あふれる13人の英雄。専用スキルとボイス付き
 • 森、雪原、砂漠、火山、夜の街、秋の谷、血の月、オーロラなど12のマップ
 • アップグレードできるタワー、タレント、そして能力ボーナス付きのタワースキン
 • 試練の塔：階ごとにランダムな特性。どこまで登れる？
@@ -137,7 +139,7 @@ Play offline any time; your progress is backed up to the cloud when you're onlin
 
 ## 한국어
 **앱 이름**：히어로 디펜스 - 영웅 타워 디펜스
-**부제**：영웅 12명 · 맵 12개 · 시련의 탑
+**부제**：영웅 13명 · 맵 12개 · 시련의 탑
 **간단한 설명**：타워를 짓고 영웅을 소환해 스킬로 성문을 지켜라! 오프라인 플레이 지원.
 
 **자세한 설명**：
@@ -145,7 +147,7 @@ Play offline any time; your progress is backed up to the cloud when you're onlin
 
 길 양옆에 타워를 세우고, 영웅을 최전선에 보내고, 결정적인 순간에 스킬을 터뜨려 전세를 뒤집으세요.
 
-• 전용 스킬과 보이스를 가진 개성 넘치는 영웅 12명
+• 전용 스킬과 보이스를 가진 개성 넘치는 영웅 13명
 • 숲, 설원, 사막, 화산, 밤의 도시, 가을 계곡, 핏빛 달, 오로라 등 12개 맵
 • 업그레이드 가능한 타워, 특성, 그리고 능력치 보너스가 붙는 타워 스킨
 • 시련의 탑: 층마다 무작위 특성, 어디까지 오를 수 있을까?
@@ -164,7 +166,7 @@ Play offline any time; your progress is backed up to the cloud when you're onlin
 
 ## Español
 **Nombre**：Hero Defense: Torres y Héroes
-**Subtítulo**：12 héroes, 12 mapas y torre
+**Subtítulo**：13 héroes, 12 mapas y torre
 **Descripción corta**：Construye torres, invoca héroes y lanza habilidades. ¡Defiende cada puerta! Sin conexión.
 
 **Descripción completa**：
@@ -172,7 +174,7 @@ La horda de monstruos ya está en las puertas, ¡y tú eres la última línea de
 
 Construye torres a lo largo del camino, envía héroes al frente y lanza sus habilidades en el momento justo para cambiar el rumbo de la batalla.
 
-• 12 héroes únicos, cada uno con habilidades y voces propias
+• 13 héroes únicos, cada uno con habilidades y voces propias
 • 12 mapas: bosque, nieve, desierto, volcán, ciudad nocturna, valle otoñal, luna de sangre, aurora…
 • Torres mejorables, árbol de talentos y aspectos de torre con bonificaciones
 • Torre de Pruebas: modificadores aleatorios en cada piso, ¿hasta dónde llegarás?
@@ -196,4 +198,5 @@ Juega sin conexión cuando quieras; tu progreso se guarda en la nube al conectar
 - **使用数据 · 产品互动**（关卡开始/结束等匿名事件）— 用途：分析
 - **游戏内容**（存档进度、分数）— 用途：App 功能
 - 不收集：位置、联系人、照片、通讯录、支付信息、广告 ID
-- 用户可以申请删除数据：在隐私政策里写明发邮件到支持邮箱即可删除
+- 用户可以删除数据：游戏内「设置 → 删除我的数据」会立即删除云端存档、成绩、昵称和匿名账号；也可以发邮件到 info@eleronzentechnology.com
+- Google Play「数据删除」网址填：https://eleronzentechnology.com/hero-defense/privacy.html

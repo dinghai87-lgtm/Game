@@ -356,6 +356,7 @@ const IS_NATIVE=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.C
 const TEST_ON=!IS_NATIVE&&/[?&]test=1/.test(location.search);
 // 支付配置：拿到 Stripe 后在页面里设置 window.HERO_PAY_CFG={mode:'stripe',api:'https://你的后端'}（见 PAY_SETUP.md）。App 内不走 Stripe（商店规定虚拟商品走内购）。
 const PAY_CFG=Object.assign({mode:'off',api:''},window.HERO_PAY_CFG||{});const PAY_LIVE=!IS_NATIVE&&PAY_CFG.mode==='stripe'&&!!PAY_CFG.api;
+const SHARE_BASE=IS_NATIVE?'https://eleronzentechnology.com/hero-defense/':location.origin+location.pathname;
 const APP_FREE=IS_NATIVE||/[?&]app=1/.test(location.search);
 // 广告还没接 SDK：只在测试模式或接入 HeroAds 后才显示「看广告」类入口
 const AD_ON=TEST_ON||!!window.HeroAds;
@@ -1557,7 +1558,7 @@ function drawHud(dt){const t=G.time;
   // resources plate
   ns('ui_Window_Background',8,6,380,58,150,.16);
   heartIcon(40,35,30);txt(G.lives,62,36,24,G.lifeFlash>0?'#ff6b6b':'#fff','left',4);
-  coinIcon(130,35,13);txt(fmt(G.gold),150,36,24,'#ffe27a','left',4);
+  coinIcon(130,35,13);fitTxt(G.gold>=1e6?(G.gold/1e6).toFixed(1)+'M':fmt(G.gold),150,36,24,100,'#ffe27a','left',4);
   imgC('ui_Icon_Swords',260,35,30,'drop-shadow(0 1px 1px #000)');txt(G.wave+(G.L.endless?'':' / '+G.L.waves),282,36,21,'#fff','left',4);
   // wave progress
   if(!G.L.endless){const px=W/2-170,py=16;img('ui_ProgressBar_Background',px,py,340,30);ctx.save();ctx.beginPath();ctx.rect(px+8,py,(340-16)*G.wave/G.L.waves,30);ctx.clip();img('ui_ProgressBar_Fill_Redish',px+8,py+8,324,14);ctx.restore();
@@ -1644,7 +1645,7 @@ let OVER_SEC=[];function overSec(label,fn,style){OVER_SEC.push([label,fn,style])
 // ====================== 菜单界面 ======================
 function bgMenu(k,dim){img('map'+k,0,0,W,H);ctx.fillStyle=`rgba(15,8,3,${dim==null?.45:dim})`;ctx.fillRect(0,0,W,H);ctx.drawImage(getVignette(),0,0)}
 let titleT=0,showSettings=false;
-function openLegal(k){if(typeof APP_FREE!=='undefined'&&APP_FREE&&window.Capacitor){window.open('https://dinghai87-lgtm.github.io/Game/hero-defense/'+k+'.html','_system');return}if(location.protocol.startsWith('http')){window.open(k+'.html','_blank');return}
+function openLegal(k){if(typeof APP_FREE!=='undefined'&&APP_FREE&&window.Capacitor){window.open('https://eleronzentechnology.com/hero-defense/'+k+'.html','_system');return}if(location.protocol.startsWith('http')){window.open(k+'.html','_blank');return}
   const T={privacy:[TR('隐私政策'),[TR('只收集游戏进度、随机设备 ID 和匿名游戏数据'),TR('支付由 Apple / Google / Stripe 处理，我们收不到卡号'),TR('不出售个人信息，可随时联系我们删除数据'),TR('完整内容见网页版 privacy.html')]],
     terms:[TR('用户协议'),[TR('钻石、英雄、装备为虚拟物品，不能兑换现金'),TR('禁止外挂、改存档和利用漏洞'),TR('召唤结果随机，概率见概率公示'),TR('完整内容见网页版 terms.html')]],
     odds:[TR('召唤概率公示'),[TR('整个英雄 5% · 英雄碎片 67% · 装备 28%'),TR('装备：普通 60% · 精良 28% · 史诗 10% · 传说 2%'),TR('BOSS 掉落：普通 20% · 精良 45% · 史诗 27% · 传说 8%'),TR('十连保底：至少 1 件史诗以上装备或 1 位英雄'),TR('英雄保底：连续 40 次没出整个英雄，第 40 次必出')]]}[k];popup(T[0],T[1])}
@@ -2283,7 +2284,7 @@ function showDmgStats(){const d=G&&G.dstat||{};const tot=Object.values(d).reduce
 // ====================== 章节剧情 ======================
 const STORY=[['慧远','烽火燃起，熔岩古道告急！诸位侠士，随我守住第一道关！'],['落羽','矿洞深处传来怪声……敌人在地下集结，小心埋伏。'],['白眉','雪原古墓的封印松动了，冰霜之下藏着更强的东西。'],['玄机','迷雾沼泽的毒瘴里有亡灵在低语，用火与雷照亮它们！'],['孤鸿','黄沙古堡的守军全军覆没，只剩我们了。'],['明心','雨林部落向我们求援，魔物正从密林中涌来。'],['夜枭','幻光森林的幻象会迷惑人心，相信你的塔阵。'],['玄甲','冰封王座之上，魔王的影子已经出现……最后的决战！']];
 function storyFor(li){if(li<0||li%8!==0)return;const ch=li/8;SAVE.story=SAVE.story||{};if(SAVE.story[ch])return;SAVE.story[ch]=1;save();const s=STORY[ch%STORY.length];
-  popup(TR('第 {n} 章').replace('{n}',ch+1),[s[0]+'：',TR(s[1])],[{label:TR('出发！'),style:'green'}])}
+  popup(TR('第 {n} 章').replace('{n}',ch+1),[TR(s[0])+(isZh()?'：':': '),TR(s[1])],[{label:TR('出发！'),style:'green'}])}
 
 // ====================== 自动省电画质 ======================
 let perfT=0,perfN=0,perfLow=0,perfL=0;
@@ -2297,9 +2298,9 @@ function doInstall(){if(installEvt){installEvt.prompt();installEvt.userChoice.th
   if(isIOS())popup(TR('添加到主屏幕'),[TR('1. 用 Safari 打开本页'),TR('2. 点底部「分享」按钮（方框加向上箭头）'),TR('3. 选「添加到主屏幕」，桌面就会出现游戏图标')]);
   else popup(TR('添加到桌面'),[TR('1. 用 Chrome 打开本页'),TR('2. 点右上角「⋮」菜单'),TR('3. 选「添加到主屏幕」或「安装应用」')])}
 const isMobile=()=>/android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent)||isIOS();
-function installAsk(){if(IS_NATIVE||isStandalone()||!isMobile()||POP||SAVE.instAsk===today())return;SAVE.instAsk=today();save();
+function installAsk(){if(APP_FREE||isStandalone()||!isMobile()||POP||SAVE.instAsk===today())return;SAVE.instAsk=today();save();
   popup(TR('添加到手机桌面'),[TR('添加后像 App 一样全屏玩，打开更快，断网也能玩'),isIOS()?TR('苹果手机：点底部「分享」→「添加到主屏幕」'):TR('点下面按钮即可安装到桌面')],[{label:TR('添加到桌面'),style:'green',fn:doInstall},{label:TR('以后再说'),style:'gray'}])}
-function drawInstallBtn(){if(IS_NATIVE)return;try{installAsk()}catch(_){}if(isStandalone()||SAVE.installHide)return;const x=140,y=84,w=176,h=34;ctx.fillStyle='rgba(20,60,30,.9)';rr(x,y,w,h,12);ctx.fill();ctx.strokeStyle='#8ef59a';ctx.lineWidth=1.5;rr(x,y,w,h,12);ctx.stroke();
+function drawInstallBtn(){if(APP_FREE)return;try{installAsk()}catch(_){}if(isStandalone()||SAVE.installHide)return;const x=140,y=84,w=176,h=34;ctx.fillStyle='rgba(20,60,30,.9)';rr(x,y,w,h,12);ctx.fill();ctx.strokeStyle='#8ef59a';ctx.lineWidth=1.5;rr(x,y,w,h,12);ctx.stroke();
   txt('📲 '+TR('添加到桌面'),x+w/2-8,y+h/2+.5,14,'#e8ffe0','center',2);hit(x,y,w-24,h,doInstall);txt('×',x+w-12,y+h/2,14,'#9fbf9a','center',0);hit(x+w-24,y,24,h,()=>{SAVE.installHide=1;save()})}
 
 // ====================== 内测反馈 ======================
@@ -2614,7 +2615,7 @@ function shareReport(){try{const o=G.over,L=G.L;const cw=1080,ch=1350,c=document
     T(HEROES[a.hero].name,X,Y+110,32,'#ffe27a')});
   const B=Object.keys(G.buf||{});if(B.length)T('✦ '+B.map(k=>TR(RCARDS.find(c=>c.k===k).n)).join(' · '),cw/2,860,30,'#ffd84a');
   if(G.syn&&G.syn.length)T('羁绊 '+G.syn.map(s=>TR(s.n)).join(' · '),cw/2,915,30,'#9ef0ff');
-  T(TR('来挑战我！'),cw/2,1080,56,'#fff6d0');T('dinghai87-lgtm.github.io/Game/hero-defense',cw/2,1160,30,'#cbb48a');T(TR('© 2026 万泰游戏开发 版权所有'),cw/2,1280,24,'#7d6e57');
+  T(TR('来挑战我！'),cw/2,1080,56,'#fff6d0');T('eleronzentechnology.com/hero-defense',cw/2,1160,30,'#cbb48a');T(TR('© 2026 万泰游戏开发 版权所有'),cw/2,1280,24,'#7d6e57');
   c.toBlob(b=>{if(!b)return;const f=new File([b],'hero-defense.png',{type:'image/png'});track('share',{li:G.li});
     if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:TR('英雄塔防'),text:TR('来挑战我！')}).catch(()=>{})}
     else{const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='hero-defense.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000);showToast(TR('战报图片已保存'))}},'image/png')}catch(e){console.error(e)}}
@@ -3139,7 +3140,7 @@ function cmbFire(p){if(!G.cmbE||G.cmbE<1)return;G.cmbE=0;const F=CMB_FX[p.s.n];t
 function chEncode(o){try{return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/=+$/,'').replace(/\+/g,'-').replace(/\//g,'_')}catch(e){return ''}}
 function chDecode(s){try{s=s.replace(/-/g,'+').replace(/_/g,'/').replace(/ /g,'+');while(s.length%4)s+='=';return JSON.parse(decodeURIComponent(escape(atob(s))))}catch(e){return null}}
 const chBetter=(lv,t,o)=>lv>o.v||(lv===o.v&&t<o.t);
-function chLink(){const L=G.L;const o={l:G.li,v:G.lives,t:Math.round(G.time||0),k:G.kills||0,n:(typeof sbName==='function'?sbName():'')};return location.origin+location.pathname+'?ch='+chEncode(o)}
+function chLink(){const L=G.L;const o={l:G.li,v:G.lives,t:Math.round(G.time||0),k:G.kills||0,n:(typeof sbName==='function'?sbName():'')};return SHARE_BASE+'?ch='+chEncode(o)}
 function chShare(){try{if(!G||!G.over||G.li<0)return;const url=chLink();const txt=TR('我在《英雄塔防》第 {n} 关剩 {v} 条命、用时 {t} 秒守住了，你能超过我吗？').replace('{n}',G.li+1).replace('{v}',G.lives).replace('{t}',Math.round(G.time||0));track('ch_share',{li:G.li});
   if(navigator.share){navigator.share({title:TR('英雄塔防'),text:txt,url}).catch(()=>{})}else if(navigator.clipboard){navigator.clipboard.writeText(txt+' '+url).then(()=>showToast(TR('挑战链接已复制，发给朋友吧！'))).catch(()=>prompt(TR('复制下面的链接发给朋友：'),url))}else prompt(TR('复制下面的链接发给朋友：'),url)}catch(e){console.error(e)}}
 // 打开带 ?ch= 的链接：记下挑战
@@ -3235,7 +3236,7 @@ function ccDraft(){SAVE.ccDraft=SAVE.ccDraft||{m:1,w:10,g:800,d:1.2,b:0,h:1,a:[0
 function ccLevel(c){c=c||ccPlay||ccDraft();const norm=Object.keys(ENEMIES).filter(k=>!ENEMIES[k].boss&&k!=='ogre'&&k!=='chest');const R=mulberry(c.m*977+c.w*31+Math.round(c.d*100));const pool=[];const nn=norm.slice();while(pool.length<Math.min(10,4+Math.floor(c.d*3)))pool.push(nn.splice(Math.floor(R()*nn.length),1)[0]);
   const allow=(c.a||[]).map(i=>CC_TW[i]).filter(Boolean);return {name:TR('自制挑战')+(c.n?' · '+c.n:''),map:c.m,paths:PATHS[c.m].map((_,i)=>i),waves:c.w,gold:c.g,pool,boss:CC_BOSS[c.b]==='none'?null:CC_BOSS[c.b],diff:c.d,chal:'custom',allow:allow.length?allow:null,seed:c.m*977+c.w*31,noHero:!c.h,cc:c}}
 function ccDesc(c){return [TR(MAP_NAMES[c.m]||'')+' · '+c.w+' '+TR('波')+' · 💰'+c.g+' · '+TR('难度')+' '+c.d.toFixed(1),(CC_BOSS[c.b]==='none'?TR('无 BOSS'):'BOSS：'+ENEMIES[CC_BOSS[c.b]].name)+' · '+(c.h?TR('可带英雄'):TR('不能带英雄')),TR('可建：')+(c.a||[]).map(i=>TOWERS[CC_TW[i]].name).join(' ')]}
-function ccShare(c){try{c=Object.assign({},c||ccDraft(),{n:(typeof sbName==='function'?sbName():'')});const url=location.origin+location.pathname+'?cc='+chEncode(c);const t=TR('我在《英雄塔防》做了一关自制挑战，你能过吗？');track('cc_share',{});
+function ccShare(c){try{c=Object.assign({},c||ccDraft(),{n:(typeof sbName==='function'?sbName():'')});const url=SHARE_BASE+'?cc='+chEncode(c);const t=TR('我在《英雄塔防》做了一关自制挑战，你能过吗？');track('cc_share',{});
   if(navigator.share)navigator.share({title:'Hero Defense',text:t,url}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(t+' '+url).then(()=>showToast(TR('挑战链接已复制，发给朋友吧！'))).catch(()=>prompt(TR('复制下面的链接发给朋友：'),url));else prompt(TR('复制下面的链接发给朋友：'),url)}catch(e){console.error(e)}}
 function ccStart(c){ccPlay=c;ccPop=false;POP=null;lvPop=null;if(c.h){levelSel=-8;pickStart(-8)}else{startLevel(-8,0);scene='battle'}}
 (function(){try{const q=new URLSearchParams(location.search);const s=q.get('cc');if(!s)return;const o=chDecode(s);if(o&&o.m>=1&&o.m<=12&&o.w>=4&&o.w<=30){localStorage.setItem('hero_cc',JSON.stringify(Object.assign(o,{fresh:1})));try{track('cc_open',{})}catch(_){}}q.delete('cc');const r=q.toString();history.replaceState(null,'',location.pathname+(r?'?'+r:''))}catch(e){}})();
@@ -3544,7 +3545,7 @@ function giftRedeem(){const s=prompt(TR('输入兑换码：'),'');if(!s)return;c
   if(!G0){showToast(TR('兑换码无效'));AUD.sfx('deny');return}if(SAVE.gift[k]){showToast(TR('这个兑换码已经用过了'));AUD.sfx('deny');return}
   SAVE.gift[k]=1;const out=[];if(G0.yb){SAVE.yb+=G0.yb;out.push('💎 +'+G0.yb)}if(G0.shards){for(const h of SAVE.team.filter(owns))SAVE.shards[h]=(SAVE.shards[h]||0)+G0.shards;out.push(TR('出战英雄碎片')+' +'+G0.shards)}if(G0.insta){try{out.push('⚡ '+instaGive(2,5,'gift').join(' · '))}catch(_){}}
   save();track('gift',{k});AUD.sfx('win');popup('🎁 '+TR('兑换成功'),out,[{label:TR('确定'),style:'green'}])}
-(function(){const ds=drawSettings;drawSettings=function(){ds.apply(this,arguments);try{if(morePop)return;const x=W/2-260,y=H/2-300;button('🎁 '+TR('兑换码'),x+26,y+600-84,124,44,()=>{giftRedeem()},{style:'gold',size:14})}catch(e){}}})();
+(function(){const ds=drawSettings;drawSettings=function(){ds.apply(this,arguments);try{if(morePop||APP_FREE)return;const x=W/2-260,y=H/2-300;button('🎁 '+TR('兑换码'),x+26,y+600-84,124,44,()=>{giftRedeem()},{style:'gold',size:14})}catch(e){}}})();
 
 // ====================== 英雄殿点选台词：点英雄卡片时，头像旁冒出他的一句台词 ======================
 let hallBark=null,hallLast=null;
@@ -3708,7 +3709,7 @@ doFeedback=function(){const t=prompt(TR('写下你的意见或遇到的问题（
 sbAuth().then(()=>{netBoard();flushEvents();save()});
 // ====================== 自动更新 ======================
 // 每次打开 / 切回前台都检查一次 version.json，发现新版本就清缓存并刷新（每个版本只刷一次，防止死循环）
-const BUILD_VER='1795000737';
+const BUILD_VER='1795084277';
 async function checkUpdate(){if(BUILD_VER.startsWith('__')||!location.protocol.startsWith('http'))return;try{
   const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=String((await r.json()).v||'');
   if(!v||v===BUILD_VER)return;if(sessionStorage.getItem('hero_upd')===v)return;sessionStorage.setItem('hero_upd',v);

@@ -1,5 +1,5 @@
 #!/bin/bash
-# 英雄守关 Hero Defense — iOS 上架包。需要一台装了 Xcode、登录了 Apple 开发者账号的 Mac。
+# 英雄塔防 Hero Defense — iOS 上架包。需要一台装了 Xcode、登录了 Apple 开发者账号的 Mac。
 set -e
 cd "$(dirname "$0")"
 npm install

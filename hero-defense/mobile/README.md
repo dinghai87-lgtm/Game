@@ -1,4 +1,4 @@
-# 英雄守关 Hero Defense — App 打包
+# 英雄塔防 Hero Defense — App 打包
 
 这一层把网页版游戏（上一层的 index.html 等）包成 iOS / Android 原生 App（Capacitor 7）。
 

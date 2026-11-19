@@ -20,7 +20,9 @@
 <meta name="twitter:card" content="summary">
 <title>VANTAX POKER 万泰扑克 · 好友俱乐部</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<!-- 字体异步加载：谷歌字体在部分地区（如中国大陆）打不开，不能让它卡住整个页面；没加载到就用系统字体 -->
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 :root{
   --bg:#0a0a0c; --panel:#141418; --panel2:#1b1b21; --line:#2a2a33; --txt:#ece7dc; --mute:#9a958a;
@@ -28,7 +30,7 @@
   --blue:#3b82f6;
 }
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--txt);font-family:"Noto Sans SC",system-ui,sans-serif;font-size:14px}
+html,body{margin:0;background:var(--bg);color:var(--txt);font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,sans-serif;font-size:14px}
 button{font:inherit;cursor:pointer}
 button:disabled{opacity:.45;cursor:not-allowed}
 a{color:var(--gold2)}
@@ -166,7 +168,7 @@ body.four .pc.s-d{color:#1d5fd1} body.four .pc.s-c{color:#127a3a}
 .champ-in{text-align:center}.champ-b{font-size:90px;animation:winp .8s ease-in-out infinite alternate}
 .champ-t{font-family:Cinzel,serif;font-weight:800;font-size:44px;letter-spacing:.2em;background:linear-gradient(#fff3c4,#d4ac55,#8a6420);-webkit-background-clip:text;background-clip:text;color:transparent}
 .champ-n{font-size:28px;font-weight:900;margin:6px 0 10px}
-@media(max-width:640px){.felt-wrap{aspect-ratio:auto;height:max(400px,calc(100svh - 360px))}.tv-head{gap:6px;margin-bottom:6px}.actbar{padding:8px;gap:6px}.actbar .raise .btn.sm{padding:4px 8px}#actbar{position:sticky;bottom:0;z-index:15;padding-bottom:env(safe-area-inset-bottom)}#actbar .actbar{margin-top:8px;box-shadow:0 -8px 24px #000c}.actbar .big{min-width:0;flex:1;padding:12px 8px}.actbar .raise{min-width:100%;order:3}.seat{width:78px}.seat .nm{font-size:11px}.tv-head .nm{font-size:15px}.felt-wrap{--cw:34px}}
+@media(max-width:640px){.felt-wrap{aspect-ratio:auto;height:max(400px,calc(100svh - 360px))}.tv-head{gap:6px;margin-bottom:6px}.actbar{padding:8px;gap:6px}.actbar .raise .btn.sm{padding:4px 8px}#actbar{position:sticky;bottom:0;z-index:15}#actbar .actbar{margin-top:8px;box-shadow:0 -8px 24px #000c}.actbar .big{min-width:0;flex:1;padding:12px 8px}.actbar .raise{min-width:100%;order:3}.seat{width:78px}.seat .nm{font-size:11px}.tv-head .nm{font-size:15px}.felt-wrap{--cw:34px}}
 .eq{margin-top:3px;display:inline-block;background:#1d5fd1;color:#fff;font-weight:800;font-size:12px;padding:0 8px;border-radius:999px;font-variant-numeric:tabular-nums}
 .pc.rabbit{opacity:.55;filter:grayscale(.4)}
 .hero-art{pointer-events:none;position:absolute;right:14px;bottom:0;width:min(300px,40%);opacity:.95;filter:drop-shadow(0 10px 30px #000)}
@@ -366,8 +368,7 @@ body .felt-wrap .seat .cards{--cw:24px}body .felt-wrap .seat.me .cards,body.phot
 @media(max-width:640px){.top nav{order:3;flex:1 0 100%!important;width:100%}.top nav button{padding:6px 10px;flex:1 0 auto}}
 /* iPhone 刘海和底部手势条：横屏两侧、底部操作栏留出安全区（状态栏用不透明黑色，顶部不用处理） */
 body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
-#actbar .actbar{padding-bottom:max(5px,env(safe-area-inset-bottom))}
-@media(max-width:640px){main{padding-bottom:calc(64px + env(safe-area-inset-bottom))}}
+#actbar .actbar{padding-bottom:max(5px,env(safe-area-inset-bottom));padding-left:max(8px,env(safe-area-inset-left));padding-right:max(8px,env(safe-area-inset-right))}
 </style>
 </head>
 <body>
@@ -380,7 +381,7 @@ body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-ri
 <footer>© 万泰游戏开发 · 好友私局，仅限受邀朋友 · 不抽水 · 金币是游戏积分，仅供娱乐，不能购买或兑换</footer>
 <div id="modal"></div>
 <script src="/poker/assets.js?v=dd23ef8456" async onload="window.__vxAssets&&__vxAssets()"></script>
-<script>window.VX_BUILD="9d4ba671";</script>
+<script>window.VX_BUILD="1f4738a8";</script>
 <script>window.VX_CLOUD_MODE=true;</script>
 <script>
 /* VANTAX POKER · vantaxgame.com 联机客户端：用 WebSocket 连到俱乐部后端，
@@ -1301,21 +1302,164 @@ const I18N_EN = {
   '四色牌': '4-colour deck', '按大盲显示筹码': 'Show chips in BB', '系统通知（页面在后台时：轮到你、有空位、比赛开赛）': 'Notifications (turn, seat open, tournament start)', '牌面': 'Card style', '音量': 'Volume',
   '下载今晚全部手牌': "Download tonight's hands", '📥 下载今晚全部手牌': "📥 Download tonight's hands", '年度积分榜 · Player of the Year': 'Player of the Year', '积分': 'Points', '参赛': 'Events', '历届冠军': 'Champions', '金手链数量': 'Bracelets',
   'VPIP = 翻前主动入池比例；PFR = 翻前加注比例。一般 VPIP 20–30% 偏紧，40% 以上偏松。锦标赛只计入手数，不计盈亏。': 'VPIP = how often you put money in preflop; PFR = how often you raise preflop. VPIP 20–30% is tight, 40%+ is loose. Tournaments count hands only, not profit.', '打几手后这里会出现数据': 'Play a few hands and your stats appear here',
+  "四色牌（♦蓝 ♣绿，职业玩家常用）": "4-colour deck (♦ blue ♣ green, used by pros)",
+  "A 可作最小顺子 A-2-3-4-5。花色不分大小，牌型相同比点数。": "A can be low in A-2-3-4-5. Suits are equal; same hand type compares ranks.",
+  "头像、昵称和签名会显示在牌桌、排行榜和战绩里，所有朋友都能看到。": "Your avatar, nickname and bio are shown at tables, leaderboards and stats.",
+  "签名（最多 40 字）": "Bio (max 40 chars)",
+  "昵称（最多 12 字，留空用账号名）": "Nickname (max 12 chars)",
+  "关：底牌直接亮给自己": "Off: show my cards immediately",
+  "开：每手先盖着，点一下慢慢翻开": "On: cards start face down, tap to peek",
+  "开：轮到我时显示胜率和底池赔率": "On: show equity and pot odds on my turn",
+  "抢跑 / 自动补码 / 发两次": "Straddle / Auto top-up / Run it twice",
+  "两手之间自动把筹码补回最大带入，从钱包扣": "Between hands, top up to the max buy-in from your wallet",
+  "中文": "中文",
+  "中文 / English": "中文 / English",
+  "例如：全下之前先想三秒": "e.g. think 3 seconds before shoving",
+  "入座": "Sit down",
+  "全下后如果所有全下的人都开着，剩余公共牌发两次，每个底池各分一半": "If everyone all-in has it on, the rest of the board is dealt twice and each pot is split",
+  "发送": "Send",
+  "同花色": "Suited",
+  "困难：算得细，更凶": "Hard: precise and aggressive",
+  "大字牌面（小屏更清楚）": "Big cards (clearer on small screens)",
+  "完成": "Done",
+  "实物牌面": "Photo cards",
+  "弃牌后电脑立刻打完这一手，马上发下一手": "Fold and the AI finishes the hand instantly; next hand starts right away",
+  "快捷键": "Shortcut",
+  "打个招呼吧": "Say hi",
+  "按大盲数（BB）": "In big blinds (BB)",
+  "按筹码数": "In chips",
+  "标准": "Normal",
+  "简单：爱跟注，很少诈唬": "Easy: calls a lot, rarely bluffs",
+  "每人每手自动积累时间银行（上限 60 秒），思考时间用完后自动启用。": "Everyone gains time bank each hand (max 60s); it kicks in when your clock runs out.",
+  "混合局：德州和奥马哈每圈轮换": "Mixed: Hold'em and Omaha alternate every orbit",
+  "牌偏弱，免费看牌就好": "Weak hand — take the free card",
+  "牌型大小（从大到小）": "Hand rankings (high to low)",
+  "牌型大小": "Hand rankings",
+  "牌桌设置：行动时间、时间银行、7-2 奖金": "Table settings: shot clock, time bank, 7-2 bounty",
+  "牌面样式": "Card style",
+  "牌面配色": "Card colours",
+  "皇家蓝": "Royal blue",
+  "翡翠绿": "Emerald",
+  "酒红": "Wine red",
+  "黑金": "Black gold",
+  "等待下一手…": "Waiting for next hand…",
+  "等待玩家入座…": "Waiting for players…",
+  "筹码显示": "Chip display",
+  "经典两色（♥♦红 ♠♣黑）": "Classic 2-colour (♥♦ red ♠♣ black)",
+  "翻牌：": "Flop: ",
+  "转牌：": "Turn: ",
+  "河牌：": "River: ",
+  "胜率明显高于赔率，跟注划算": "Equity well above pot odds — calling is good",
+  "自动（电脑实物牌，手机大字牌）": "Auto (photo on desktop, big on phone)",
+  "表情": "Emoji",
+  "说点什么…": "Say something…",
+  "跟任意注": "Call any",
+  "预操作：": "Pre-action:",
+  "轮到你在枪口位时自动下 2 倍大盲（4 人以上桌）": "Post a 2× BB straddle when you are UTG (4+ players)",
+  "下一手所有人各放": "Next hand everyone posts",
+  "进底池，直接发翻牌": "into the pot and the flop is dealt",
+  "从钱包带入筹码": "Buy in from wallet",
+  "离桌时剩余筹码自动回到钱包。": "Chips return to your wallet when you leave.",
+  "小时": "hour",
+  "报名费做赏金": "of entry as bounty",
+  "（我）": " (me)",
+  "在桌筹码": "chips in play",
+  "已归还": "returned",
+  "所有人的": "everyone’s",
+  "加起来应为": "should add up to",
+  "暂计": "counted as entry",
+  "玩家点右上角「金币」申请后会出现在这里；你点确认后金币才会入账。": "Requests appear here when players tap “Coins”; coins are credited once you approve.",
+  "（最近 100 条）": " (latest 100)",
+  "当前余额": "balance",
+  "▶ 看 AI 多桌赛": "▶ Watch AI MTT",
+  "▶ 看 AI 对局": "▶ Watch AI game",
+  "不可重购": "no rebuys",
+  "中局": "Mid stakes",
+  "小局": "Small stakes",
+  "五张奥马哈": "5-card Omaha",
+  "今晚 SNG 冠军赛": "Tonight's SNG",
+  "今晚（12 小时）": "Tonight (12 h)",
+  "今晚（最近 12 小时）所有牌桌的每一手：公开牌面、摊牌和你自己的底牌": "Every hand tonight (last 12 h): board, showdowns and your own cards",
+  "例如：1. 不要在群里说牌  2. 每周三 20:00 主赛事  3. 友善聊天": "e.g. 1. No talking about hands  2. Main event Wed 20:00  3. Be nice",
+  "例如：本周三 20:00 主赛事，记得报名": "e.g. Main event Wed 20:00 — register!",
+  "副房主可以处理金币申请、开桌、开赛、暂停、请人离座和禁言；俱乐部设置和副房主名单只有你能改。所有管理操作都会记在下面的「管理记录」里。": "Co-hosts can approve coin requests, open tables and events, pause, remove players and mute. Only you can change club settings and the co-host list. Every admin action is logged below.",
+  "单挑": "Heads-up",
+  "奥马哈": "Omaha",
+  "奥马哈高低": "Omaha Hi/Lo",
+  "应在场": "should be in play",
+  "归还只能扣钱包余额（在桌筹码需先离桌）。你自己的金币也在这里登记。": "Returns come out of the wallet balance (leave tables first). Record your own coins here too.",
+  "打完第一场锦标赛后出现排名": "Rankings appear after the first tournament",
+  "把钱包、全部账本、战绩、赛事、往期战报和金手链打包成一个文件下载，建议每次打完牌备份一份。": "Downloads wallets, the full ledger, stats, events, past sessions and bracelets as one file. Back up after every game night.",
+  "每人": "each",
+  "每场锦标赛积分 = 10 × (参赛人数 − 名次 + 1)，冠军额外 +50%。例如 6 人赛：冠军 90 分、亚军 50 分、第六名 10 分。人越多的比赛积分越高。": "Points per tournament = 10 × (entrants − place + 1), winner +50%. E.g. 6 players: 1st 90, 2nd 50, 6th 10. Bigger fields give more points.",
+  "清理已结束的赛事": "Clean up finished events",
+  "谁用 7-2 独赢主池，其他本手拿到牌的人各付几个大盲给他（仅德州）": "Win the main pot alone with 7-2 and everyone dealt in pays you this many BB (Hold'em only)",
+  "赏金猎人 KO": "Bounty KO",
+  "还没有现金桌": "No cash tables yet",
+  "去「房主后台」开一张": "open one in the Host panel",
+  "还没有锦标赛": "No tournaments yet",
+  "还没有冠军。赢下一场锦标赛即可获得金手链。": "No champions yet. Win a tournament to earn a bracelet.",
+  "还没有多桌锦标赛": "No multi-table tournaments yet",
+  "锦标赛 Sit & Go": "Sit & Go",
+  "桌上/奖池": "tables/prize pools",
+  "（发群对账）": " (share to group)",
+  "开赛": "Start",
+  "请人离座": "remove players",
+  "金手链": "bracelet",
+  "级可重购": "levels rebuy",
+  "前": "first",
+  "名称": "Name",
+  "小盲": "SB",
+  "起始筹码": "Starting stack",
+  "每级分钟": "Minutes per level",
+  "人数上限": "Max players",
+  "最低带入": "Min buy-in",
+  "最高带入": "Max buy-in",
+  "开赛时间": "Start time",
+  "重复": "Repeat",
+  "不重复": "Once",
+  "快速局": "Fast",
+  "今晚标准局": "Standard night",
+  "一键开好": "Quick setup",
+  "房主": "Host",
+  "管理员": "Admin",
+  "已确认你的": "approved your",
+  "你的申请被": "Your request was",
+  "拒绝": "Reject",
+  "确认发放": "Approve",
+  "确认收回": "Approve return",
+  '自动补码': 'Auto top-up', '换到这个座位（下一手需补一个大盲）': 'Move to this seat (post a big blind next hand)', '时间银行': 'Time bank', '思考时间': 'Shot clock',
+  "净盈亏 = 钱包余额 + 在桌筹码 + 已归还 − 累计发放。所有人的净盈亏加起来应为 0（锦标赛进行中按报名费暂计）。金币只是游戏积分，由房主确认发放，不能购买，也不能兑换成钱。": "Net = wallet + chips in play + returned − issued. Everyone’s net adds up to 0 (running tournaments count the entry fee). Coins are game points issued by the host; they cannot be bought or exchanged.",
+  "还没有多桌锦标赛，去「房主后台 → 开桌」选「多桌锦标赛」": "No multi-table tournaments yet — create one in Host panel → New table",
+  "一键开好一套桌，开后可在下方单独关闭。": "Sets up a group of tables in one click; you can close them individually below.",
+  "已发放 ": "Issued ",
+  "德州扑克 · 奥马哈 · 纯娱乐 · 金币是游戏积分，不能购买或兑换": "Hold'em · Omaha · just for fun · coins are game points, not for sale or exchange",
+  "混合局 德州⇄奥马哈 每圈轮换": "Mixed: Hold'em ⇄ Omaha each orbit",
+  "清理已结束的锦标赛": "Clean up finished tournaments",
+  "清理已结束的赛事/牌桌": "Clean up finished events/tables",
+  "金币只是游戏积分，由房主确认发放，不能购买，也不能兑换成钱。需要金币就在这里申请；不玩了可以把金币归还给房主。": "Coins are game points issued by the host — they cannot be bought or exchanged. Request coins here; return them to the host when you are done.",
+  "多桌锦标赛 MTT": "Multi-table tournament (MTT)",
+  "练习场（对 AI，不计金币）": "Practice (vs AI, no coins)",
   '结构': 'Structure', '筹码': 'chips', '分钟/级': 'min/level', '每桌': 'per table', '可延迟报名': 'late reg', '延迟报名': 'Late reg', '可重购': 'rebuys', '赏金': 'bounty', '锦标赛 Sit & Go': 'Sit & Go', '锦标赛': 'Tournament', '高低': 'Hi/Lo', '练习桌 PLO8 高低': 'Practice table PLO8 Hi/Lo',
   '胜率约': 'Equity ≈', '的随机牌': ' random hands', '需要': 'need', '才划算': 'to call profitably', '胜率低于赔率，长期看弃牌更好': 'Equity below pot odds — folding is better long-term', '胜率高于赔率，跟注长期赚': 'Equity above pot odds — calling is profitable', '对 ': 'vs ',
   '© 万泰游戏开发 · VANTAX POKER 免费娱乐版 · 仅与电脑对战 · 练习币不能购买、不能兑换、无任何奖品': '© Vantax Games · VANTAX POKER Free Play · vs AI only · practice chips cannot be bought, sold or exchanged, no prizes',
   '免费娱乐版：只和电脑玩家对战。练习币仅供娱乐，不能购买、不能兑换，也没有任何奖品。': 'Free play: you only play against AI. Practice chips are for fun — they cannot be bought or exchanged, and there are no prizes.',
 };
 const I18N_RX = [
-  [/^我$/, 'Me'], [/（跟 (\d+) 赢 (\d+)）/g, '(call $1 to win $2)'],
+  [/^我$/, 'Me'], [/^我 /, 'Me '], [/每 (\d+) 手/g, 'every $1 hands'], [/等待 (.+) 行动…/g, 'Waiting for $1…'], [/前 (\d+) 级/g, 'first $1 levels'], [/第(\d+)名/g, '#$1'], [/（跟 (\d+) 赢 (\d+)）/g, '(call $1 to win $2)'],
   [/第 ?(\d+) ?手/g, 'Hand $1'], [/第(\d+)级/g, 'Level $1'], [/(\d+) 手后换(德州|奥马哈)/g, (m, n, g) => `switch to ${g === '德州' ? "Hold'em" : 'Omaha'} in ${n} hands`], [/下一手换(德州|奥马哈)/g, (m, g) => `next hand: ${g === '德州' ? "Hold'em" : 'Omaha'}`],
-  [/(\d+) 秒/g, '$1s'], [/(\d+) 分钟/g, '$1 min'], [/(\d+) 人/g, '$1 players'], [/(\d+) 个大盲/g, '$1 BB'], [/第 (\d+) 名/g, '#$1'], [/前注/g, 'ante'],
+  [/(\d+) 手/g, '$1 hands'], [/(\d+) 秒/g, '$1s'], [/[（(]秒[)）]/g, ' (s)'], [/first (\d+) 级/g, 'first $1 levels'], [/已开好「(.+?)」/g, 'Set up “$1”'], [/(\d+) 分钟/g, '$1 min'], [/(\d+) 人/g, '$1 players'], [/(\d+) 个大盲/g, '$1 BB'], [/第 (\d+) 名/g, '#$1'], [/前注/g, 'ante'],
 ];
-const I18N_KEYS = Object.keys(I18N_EN).sort((a, b) => b.length - a.length);
+// 1–2 个字的词只在整段文字完全相同时才替换，避免「开发」里的「开」被换成 On 这种中英混拼
+const I18N_KEYS = Object.keys(I18N_EN).filter(k => k.length > 2).sort((a, b) => b.length - a.length);
+const I18N_SHORT = new RegExp('(?<![\\u4e00-\\u9fff])(' + Object.keys(I18N_EN).filter(k => k.length <= 2).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')).join('|') + ')(?![\\u4e00-\\u9fff])', 'g');
 function trEN(str) {
   if (!/[一-鿿]/.test(str)) return str;
+  const tr = str.trim(); if (I18N_EN[tr] !== undefined) return str.replace(tr, I18N_EN[tr]);
   let s = str;
   for (const k of I18N_KEYS) if (s.indexOf(k) >= 0) s = s.split(k).join(I18N_EN[k]);
+  // 短词：前后不是汉字时才替换（「跟注 2」可以，「开发」不行）
+  s = s.replace(I18N_SHORT, m => I18N_EN[m]);
   for (const [rx, to] of I18N_RX) s = s.replace(rx, to);
   return s;
 }
@@ -1986,15 +2130,16 @@ class Host {
     if (co && it.op === 'credit') {
       const who = String(it.uid || ''), rs = it.extra && +it.extra.reqSeq, d = Math.round(+it.delta || 0);
       const pr = (App.peers || []).map(p => p.by === who && p.presence && p.presence.req).find(q => q && +q.seq === rs);
-      if (!rs || !pr || d !== (pr.kind === 'out' ? -1 : 1) * Math.round(+pr.amt || 0)) return err('副房主只能确认玩家提交的申请；手动加减请让房主操作');
+      if (!rs || !pr || (d !== 0 && d !== (pr.kind === 'out' ? -1 : 1) * Math.round(+pr.amt || 0))) return err('副房主只能确认或拒绝玩家提交的申请；手动加减请让房主操作');
     }
+    if (co && it.op === 'notify') it = Object.assign({}, it, { msg: '【管理员 ' + nameOf(uid) + '】' + String(it.msg || '').replace(/^【[^】]*】/, '') });
     const r = this.admin2(uid, it, err);
     if (r && it.op !== 'notify') this.adminLog(uid, it);
     return r;
   }
   adminLog(uid, it) {
     const T = this.tables[it.tid], nm = u => '@{' + u + '}';
-    const txt = { credit: `${it.delta >= 0 ? '给' : '从'} ${nm(it.uid)} ${it.delta >= 0 ? '发放' : '收回'} ${Math.abs(Math.round(+it.delta || 0))}${it.note ? '（' + String(it.note).slice(0, 30) + '）' : ''}`, createTable: `开桌「${String((it.cfg || {}).name || '').slice(0, 24)}」`, createMtt: `开赛「${String((it.cfg || {}).name || '').slice(0, 24)}」`, closeTable: `关闭「${T ? T.name : it.tid}」`, removeSeat: `请 ${T && T.seats[+it.seat] ? nm(T.seats[+it.seat].uid) : '玩家'} 离开「${T ? T.name : ''}」`, pause: `暂停/继续「${T ? T.name : ''}」`, clubInfo: '修改俱乐部信息', tset: `调整「${T ? T.name : ''}」牌桌设置`, cleanup: '清理已结束的赛事', bomb: `「${T ? T.name : ''}」下一手炸弹锅`, admins: '修改副房主名单', mute: `${(+it.mins || 0) > 0 ? '禁言 ' + nm(it.uid) + ' ' + it.mins + ' 分钟' : '解除 ' + nm(it.uid) + ' 的禁言'}` }[it.op];
+    const txt = { credit: !Math.round(+it.delta || 0) ? `拒绝了 ${nm(it.uid)} 的申请` : `${it.delta >= 0 ? '给' : '从'} ${nm(it.uid)} ${it.delta >= 0 ? '发放' : '收回'} ${Math.abs(Math.round(+it.delta || 0))}${it.note ? '（' + String(it.note).slice(0, 30) + '）' : ''}`, createTable: `开桌「${String((it.cfg || {}).name || '').slice(0, 24)}」`, createMtt: `开赛「${String((it.cfg || {}).name || '').slice(0, 24)}」`, closeTable: `关闭「${T ? T.name : it.tid}」`, removeSeat: `请 ${T && T.seats[+it.seat] ? nm(T.seats[+it.seat].uid) : '玩家'} 离开「${T ? T.name : ''}」`, pause: `暂停/继续「${T ? T.name : ''}」`, clubInfo: '修改俱乐部信息', tset: `调整「${T ? T.name : ''}」牌桌设置`, cleanup: '清理已结束的赛事', bomb: `「${T ? T.name : ''}」下一手炸弹锅`, admins: '修改副房主名单', mute: `${(+it.mins || 0) > 0 ? '禁言 ' + nm(it.uid) + ' ' + it.mins + ' 分钟' : '解除 ' + nm(it.uid) + ' 的禁言'}` }[it.op];
     if (!txt) return;
     App.db.collection('adminlog').add({ by: uid, op: it.op, txt, at: now() }).catch(() => { });
   }
@@ -2443,7 +2588,7 @@ function send(it) {
 let rq = false;
 function scheduleRender() { try { checkTurnNotify(); } catch (e) { } if (!rq) { rq = true; requestAnimationFrame(() => { rq = false; render(); }); } }
 const sigs = {};
-function setHTML(el, key, html) { if (!el) return; if (sigs[key] === html && el.dataset.k === key) return; sigs[key] = html; el.dataset.k = key; el.innerHTML = html; }
+function setHTML(el, key, html) { if (!el) return; if (sigs[key] === html && el.dataset.k === key) return; sigs[key] = html; el.dataset.k = key; el.innerHTML = html; el.querySelectorAll('button[title]:not([aria-label])').forEach(b => b.setAttribute('aria-label', b.title)); }
 
 function autoPre() {
   const T = getTables(), me = myUid();
@@ -2500,7 +2645,7 @@ function renderTop() {
   const pend = App.pendingReq && App.ctx === 'online' && !(App.wallets[App.me] && App.wallets[App.me].reqSeq >= App.pendingReq.seq);
   const hs = App.ctx !== 'online' || !App.online ? '' : App.netDown ? `<span class="pill bad" title="与服务器的连接中断，正在自动重连；恢复后会自动同步" onclick="WTP.reconnect()">● 断线重连中…</span>` : App.host ? '<span class="pill ok" title="本页正在主持牌局，请保持打开">● 主持中</span>' : window.VX_SERVER_HOST ? (hostAlive() ? '<span class="pill ok" title="牌局由服务器主持，关掉页面也会继续">● 服务器在线</span>' : '<span class="pill live">● 服务器连接中</span>') : App.gotBeat ? (hostAlive() ? '<span class="pill ok">● 房主在线</span>' : '<span class="pill live">● 房主离线</span>') : '';
   setHTML($('#walletBox'), 'wb', `${hs}<div class="wallet"><span class="coin"></span><b>${fmt(bal)}</b><span class="pill">${lab}</span>
-    ${App.ctx === 'online' ? `<button class="btn gold sm" onclick="WTP.buyModal()">${pend ? '申请审核中…' : '金币'}</button>` : ''}<button class="btn sm meb" title="个人资料" onclick="WTP.profile()">${esc((Prefs.prof && Prefs.prof.emo) || '👤')}</button><button class="btn sm" title="设置" onclick="WTP.settings()">⚙</button>${PUB ? `<button class="btn sm" title="中文 / English" onclick="WTP.toggleLang()">${Prefs.lang === 'en' ? '中' : 'EN'}</button>` : ''}</div>`);
+    ${App.ctx === 'online' ? `<button class="btn gold sm" onclick="WTP.buyModal()">${pend ? '申请审核中…' : '金币'}</button>` : ''}<button class="btn sm meb" title="个人资料" onclick="WTP.profile()">${esc((Prefs.prof && Prefs.prof.emo) || '👤')}</button><button class="btn sm" title="设置" onclick="WTP.settings()">⚙</button>${PUB || window.VX_CLOUD_MODE ? `<button class="btn sm" title="中文 / English" onclick="WTP.toggleLang()">${Prefs.lang === 'en' ? '中' : 'EN'}</button>` : ''}</div>`);
 }
 
 function clubNoticeSeen() { try { return +localStorage.getItem('wtp_notice_' + (window.VX_CLOUD ? VX_CLOUD.club : 'art')) || 0; } catch (e) { return 0; } }
@@ -2783,12 +2928,12 @@ function adminHTML() {
       <label class="f">时长<select id="muM"><option value="10">10 分钟</option><option value="60">1 小时</option><option value="720">今晚（12 小时）</option><option value="0">解除禁言</option></select></label><button class="btn sm gold" onclick="WTP.muteSel()">确定</button></div>
       <h3>管理记录</h3><div id="admLog" class="note">${admLogHTML()}</div></div>`; }
   h += `<div class="two"><div class="panel"><h3 style="margin-top:0">待处理申请</h3><div id="admReqs"></div>
-    <h3>手动登记</h3><div class="frow">
+    <div style="${CO ? 'display:none' : ''}"><h3>手动登记</h3><div class="frow">
     <label class="f">玩家<select id="adjU"></select></label>
     <label class="f">类型<select id="adjT"><option value="buyin">发放金币</option><option value="cashout">收回金币</option></select></label>
     <label class="f">金额<input id="adjA" type="number" min="1" value="1000" style="width:110px"></label>
     <button class="btn gold" onclick="WTP.adjust()">登记</button></div>
-    <p class="note">归还只能扣钱包余额（在桌筹码需先离桌）。你自己的金币也在这里登记。</p></div>`;
+    <p class="note">归还只能扣钱包余额（在桌筹码需先离桌）。你自己的金币也在这里登记。</p></div></div>`;
   h += `<div class="panel"><h3 style="margin-top:0">开桌</h3>
     <div class="frow"><label class="f">类型<select id="ntK" onchange="WTP.ntKind()"><option value="cash">现金桌</option><option value="sng">锦标赛 SNG</option><option value="mtt">多桌锦标赛 MTT</option></select></label>
     <label class="f">玩法<select id="ntG"><option value="nlh">无限注德州 NLH</option><option value="plo">底池限注奥马哈 PLO</option><option value="plo5">五张奥马哈 PLO5</option><option value="plo8">奥马哈高低 PLO8</option><option value="mix">混合局 德州⇄奥马哈 每圈轮换</option></select></label>
@@ -3316,7 +3461,7 @@ const WTP = window.WTP = {
     H.notify(uid, `${App.isOwner ? '房主' : '管理员 ' + nameOf(App.me)} 已确认你的${r.req.kind === 'out' ? '归还' : '领取'} ${fmt(amt)}`);
     render();
   },
-  reject(uid, seq) { const H = admH(); H.credit(uid, 0, null, '', { reqSeq: seq }); H.notify(uid, '你的申请被房主拒绝，请联系房主'); render(); },
+  reject(uid, seq) { const H = admH(); H.credit(uid, 0, null, '', { reqSeq: seq }); H.notify(uid, `你的申请被${App.isOwner ? '房主' : '管理员 ' + nameOf(App.me)}拒绝，请联系房主`); render(); },
   adjust() {
     const H = admH(), u = $('#adjU').value, ty = $('#adjT').value, a = Math.floor(+$('#adjA').value || 0);
     if (!u || a <= 0) return toast('请选择玩家并填写金额');
@@ -3402,10 +3547,11 @@ const WTP = window.WTP = {
       <div class="frow"><button class="btn gold" onclick="WTP.saveProfile()">保存</button><button class="btn" onclick="WTP.closeModal()">取消</button></div>
       ${window.VX_CLOUD ? `<h3>在其他设备登录</h3><div class="note">在手机或另一台电脑上打开这个链接，就是同一个身份、同一个钱包。<b>这个链接等于你的账号，不要发给别人。</b></div><div class="frow"><button class="btn sm" onclick="WTP.copyDevice()">复制我的登录链接</button><button class="btn sm red" onclick="if(confirm('退出后需要重新用邀请链接或登录链接进入，确定吗？'))VX_CLOUD.leave()">退出俱乐部</button></div>` : ''}`);
   },
+  ownerLinkSaved() { try { localStorage.setItem('vx_link_saved_' + VX_CLOUD.club, '1'); } catch (e) { } WTP.closeModal(); render(); },
   saveOwnerLink() {
     const u = window.VX_CLOUD.deviceLink();
     const done = () => { try { localStorage.setItem('vx_link_saved_' + VX_CLOUD.club, '1'); } catch (e) { } toast('房主登录链接已复制，请马上存到安全的地方，不要发到群里'); render(); };
-    (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(done).catch(() => { modal(`<h3>房主登录链接</h3><div class="note">请手动复制保存：</div><input style="width:100%" readonly value="${esc(u)}" onclick="this.select()"><button class="btn gold" style="margin-top:8px" onclick="WTP.closeModal()">我已保存</button>`); done(); });
+    (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(done).catch(() => { modal(`<h3>房主登录链接</h3><div class="note">自动复制失败，请长按/全选手动复制保存：</div><input style="width:100%" readonly value="${esc(u)}" onclick="this.select()"><button class="btn gold" style="margin-top:8px" onclick="WTP.ownerLinkSaved()">我已保存</button>`); });
   },
   async backup() {
     const H = admH(); if (!H) return;

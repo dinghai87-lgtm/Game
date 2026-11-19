@@ -36,7 +36,7 @@
 .chest:hover:not(:disabled){transform:translateY(-3px) scale(1.04)}
 .chest.open{background:radial-gradient(circle,#fde68a,#b45309);font:900 clamp(16px,4.5vw,22px) Anton,Impact,"Arial Black",sans-serif;color:#3b0d00;animation:growW .4s}
 .chest.end{background:radial-gradient(circle,#86efac,#166534);color:#fff}
-.chest.dim{opacity:.35}
+.chest.dim{opacity:.35}.chest img{width:78%;height:78%;object-fit:contain;filter:drop-shadow(0 3px 3px rgba(0,0,0,.6));pointer-events:none}.chest:not(.open):hover img{transform:scale(1.06)}
 .ftot{font:900 26px Anton,Impact,"Arial Black",sans-serif;color:#fde68a;text-shadow:0 2px 0 #000}
 .wheelwrap{position:relative;width:min(340px,80vw);aspect-ratio:1;margin:6px auto 12px}
 .wheelwrap svg{width:100%;height:100%;transition:transform 4.2s cubic-bezier(.12,.6,.1,1);filter:drop-shadow(0 8px 20px rgba(0,0,0,.6))}
@@ -180,11 +180,11 @@ body.lowfx .cell.win .in::after{animation:none!important;display:none!important}
   function pickGame(b) {
     return new Promise(res => {
       const N = 12, icons = ['🧰', '🎁', '💼', '👜'];
-      const LZ = ((window.LVLang && LVLang.get()) || 'bi'), FZ = (zh, en) => LZ === 'zh' ? zh : LZ === 'en' ? en : zh + ' ' + en; box().innerHTML = '<h2>' + FZ('宝箱选宝', 'TREASURE PICK') + '</h2><p>' + FZ('打开宝箱拿奖金，开到“收取”时奖励结束。', 'Open chests to reveal prizes. The bonus ends when you find COLLECT.') + (b.mult > 1 ? FZ(' 所有奖金 x' + b.mult + '！', ' All prizes x' + b.mult + '!') : '') + '</p><div class="chests">' + Array.from({ length: N }, (_, i) => '<button class="chest emo" data-i="' + i + '">' + icons[i % 4] + '</button>').join('') + '</div><div class="ftot" id="ptot">0.00</div>';
+      const LZ = ((window.LVLang && LVLang.get()) || 'bi'), FZ = (zh, en) => LZ === 'zh' ? zh : LZ === 'en' ? en : zh + ' ' + en; box().innerHTML = '<h2>' + FZ('宝箱选宝', 'TREASURE PICK') + '</h2><p>' + FZ('打开宝箱拿奖金，开到“收取”时奖励结束。', 'Open chests to reveal prizes. The bonus ends when you find COLLECT.') + (b.mult > 1 ? FZ(' 所有奖金 x' + b.mult + '！', ' All prizes x' + b.mult + '!') : '') + '</p><div class="chests">' + Array.from({ length: N }, (_, i) => '<button class="chest" data-i="' + i + '"><img src="assets/fx/pick' + (i % 4 + 1) + '.webp" alt=""></button>').join('') + '</div><div class="ftot" id="ptot">0.00</div>';
       ov.classList.add('show'); let k = 0, tot = 0; const bet = curBet(); let done = false;
       const open = btn => {
         if (done || btn.disabled) return; const it = b.items[k++]; btn.disabled = true; btn.classList.add('open');
-        if (it === 'COLLECT') { btn.classList.add('end'); btn.textContent = 'COLLECT'; done = true; sfx.big();
+        if (it === 'COLLECT') { btn.classList.add('end'); btn.textContent = FZ('收取', 'COLLECT'); done = true; sfx.big();
           box().querySelectorAll('.chest:not(.open)').forEach(x => { x.classList.add('dim'); x.disabled = true; });
           document.getElementById('ptot').textContent = fmt(b.win) + (b.mult > 1 ? '  (x' + b.mult + ')' : ''); clearInterval(auto); setTimeout(() => { ov.classList.remove('show'); res(); }, 1800); return; }
         tot += it; btn.textContent = it + 'x'; sfx.coins(); document.getElementById('ptot').textContent = fmt(r2(b.win * tot / b.base));

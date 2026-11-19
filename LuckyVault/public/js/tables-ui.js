@@ -933,7 +933,7 @@
     const s = document.getElementById('pkS'); o.spots.forEach(x => s.appendChild(spotBtn(...x)));
   }
   async function putCards(el, codes, open, n) { if (!codes) return; const have = el.querySelectorAll('.pcard').length; if (have === codes.length && !codes.some((c, i) => c !== '??' && el.children[i] && el.children[i].dataset && el.children[i].dataset.c === '??')) {}
-    el.innerHTML = ''; for (let i = 0; i < codes.length; i++) { const e = cardEl(codes[i], open ? i : 0); e.dataset.c = codes[i]; el.appendChild(e); if (i >= (n || 0)) { (sfx.card || sfx.click)(); await wait(110); } } }
+    el.innerHTML = ''; for (let i = 0; i < codes.length; i++) { const e = cardEl(codes[i], open ? i : 0); e.dataset.c = codes[i]; el.appendChild(e); if (i >= (n || 0)) { if (i === (n || 0) && n) await wait(350); (sfx.card || sfx.click)(); await wait(S.turbo ? 120 : 300); } } }
   function pkResult(v, r, extraParts) {
     const H = document.getElementById('tcpH'), O = PK_OUT[v.out] || [v.out || '', v.out || ''];
     ['tcpD', 'tcpP'].forEach(id => document.getElementById(id).classList.remove('win', 'lose'));
@@ -955,8 +955,8 @@
     async render(v, r) {
       const d = document.getElementById('dC'), p = document.getElementById('pC'), H = document.getElementById('tcpH');
       ['tcpD', 'tcpP'].forEach(id => document.getElementById(id).classList.remove('win', 'lose'));
-      if (!v.done || !p.querySelector('.pcard')) { p.innerHTML = ''; for (let i = 0; i < v.P.length; i++) { p.appendChild(cardEl(v.P[i], i)); (sfx.card || sfx.click)(); await wait(120); } }
-      d.innerHTML = ''; v.D.forEach((c, i) => d.appendChild(cardEl(c, v.done ? i : 0))); if (v.done) { (sfx.card || sfx.click)(); await wait(300); }
+      if (!v.done || !p.querySelector('.pcard')) { p.innerHTML = ''; for (let i = 0; i < v.P.length; i++) { p.appendChild(cardEl(v.P[i], i)); (sfx.card || sfx.click)(); await wait(S.turbo ? 120 : 280); } }
+      if (v.done && v.D.length && !String(v.D[0]).includes('?')) { d.innerHTML = ''; v.D.forEach(() => d.appendChild(cardEl('??', 0))); await wait(S.turbo ? 100 : 350); for (let i = 0; i < v.D.length; i++) { d.replaceChild(cardEl(v.D[i], i), d.children[i]); (sfx.card || sfx.click)(); await wait(S.turbo ? 120 : 420); } } else { d.innerHTML = ''; v.D.forEach((c, i) => d.appendChild(cardEl(c, v.done ? i : 0))); }
       document.getElementById('pL').innerHTML = PKT('你的手牌', 'YOUR HAND') + (v.ph ? ' <b>' + hn3(v.ph) + '</b>' : '');
       document.getElementById('dL').innerHTML = PKT('庄家', 'DEALER') + (v.dh ? ' <b>' + hn3(v.dh) + '</b>' : '');
       if (!v.done) { const go = tcpHint(v.P, v.ph); H.innerHTML = PKT('建议：', 'Tip: ') + (go ? PKT('跟注（手牌 Q-6-4 或更好）', 'PLAY (Q-6-4 or better)') : PKT('弃牌（低于 Q-6-4）', 'FOLD (below Q-6-4)')); showRes(PKT('跟注还是弃牌？', 'Play or fold?'), 0); return; }

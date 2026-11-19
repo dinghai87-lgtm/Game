@@ -63,6 +63,7 @@ def hue(dst, deg):
     h = h.point(lambda x: (x + int(deg * 255 / 360)) % 256); out = Image.merge('HSV', (h, s_, v)).convert('RGB').convert('RGBA'); out.putalpha(a); out.save(dst, 'WEBP', quality=90)
 SA = CP + 'rpg-stone-age-game-512x512-icons/PNG/without background/'
 FR = CP + 'fruits-berries-vegetables-icon-512x512-set/PNG/without background/'
+SEA = '/tmp/packs/rpg-sea-loot-icons/PNG/without background/'
 MK = CP + 'rpg-monk-skill-game-icons/PNG/'
 FL = CP + 'fairy-loot-game-icons/PNG/without_shadow/'
 K = ['h1', 'h2', 'h3', 'h4', 'l1', 'l2', 'l3', 'l4', 'l5', 'W', 'S']
@@ -114,6 +115,11 @@ G = {
  # ---- batch 6: classic fruit trio shared one kit (7/9 identical) -> 7+BAR recoloured, fruits from the 512 painted set ----
  'vegas-wheel-7s': dict(src=[None, None] + P(FR, 43, 13, 15, 29, 46) + [None] * 4, hue=(230, ['h1', 'h2']), glow=(150, 160, 255)),
  'triple-fortune-wilds': dict(src=[None, None] + P(FR, 44, 16, 30, 31, 35) + [None] * 4, hue=(140, ['h1', 'h2']), glow=(120, 255, 190)),
+ # ---- batch 7: per-key duplicate check ----
+ # Monkey Business: h1,h2,h4,l2 identical to jungle-reels -> banana bunch, mango, papaya, melon (512 painted fruit)
+ 'monkey-business': dict(src=P(FR, 27, 11) + [None] + P(FR, 14) + [None] + P(FR, 13) + [None] * 5, glow=(200, 255, 110)),
+ # Shark Hunter: 6 keys shared with ocean-treasure / ocean-wilds -> sea loot (shark, tentacle, scallop, starfish, pearls, oyster)
+ 'shark-hunter': dict(src=[None] + P(SEA, 31, 21) + [None] + P(SEA, 14, 19, 12) + [None] + P(SEA, 10) + [None, None], glow=(110, 210, 255)),
 }
 todo = sys.argv[1:] or list(G)
 for slug in todo:

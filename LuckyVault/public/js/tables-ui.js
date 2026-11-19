@@ -404,11 +404,20 @@
     async render(v, r) {
       document.getElementById('bjSpot').classList.add('dim');
       { const sd = document.getElementById('bjSide'); if (sd) sd.innerHTML = v.side ? Object.entries(v.side.r).map(([k, t]) => '<span class="' + (/No /.test(t) ? '' : 'w') + '">' + (k === 'pp' ? 'Perfect Pairs' : '21+3') + ': ' + t + '</span>').join('') : ''; }
-      const dc = document.getElementById('dCards'); dc.innerHTML = ''; v.dealer.forEach((c, i) => dc.appendChild(cardEl(c, i)));
-      document.getElementById('dLbl').innerHTML = 'Dealer <b>' + (v.done ? v.dealerTotal : v.dealerTotal) + '</b>';
+      // dealer: while the hand is live show cards as dealt; once it's over, turn the hole card and draw one card at a time
+      const dc = document.getElementById('dCards'), prevN = REND.blackjack._dn || 0, revealing = v.done && v.dealer.length > 1;
+      const keep = revealing ? Math.max(1, Math.min(prevN, v.dealer.length) - 1) : v.dealer.length;
+      dc.innerHTML = ''; v.dealer.slice(0, keep).forEach((c, i) => dc.appendChild(cardEl(c, i)));
+      document.getElementById('dLbl').innerHTML = 'Dealer' + (revealing ? '' : ' <b>' + v.dealerTotal + '</b>');
+      REND.blackjack._dn = v.done ? 0 : v.dealer.length;
       const ph = document.getElementById('pHands'); ph.innerHTML = '';
       v.hands.forEach((h, i) => { const w = document.createElement('div'); w.className = 'hand' + (!v.done && i === v.cur && v.hands.length > 1 ? ' cur' : '') + (v.done && h.res ? (/win|blackjack/.test(h.res) ? ' hw' : /lose|bust|surrender/.test(h.res) ? ' hl' : '') : ''); w.appendChild(cardsEl(h.cards));
         w.appendChild(el('<div class="lbl">' + (h.bj ? 'Blackjack' : (h.soft && h.total < 21 ? 'Soft ' : '') + h.total) + ' <b>' + fmt(h.bet) + '</b>' + (h.free ? ' <b class="free">+' + fmt(h.free) + ' FREE</b>' : '') + (h.bonus ? ' <b class="free">21 bonus ' + h.bonus + ':1</b>' : '') + (h.res ? ' · ' + ({ win: 'WIN', lose: 'LOSE', push: 'PUSH', bust: 'BUST', blackjack: 'BLACKJACK!', surrender: 'SURRENDERED' })[h.res] : '') + '</div>')); ph.appendChild(w); });
+      if (revealing) {
+        showRes('', 0); await wait(450);
+        for (let i = keep; i < v.dealer.length; i++) { const ce = cardEl(v.dealer[i], 0); dc.appendChild(ce); (sfx.card || sfx.click)(); await wait(i === 1 ? 750 : 850); }
+        document.getElementById('dLbl').innerHTML = 'Dealer <b>' + v.dealerTotal + '</b>';
+      }
       (sfx.card || sfx.click)(); await wait(250);
       if (v.actions && v.actions.includes('switch')) showRes('Switch the second cards of your two hands?', 0);
       else if (v.ins === 'offer') showRes('Dealer shows an Ace · Insurance?', 0);

@@ -88,13 +88,14 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 #board{position:relative}
 #board.reels{display:flex;gap:4px}
 #board.drop{overflow:hidden}
-.reel{position:relative;overflow:hidden;width:var(--cell);height:calc(var(--cell) * var(--rows));background:linear-gradient(rgba(0,0,0,.35),rgba(255,255,255,.04) 50%,rgba(0,0,0,.35));border-radius:6px}
+.reel{position:relative;overflow:hidden;width:var(--cell);height:calc(var(--cellh,var(--cell)) * var(--rows));background:linear-gradient(rgba(0,0,0,.35),rgba(255,255,255,.04) 50%,rgba(0,0,0,.35));border-radius:6px}
 .reel.antic{box-shadow:0 0 0 2px var(--gold),0 0 24px 6px rgba(255,200,61,.75);animation:ant .25s infinite alternate}
 @keyframes ant{to{box-shadow:0 0 0 2px #fff,0 0 34px 10px rgba(255,200,61,.95)}}
 .reel.moving .strip{filter:none}@media (pointer:coarse),(max-width:900px){.reel.moving .strip{filter:none}}.strip{backface-visibility:hidden;transform:translateZ(0)}
 .strip{position:absolute;left:0;top:0;width:100%;will-change:transform}
 .cell{width:var(--cell);height:var(--cell);display:flex;align-items:center;justify-content:center}
 #board.drop .cell{position:absolute;left:0;top:0;will-change:transform}
+#board.reels .cell{height:var(--cellh,var(--cell))}#board.reels .cell>.in{height:auto;aspect-ratio:1}
 .in{width:90%;height:90%;display:flex;align-items:center;justify-content:center;border-radius:18%;font-size:calc(var(--cell) * .56);line-height:1;position:relative;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;transition:transform .2s}
 .hi .in{background:radial-gradient(circle,rgba(255,255,255,.22),rgba(255,255,255,.04) 70%)}
 .hi .in::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
@@ -583,7 +584,7 @@ const sfx=(()=>{let ac=null,bus=null;const B={},LD={},SH=['vo_win','vo_congrats'
 ['pointerdown','keydown'].forEach(e=>addEventListener(e,()=>{if(S.snd)sfx.unlock()},{once:true,passive:true}));
 
 // ===================== CELLS =====================
-let CELL=80;
+let CELL=80,CELLH=80; // CELLH: reel row height (taller than CELL on portrait phones so 3-row reels fill the screen)
 function shortN(v){return v>=1e6?(v/1e6).toFixed(v>=1e7?0:1)+'M':v>=1e3?(v/1e3).toFixed(v>=1e4?0:1)+'K':(Math.round(v*100)/100).toString()}
 function txCls(t){return t==='7'?'seven':t==='BAR'?'bar':t==='10'?'T':t}
 function cellEl(g,o){const d=document.createElement('div');d.className='cell';let cls,html,cls0='';const s=o.s;
@@ -601,13 +602,13 @@ class ReelView{
   for(let c=0;c<this.m.cols;c++){const r=document.createElement('div');r.className='reel';const st=document.createElement('div');st.className='strip';r.appendChild(st);b.appendChild(r);this.reels.push({r:r,st:st})}}
  setCol(c,col){const st=this.reels[c].st;st.style.transition='none';st.style.transform='translateY(0)';st.innerHTML='';this.cells[c]=col.map(o=>{const e=cellEl(this.g,o);st.appendChild(e);return e})}
  set(grid){grid.forEach((col,c)=>this.setCol(c,col))}
- cellPos(c,r){return[c*(CELL+4)+CELL/2,r*CELL+CELL/2]}
+ cellPos(c,r){return[c*(CELL+4)+CELL/2,r*CELLH+CELLH/2]}
  spin(grid,turbo){const R=this.m.rows;let sc=0,extra=0;const ps=[];const base=turbo?260:560,step=turbo?80:170,ant=turbo?600:1300;this.live=[];
   for(let c=0;c<this.m.cols;c++){const {r,st}=this.reels[c];const ant0=sc>=2;if(ant0)extra+=ant;const dur=base+step*c+extra;
    const nFill=Math.min(22,Math.max(4,Math.round(dur/(turbo?28:42))));const old=Array.from(st.children).slice(0,R);
    st.style.transition='none';st.innerHTML='';grid[c].forEach(o=>st.appendChild(cellEl(this.g,o)));
    for(let i=0;i<nFill;i++)st.appendChild(cellEl(this.g,E.gen(this.g.mk||this.g.e,c,false)));old.forEach(e=>st.appendChild(e));
-   const len=R+nFill+old.length;st.style.transform='translateY('+(-(len-R)*CELL)+'px)';r.classList.add('moving');
+   const len=R+nFill+old.length;st.style.transform='translateY('+(-(len-R)*CELLH)+'px)';r.classList.add('moving');
    let at=null;if(ant0)at=setTimeout(()=>{r.classList.add('antic');sfx.antic()},Math.max(0,dur-ant));
    ps.push(new Promise(res=>{const rec={done:false,t:null,finish:()=>{if(rec.done)return;rec.done=true;clearTimeout(rec.t);clearTimeout(at);r.classList.remove('antic','moving');sfx.stop();{const kids=Array.from(st.children);if(kids.length>=R){st.style.transition='none';st.style.transform='translateY(0)';for(let i=kids.length-1;i>=R;i--)kids[i].remove();this.cells[c]=kids.slice(0,R)}else this.setCol(c,grid[c])}this.cells[c].forEach(e=>e.classList.add('land'));res()}};
     rec.slam=()=>{if(rec.done)return;clearTimeout(rec.t);clearTimeout(at);const cur=getComputedStyle(st).transform;st.style.transition='none';st.style.transform=cur;void st.offsetHeight;
@@ -654,7 +655,7 @@ function countWin(v,label){return new Promise(res=>{const d=S.turbo||T.quick?250
  (function tk(n){if(fin)return;const p=Math.min(1,(n-t0)/d);if(b)b.textContent=fmt(v*(1-Math.pow(1-p,2)));if(p<1)requestAnimationFrame(tk);else end()})(t0)})}
 function curBet(){while(S.bi>0&&!betOk(S.bi))S.bi--;return T.fs?T.fs.bet:BETS[S.bi]}
 
-function relayout(grid){const old=CELL;layout();grid=grid||T.grid;if(T.g&&T.view&&grid&&CELL!==old){T.view=E.MATH[T.g.mk||T.g.e].type==='reel'?new ReelView($('#board'),T.g):new DropView($('#board'),T.g);T.view.set(grid)}}
+function relayout(grid){const old=CELL,oldh=CELLH;layout();grid=grid||T.grid;if(T.g&&T.view&&grid&&(CELL!==old||CELLH!==oldh)){T.view=E.MATH[T.g.mk||T.g.e].type==='reel'?new ReelView($('#board'),T.g):new DropView($('#board'),T.g);T.view.set(grid)}}
 function layout(){if(!T.g)return;const m=E.MATH[T.g.mk||T.g.e];const reel=m.type==='reel';
  document.documentElement.style.setProperty('--rows',m.rows);
  const st=$('#stage'),fr=$('#frame'),cs=getComputedStyle(fr),fp=parseFloat(cs.paddingLeft)||10;const logo=$('#gLogo');logo.style.display='none';
@@ -662,9 +663,10 @@ function layout(){if(!T.g)return;const m=E.MATH[T.g.mk||T.g.e];const reel=m.type
  const W=st.clientWidth-pad-gaps;const fsH=T.fs?40:0;const hwb=$('#hwBar');const hwH=hwb.classList.contains('show')?hwb.offsetHeight+8:0;const H0=st.clientHeight-pad-$('#winbar').offsetHeight-14-fsH-hwH;
  const cap=reel?150:112;let c=Math.floor(Math.min(W/m.cols,H0/m.rows,cap));
  if(H0-m.rows*c>=74){logo.style.display='flex';const H1=H0-logo.offsetHeight-10;c=Math.floor(Math.min(W/m.cols,H1/m.rows,cap))}
- CELL=Math.max(30,c);
- document.documentElement.style.setProperty('--cell',CELL+'px');
- const svg=$('#lines');const bw=reel?m.cols*CELL+gaps:m.cols*CELL;svg.setAttribute('width',bw);svg.setAttribute('height',m.rows*CELL);
+ CELL=Math.max(30,c);CELLH=CELL;
+ if(reel&&st.clientWidth<600&&m.rows<=4){const lh=logo.style.display==='flex'?logo.offsetHeight+10:0;CELLH=Math.max(CELL,Math.min(Math.floor(CELL*1.3),Math.floor((H0-lh)/m.rows)))}
+ document.documentElement.style.setProperty('--cell',CELL+'px');document.documentElement.style.setProperty('--cellh',CELLH+'px');
+ const svg=$('#lines');const bw=reel?m.cols*CELL+gaps:m.cols*CELL;svg.setAttribute('width',bw);svg.setAttribute('height',m.rows*(reel?CELLH:CELL));
  if(T.view&&T.view.b&&!reel){T.view.b.style.width=m.cols*CELL+'px';T.view.b.style.height=m.rows*CELL+'px'}}
 
 function openGame(id){if(needLogin())return;try{sfx.enter&&sfx.enter()}catch(e){}if(GAMES[id]&&!vis(GAMES[id])&&hasArt!==undefined&&LVX&&LVX.assets&&Object.keys(LVX.assets.games).length){toast('This game is coming soon');return}{const g0=GAMES[id];if(g0&&!g0.slot){if(g0.off){toast('This game is under maintenance');return}S.recent=[id].concat(S.recent.filter(x=>x!==id)).slice(0,12);save();if(location.hash!=='#'+g0.slug)history.pushState({g:id},'','#'+g0.slug);openTable(g0);return}}if(S.fs&&S.fs.gid!==id&&GAMES[S.fs.gid]){toast('You have unfinished free spins');id=S.fs.gid}
@@ -848,7 +850,7 @@ function autoCheck(r){const c=T.autoCfg;if(!c||T.auto<=0)return;let why='';
  if(c.loss&&c.bal0-S.bal>=c.loss-1e-9)why='Loss limit reached';else if(c.win&&r.win>=c.win)why='Single win limit reached';else if(c.stopFS&&(r.ev==='start'||r.res.hold))why='Bonus won';
  if(why){T.auto=0;updUI();toast('Autoplay stopped: '+why)}}
 document.addEventListener('keydown',e=>{if(!T.g)return;if(e.code==='Space'&&!$('.ov.show')){e.preventDefault();$('#spin').click()}else if(e.code==='Escape'){$('#info').classList.remove('show')}});
-let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(T.g&&!T.busy&&T.view){const c0=CELL;layout();if(CELL===c0)return;const g=T.grid;T.view=E.MATH[T.g.mk||T.g.e].type==='reel'?new ReelView($('#board'),T.g):new DropView($('#board'),T.g);T.view.set(g)}},200)});
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(T.g&&!T.busy&&T.view){const c0=CELL,h0=CELLH;layout();if(CELL===c0&&CELLH===h0)return;const g=T.grid;T.view=E.MATH[T.g.mk||T.g.e].type==='reel'?new ReelView($('#board'),T.g):new DropView($('#board'),T.g);T.view.set(g)}},200)});
 addEventListener('popstate',()=>{const slug=location.hash.slice(1);const g=GAMES.find(x=>x&&x.slug===slug);if(g&&!T.g&&!TT.g)openGame(g.id);else if(!g&&T.g){if(!closeGame())history.pushState({},'','#'+T.g.slug)}else if(!g&&TT.g){if(!closeTable())history.pushState({},'','#'+TT.g.slug)}});
 
 // ===================== STORE / AUTH =====================

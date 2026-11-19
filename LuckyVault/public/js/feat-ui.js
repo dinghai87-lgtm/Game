@@ -136,7 +136,7 @@ body.lowfx .cell.win .in::after{animation:none!important;display:none!important}
     else if (f.t === 'colossal') {
       sfx.big(); floatTxt('COLOSSAL!', 1000); for (let c = f.c0; c < f.c0 + 3; c++) for (let r = 0; r < 3; r++) setCell(v, c, r, fin[c][r]);
       const a = v.cellPos(f.c0, 0), z = v.cellPos(f.c0 + 2, 2); colo = document.createElement('div'); colo.className = 'colo';
-      Object.assign(colo.style, { left: (a[0] + 4 - CELL / 2 + 3) + 'px', top: (a[1] + 4 - CELL / 2 + 3) + 'px', width: (z[0] - a[0] + CELL - 6) + 'px', height: (z[1] - a[1] + CELL - 6) + 'px' });
+      Object.assign(colo.style, { left: (a[0] + 4 - CELL / 2 + 3) + 'px', top: (a[1] + 4 - CELLH / 2 + 3) + 'px', width: (z[0] - a[0] + CELL - 6) + 'px', height: (z[1] - a[1] + CELLH - 6) + 'px' });
       const t = T.g.glyph[f.to] || '⭐'; colo.innerHTML = '<span class="emo">' + t + '</span>'; document.getElementById('boardWrap').appendChild(colo); await wait(tb ? 300 : 900);
     }
     else if (f.t === 'walk') { floatTxt('WALKING WILD → RESPIN', 900); }

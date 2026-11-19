@@ -143,10 +143,15 @@ G = {
  'koi-pond': dict(src=[None, None] + P(SEA, 35) + [None] + P(SEA, 47, 26) + [None] * 5, glow=(255, 150, 110)),
  # Jungle King: h2,h3,h4 shared with jungle-reels -> blueberries, pineapple, wild strawberry (512 painted; h1 is already a dragon fruit)
  'jungle-king': dict(src=[None] + P(FR, 39, 45, 26) + [None] * 7, glow=(160, 255, 120)),
+ # ---- batch 11 ----
+ # Frozen Peaks: l1,l2,l5 shared with frozen-kingdom -> ice shards
+ 'frozen-peaks#2': dict(slug='frozen-peaks', src=[None] * 4 + P(MG, 16, 22) + [None, None] + P(MG, 40) + [None, None], glow=(140, 220, 255)),
+ # Star Gems: h3,h4,l1 shared with diamond-strike -> hue-rotated
+ 'star-gems': dict(src=[None] * 11, hue=(60, ['h3', 'h4', 'l1']), glow=(255, 230, 140)),
 }
 todo = sys.argv[1:] or list(G)
 for slug in todo:
-    g = G[slug]; d = A + 'games/' + slug + '/'; e = man['games'][slug]
+    g = G[slug]; slug = g.get('slug', slug); d = A + 'games/' + slug + '/'; e = man['games'][slug]
     for k, s in zip(K, g['src']):
         if not s or 'sym_' + k not in e: continue
         (tile(s, d + k + '.webp', g['tile']) if g.get('tile') else sym(s, d + k + '.webp')); e['sym_' + k] = k + '.webp'

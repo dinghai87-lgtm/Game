@@ -382,7 +382,7 @@ body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-ri
 <footer>© 万泰游戏开发 · VANTAX POKER 免费娱乐版 · 仅与电脑对战 · 练习币不能购买、不能兑换、无任何奖品</footer>
 <div id="modal"></div>
 <script src="/poker/assets.js?v=dd23ef8456" async onload="window.__vxAssets&&__vxAssets()"></script>
-<script>window.VX_BUILD="1f4738a8";</script>
+<script>window.VX_BUILD="d28ee384";</script>
 <script>window.VX_PUBLIC=true;</script>
 <script>
 /* ===== 万泰扑克 · 牌局引擎（纯逻辑，无 DOM） ===== */
@@ -1296,6 +1296,41 @@ const I18N_EN = {
   "金币只是游戏积分，由房主确认发放，不能购买，也不能兑换成钱。需要金币就在这里申请；不玩了可以把金币归还给房主。": "Coins are game points issued by the host — they cannot be bought or exchanged. Request coins here; return them to the host when you are done.",
   "多桌锦标赛 MTT": "Multi-table tournament (MTT)",
   "练习场（对 AI，不计金币）": "Practice (vs AI, no coins)",
+  "© 万泰游戏开发 · 好友私局，仅限受邀朋友 · 不抽水 · 金币是游戏积分，仅供娱乐，不能购买或兑换": "© Vantax Games · private friends game, invite only · no rake · coins are game points for fun, not for sale or exchange",
+  "● 服务器在线": "● Server online",
+  "● 服务器连接中": "● Connecting to server",
+  "平账 ✓": "balanced ✓",
+  "对账": "Reconcile",
+  "⚠ 请先保存你的房主登录链接。房主身份只存在这台设备的浏览器里，换手机或清了浏览器数据就找不回来，俱乐部和账本也就没人能管。点下面的按钮复制，存到只有你能看到的地方（比如发给自己的微信「文件传输助手」或备忘录）。": "⚠ Save your host login link first. Host access lives only in this browser — if you change phones or clear browser data it cannot be recovered and nobody can manage the club or ledger. Copy it below and keep it somewhere private.",
+  "一键开局": "Quick setup",
+  "人数": "Seats",
+  "允许聊天": "Chat on",
+  "关闭聊天": "Chat off",
+  "只允许表情": "Emoji only",
+  "名字显示在大厅标题；公告会在大厅顶部提醒每个人一次（改了内容会再提醒）；规则放在大厅「俱乐部规则」按钮里。": "The name shows as the lobby title; the notice pops up once for everyone (again when changed); rules sit behind the lobby “Club rules” button.",
+  "把这个链接发给朋友，对方点开、取个昵称就能加入。链接泄露了可以重置，旧链接立即失效（已加入的人不受影响）。": "Send this link to friends — they open it, pick a nickname and join. If it leaks, reset it; the old link stops working (members stay).",
+  "暂无": "None yet",
+  "最大带入": "Max buy-in",
+  "最小带入": "Min buy-in",
+  "还没有其他玩家": "No other players yet",
+  "还没有管理操作": "No admin actions yet",
+  "备注": "Note",
+  "进钱圈": "Cashes",
+  "已提交，等待房主确认": "Submitted — waiting for host",
+  "提交申请": "Submit request",
+  "牌局由服务器主持，关掉页面也会继续": "Games are run by the server and continue when you close the page",
+  "在桌的人按当前筹码计算，离桌后为最终结果。": "Players still seated are counted at their current stack; final once they leave.",
+  "快速": "Fast",
+  "极速 SNG": "Turbo SNG",
+  "涨盲": "Blinds up",
+  "每级分钟数": "Minutes per level",
+  "俱乐部规则": "Club rules",
+  "领取": "Issued",
+  "从钱包带入筹码": "Take chips from your coin balance",
+  "离桌时剩余筹码自动回到钱包。": "Chips go back to your coin balance when you leave.",
+  "请先保存你的房主登录链接。": "Save your host login link first.",
+  "房主身份只存在这台设备的浏览器里，换手机或清了浏览器数据就找不回来，俱乐部和账本也就没人能管。点下面的按钮复制，存到只有你能看到的地方（比如发给自己的微信「文件传输助手」或备忘录）。": " Host access lives only in this browser — change phones or clear browser data and it cannot be recovered, and nobody can manage the club or ledger. Copy it below and keep it somewhere private.",
+  "无": "None",
   '结构': 'Structure', '筹码': 'chips', '分钟/级': 'min/level', '每桌': 'per table', '可延迟报名': 'late reg', '延迟报名': 'Late reg', '可重购': 'rebuys', '赏金': 'bounty', '锦标赛 Sit & Go': 'Sit & Go', '锦标赛': 'Tournament', '高低': 'Hi/Lo', '练习桌 PLO8 高低': 'Practice table PLO8 Hi/Lo',
   '胜率约': 'Equity ≈', '的随机牌': ' random hands', '需要': 'need', '才划算': 'to call profitably', '胜率低于赔率，长期看弃牌更好': 'Equity below pot odds — folding is better long-term', '胜率高于赔率，跟注长期赚': 'Equity above pot odds — calling is profitable', '对 ': 'vs ',
   '© 万泰游戏开发 · VANTAX POKER 免费娱乐版 · 仅与电脑对战 · 练习币不能购买、不能兑换、无任何奖品': '© Vantax Games · VANTAX POKER Free Play · vs AI only · practice chips cannot be bought, sold or exchanged, no prizes',
@@ -1309,15 +1344,31 @@ const I18N_RX = [
 // 1–2 个字的词只在整段文字完全相同时才替换，避免「开发」里的「开」被换成 On 这种中英混拼
 const I18N_KEYS = Object.keys(I18N_EN).filter(k => k.length > 2).sort((a, b) => b.length - a.length);
 const I18N_SHORT = new RegExp('(?<![\\u4e00-\\u9fff])(' + Object.keys(I18N_EN).filter(k => k.length <= 2).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')).join('|') + ')(?![\\u4e00-\\u9fff])', 'g');
+let i18nNameCache = null, i18nNameAt = 0;
+function i18nNames() {
+  if (i18nNameCache && Date.now() - i18nNameAt < 2000) return i18nNameCache;
+  const set = new Set();
+  try {
+    Object.values(App.names || {}).forEach(n => set.add(n));
+    Object.values(App.profiles || {}).forEach(p => p && p.nick && set.add(p.nick));
+    Object.values(getTables() || {}).forEach(t => t.seats.forEach(x => { if (x && x.bot && x.name) set.add(x.name); }));
+  } catch (e) { }
+  set.delete('我');
+  i18nNameCache = [...set].filter(n => /[\u4e00-\u9fff]/.test(n)).sort((a, b) => b.length - a.length); i18nNameAt = Date.now();
+  return i18nNameCache;
+}
 function trEN(str) {
   if (!/[一-鿿]/.test(str)) return str;
   const tr = str.trim(); if (I18N_EN[tr] !== undefined) return str.replace(tr, I18N_EN[tr]);
-  let s = str;
+  // 玩家昵称不翻译：先换成占位符，翻完再换回来
+  const keep = [];
+  let s = str.replace(/玩家([0-9a-zA-Z]{2,6})/g, 'Player $1');
+  for (const nm of i18nNames()) if (nm && s.indexOf(nm) >= 0) s = s.split(nm).join('\u0001' + (keep.push(nm) - 1) + '\u0002');
   for (const k of I18N_KEYS) if (s.indexOf(k) >= 0) s = s.split(k).join(I18N_EN[k]);
   // 短词：前后不是汉字时才替换（「跟注 2」可以，「开发」不行）
   s = s.replace(I18N_SHORT, m => I18N_EN[m]);
   for (const [rx, to] of I18N_RX) s = s.replace(rx, to);
-  return s;
+  return s.replace(/\u0001(\d+)\u0002/g, (m, k) => keep[+k]);
 }
 let i18nObs = null;
 function applyLang() {
@@ -1988,7 +2039,7 @@ class Host {
       const pr = (App.peers || []).map(p => p.by === who && p.presence && p.presence.req).find(q => q && +q.seq === rs);
       if (!rs || !pr || (d !== 0 && d !== (pr.kind === 'out' ? -1 : 1) * Math.round(+pr.amt || 0))) return err('副房主只能确认或拒绝玩家提交的申请；手动加减请让房主操作');
     }
-    if (co && it.op === 'notify') it = Object.assign({}, it, { msg: '【管理员 ' + nameOf(uid) + '】' + String(it.msg || '').replace(/^【[^】]*】/, '') });
+    if (co && it.op === 'notify') it = Object.assign({}, it, { msg: '【管理员' + ((this.profiles[uid] && this.profiles[uid].name) ? ' ' + this.profiles[uid].name : '') + '】' + String(it.msg || '').replace(/^【[^】]*】/, '') });
     const r = this.admin2(uid, it, err);
     if (r && it.op !== 'notify') this.adminLog(uid, it);
     return r;
@@ -3849,6 +3900,6 @@ boot();
 })();
 
 </script>
-<script>if('serviceWorker' in navigator&&location.pathname.indexOf('/poker')===0)addEventListener('load',()=>navigator.serviceWorker.register('/poker/sw.js',{scope:'/poker/'}).catch(()=>{}));</script>
+<script>if('serviceWorker' in navigator&&location.pathname.indexOf('/poker')===0)navigator.serviceWorker.register('/poker/sw.js',{scope:'/poker/'}).catch(()=>{});</script>
 </body>
 </html>

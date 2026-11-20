@@ -335,6 +335,7 @@ body.photo .seat.me .cards.four{--cw:clamp(40px,4vw,52px)}body.photo .seat.me .c
 .tonight{margin-bottom:14px;background:linear-gradient(135deg,#141c2b,#0e131c);border-color:#3a3020}.hlrow{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px dashed #262c36;font-size:14px}.hlrow:last-of-type{border-bottom:0}
 .serc{margin:10px 0 2px;padding:8px;border:1px solid #262c36;border-radius:10px;background:#0b1018}
 @media(max-width:520px){.hlrow{flex-wrap:wrap;row-gap:2px}}
+@media(max-width:480px){.wallet>.pill{display:none}#walletBox>.pill{white-space:nowrap}#walletBox{flex-wrap:wrap;justify-content:flex-end;min-width:0;max-width:100%}.wallet{gap:6px}}
 .tagdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:1px;box-shadow:0 0 0 1px #0008}.t-red{background:#ef4444}.t-orange{background:#f59e0b}.t-green{background:#22c55e}.t-blue{background:#3b82f6}.t-purple{background:#a855f7}
 .fly.big{transition:left .7s cubic-bezier(.4,0,.2,1),top .7s cubic-bezier(.4,0,.2,1),opacity .7s ease-in}.fly.big .chipsvg,.fly.big svg{width:26px;height:26px}
 @media(max-width:640px){.actbar .raise input[type=range]{display:none}.actbar .raise{flex-wrap:nowrap;gap:4px}.actbar .raise input[type=number]{width:64px;min-width:0;padding:6px}.actbar .raise .btn.gold{padding:8px 10px;white-space:nowrap}
@@ -381,7 +382,7 @@ body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-ri
 <footer>© 万泰游戏开发 · 好友私局，仅限受邀朋友 · 不抽水 · 金币是游戏积分，仅供娱乐，不能购买或兑换</footer>
 <div id="modal"></div>
 <script src="/poker/assets.js?v=dd23ef8456" async onload="window.__vxAssets&&__vxAssets()"></script>
-<script>window.VX_BUILD="d28ee384";</script>
+<script>window.VX_BUILD="da24973f";window.VX_VER="v6.0";</script>
 <script>window.VX_CLOUD_MODE=true;</script>
 <script>
 /* VANTAX POKER · vantaxgame.com 联机客户端：用 WebSocket 连到俱乐部后端，
@@ -395,6 +396,7 @@ body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-ri
   if (club && qs.get('t')) localStorage.setItem('vx_tok_' + club, qs.get('t'));
   const tokKey = c => 'vx_tok_' + c;
   let ws = null, hello = null, rid = 0, wait = {}, queue = [], subs = {}, sid = 0, presence = {}, peerFns = [], evFns = {}, peers = [], tries = 0, ready, readyRes;
+  let peerMap = new Map(), presWait = [], lastRx = 0, offset = 0, curTok = '', asleep = false, lastInput = Date.now(), hiddenAt = document.visibilityState === 'hidden' ? Date.now() : 0;
   ready = new Promise(r => readyRes = r);
 
   function overlay(html) {
@@ -438,49 +440,133 @@ body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-ri
     el.querySelector('#vxNew').onclick = async () => {
       const name = el.querySelector('#vxN').value.trim(); if (!name) return;
       try { const j = await post('/club', { name }); club = j.club; localStorage.setItem(tokKey(club), j.token); closeOverlay(); setUrl(); connect(j.token); }
-      catch (e) { el.querySelector('#vxE').textContent = '创建失败，请稍后再试'; }
+      catch (e) { el.querySelector('#vxE').textContent = e.code === 'rate_limited' ? '创建太频繁了，请过一会儿再试' : '创建失败，请稍后再试'; }
     };
   }
 
-  function connect(tok) {
-    const u = API.replace(/^http/, 'ws') + '/club/' + club + '/ws?token=' + encodeURIComponent(tok);
-    ws = new WebSocket(u);
-    ws.onmessage = ev => {
-      let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
-      if (m.t === 'hello') {
-        hello = m; tries = 0; if (m.serverHost) window.VX_SERVER_HOST = true; readyRes(true);
-        if (!window.__vxPushed) { window.__vxPushed = 1; setTimeout(() => { try { const P = JSON.parse(localStorage.getItem('wtp_prefs') || '{}'); if (P.notif && window.Notification && Notification.permission === 'granted') window.VX_CLOUD.push(true).catch(() => { }); } catch (e) { } }, 3000); } window.VX_CLOUD && (window.VX_CLOUD.connects = (window.VX_CLOUD.connects || 0) + 1);
-        // 重连：恢复在线状态和仍在使用的订阅，补发排队的请求
-        if (Object.keys(presence).length) raw('presence', { patch: presence });
-        Object.values(subs).forEach(s => raw('sub', s.a));
-        queue.splice(0).forEach(q => ws.send(q));
-      } else if (m.t === 'r') { const w = wait[m.id]; if (!w) return; delete wait[m.id]; m.ok ? w.res(m.v) : w.rej(Object.assign(new Error(m.v && m.v.message), { code: m.v && m.v.code })); }
-      else if (m.t === 'snap') { const s = subs[m.id]; if (s) s.on(m); }
-      else if (m.t === 'peers') { peers = Object.freeze(m.peers); peerFns.forEach(f => { try { f.fn({ peers, joined: [], left: [], updated: peers }); } catch (e) { } }); }
-      else if (m.t === 'ev') (evFns[m.topic] || []).forEach(f => { try { f(m.m); } catch (e) { } });
-    };
-    ws.onclose = ev => {
-      if (!hello && tries >= 3) {
-        const el = overlay(`<p>暂时连不上这个俱乐部。可能是网络问题，也可能登录链接已经失效。</p><button id="vxRe">重试</button><p class="vxnote">如果一直不行，请向房主要新的邀请链接；或者 <a href="#" id="vxOut">清除本机登录</a></p>`);
-        el.querySelector('#vxRe').onclick = () => { closeOverlay(); tries = 0; connect(tok); };
-        el.querySelector('#vxOut').onclick = e => { e.preventDefault(); localStorage.removeItem(tokKey(club)); location.href = location.pathname; };
-        return;
-      }
-      Object.values(subs).forEach(s => s.err && s.err({ code: 'unavailable' }));
-      peerFns.forEach(f => f.err && f.err({ code: 'unavailable' }));
-      const d = Math.min(15000, 800 * Math.pow(2, tries++));
-      setTimeout(() => connect(tok), d);
-    };
+  /*JPATCH*/
+  // 服务器发来的增量补丁（格式见 worker.js 的 jdiff）：$ 整体替换 · d/a 去头追加 · l/i 数组逐项 · o/r 对象逐键
+  function jpatch(a, p) {
+    if ('$' in p) return p.$;
+    if ('d' in p) return a.slice(p.d).concat(p.a);
+    if ('l' in p) { const r = a.slice(0, p.l); for (const i in p.i) r[+i] = jpatch(r[+i], p.i[i]); r.length = p.l; return r; }
+    const r = Object.assign({}, a);
+    for (const k in p.o) if (k !== '__proto__') r[k] = jpatch(r[k], p.o[k]);
+    if (p.r) p.r.forEach(k => { delete r[k]; });
+    return r;
   }
-  function raw(op, a) { const id = ++rid; const s = JSON.stringify({ id, op, a }); if (ws && ws.readyState === 1 && hello) ws.send(s); else queue.push(s); return id; }
-  function call(op, a) { return new Promise((res, rej) => { const id = raw(op, a); wait[id] = { res, rej }; }); }
+  /*/JPATCH*/
+  const byField = (o, arr) => { const [f, dir] = o; return arr.sort((x, y) => ((x.data || {})[f] > (y.data || {})[f] ? 1 : (x.data || {})[f] < (y.data || {})[f] ? -1 : 0) * (dir === 'desc' ? -1 : 1)); };
+  function emitCol(s) {
+    let arr = [...s.cache].map(([id, data]) => ({ id, data })).sort((x, y) => x.id < y.id ? -1 : x.id > y.id ? 1 : 0);
+    if (s.a.order) byField(s.a.order, arr);
+    if (s.a.limit) arr = arr.slice(0, s.a.limit);
+    s.on({ docs: arr });
+  }
+  function emitPeers() {
+    const me = hello && hello.uid, ms = hello && hello.sid;
+    peers = Object.freeze([...peerMap.values()].map(e => Object.assign({}, e, { isMe: e.by === me, sameTab: e.peer === ms })));
+    peerFns.forEach(f => { try { f.fn({ peers, joined: [], left: [], updated: peers }); } catch (e) { } });
+  }
+  function onMessage(m) {
+    if (m.t === 'hello') {
+      hello = m; tries = 0; if (m.serverHost) window.VX_SERVER_HOST = true; if (m.now) offset = m.now - Date.now(); readyRes(true);
+      if (!window.__vxPushed) { window.__vxPushed = 1; setTimeout(() => { try { const P = JSON.parse(localStorage.getItem('wtp_prefs') || '{}'); if (P.notif && window.Notification && Notification.permission === 'granted') window.VX_CLOUD.push(true).catch(() => { }); } catch (e) { } }, 3000); } window.VX_CLOUD && (window.VX_CLOUD.connects = (window.VX_CLOUD.connects || 0) + 1);
+      // 重连：恢复在线状态和仍在使用的订阅，补发排队的请求
+      if (Object.keys(presence).length) raw('presence', { patch: presence });
+      presWait.splice(0).forEach(w => w.res(null));
+      Object.values(subs).forEach(s => raw('sub', s.a));
+      queue.splice(0).forEach(q => ws.send(q));
+    } else if (m.t === 'r') { const w = wait[m.id]; if (!w) return; delete wait[m.id]; m.ok ? w.res(m.v) : w.rej(Object.assign(new Error(m.v && m.v.message), { code: m.v && m.v.code })); }
+    else if (m.t === 'snap') {
+      const s = subs[m.id]; if (!s) return;
+      if (s.kind === 'col') { s.cache = new Map((m.docs || []).map(d => [d.id, d.data])); emitCol(s); } else { s.last = m.doc; s.on(m); }
+    } else if (m.t === 'cd' || m.t === 'dp') {
+      const s = subs[m.id]; if (!s) return;
+      try {
+        if (m.t === 'dp') { if (!s.last || !s.last.exists) throw 0; s.last = { id: s.last.id, exists: true, data: jpatch(s.last.data, m.p) }; s.on({ doc: s.last }); return; }
+        if (!s.cache) throw 0;
+        for (const c of m.c) {
+          if (c.x) s.cache.delete(c.i);
+          else if ('v' in c) s.cache.set(c.i, c.v);
+          else { const old = s.cache.get(c.i); if (old === undefined) throw 0; s.cache.set(c.i, jpatch(old, c.p)); }
+        }
+        emitCol(s);
+      } catch (e) { raw('sub', s.a); }   // 对不上就让服务器重发完整快照
+    }
+    else if (m.t === 'peers') { peerMap = new Map((m.peers || []).map(p => [p.peer, p])); emitPeers(); }
+    else if (m.t === 'pd') { (m.u || []).forEach(p => peerMap.set(p.peer, p)); (m.g || []).forEach(x => peerMap.delete(x)); emitPeers(); }
+    else if (m.t === 'kicked') { window.__vxKicked = 1; localStorage.removeItem(tokKey(club)); hello = null; tries = 99; overlay('<p>你已被房主移出这个俱乐部。</p><p class="vxnote">如有疑问请联系房主。</p>'); }
+    else if (m.t === 'ev') (evFns[m.topic] || []).forEach(f => { try { f(m.m); } catch (e) { } });
+  }
+  function onLost(tok) {
+    if (window.__vxKicked) return;
+    // 没回音的请求：在线状态（含操作）会在重连后整份重发，其余的告诉调用方失败，不在重连后偷偷补发
+    for (const id in wait) { const w = wait[id]; delete wait[id]; if (w.op === 'presence') presWait.push(w); else w.rej(Object.assign(new Error('unavailable'), { code: 'unavailable' })); }
+    queue.length = 0;
+    if (!hello && tries >= 3) {
+      const el = overlay(`<p>暂时连不上这个俱乐部。可能是网络问题，也可能登录链接已经失效。</p><button id="vxRe">重试</button><p class="vxnote">如果一直不行，请向房主要新的邀请链接；或者 <a href="#" id="vxOut">清除本机登录</a></p>`);
+      el.querySelector('#vxRe').onclick = () => { closeOverlay(); tries = 0; connect(tok); };
+      el.querySelector('#vxOut').onclick = e => { e.preventDefault(); localStorage.removeItem(tokKey(club)); location.href = location.pathname; };
+      return;
+    }
+    Object.values(subs).forEach(s => s.err && s.err({ code: 'unavailable' }));
+    peerFns.forEach(f => f.err && f.err({ code: 'unavailable' }));
+    const d = Math.min(15000, 800 * Math.pow(2, tries++));
+    clearTimeout(window.__vxRe); window.__vxRe = setTimeout(() => connect(tok), d);
+  }
+  function connect(tok) {
+    const u = API.replace(/^http/, 'ws') + '/club/' + club + '/ws?p=2&token=' + encodeURIComponent(tok);   // p=2：支持增量同步
+    if (ws) { ws.onmessage = ws.onclose = null; try { ws.close(); } catch (e) { } }
+    if (hello) hello = Object.assign({}, hello, { sid: null });   // 旧会话作废：等这条连接自己的 hello 到了再发请求
+    curTok = tok; asleep = false;
+    const me = ws = new WebSocket(u); lastRx = Date.now();
+    me.onmessage = ev => { if (ws !== me) return; lastRx = Date.now(); let m; try { m = JSON.parse(ev.data); } catch (e) { return; } onMessage(m); };
+    me.onclose = () => { if (ws === me) onLost(tok); };
+    if (!window.__vxWake) {
+      window.__vxWake = 1;
+      // 手机从后台切回来、或网络恢复时，不等退避计时，马上重连
+      const wake = () => { if (window.__vxKicked) return; if (asleep) return wakeUp(); if (document.visibilityState === 'visible' && (!ws || ws.readyState > 1)) { clearTimeout(window.__vxRe); tries = 0; connect(curTok); } };
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') hiddenAt = Date.now(); else { hiddenAt = 0; lastInput = Date.now(); wake(); } });
+      addEventListener('online', wake); addEventListener('pageshow', wake);
+      ['pointerdown', 'keydown', 'touchstart', 'wheel'].forEach(t => addEventListener(t, () => { lastInput = Date.now(); if (asleep) wakeUp(); }, { passive: true, capture: true }));
+      setInterval(() => {
+        const n = Date.now();
+        // 连接看着还在、但 25 秒没收到任何东西（服务器每 5 秒有心跳）：多半是网络切换后的死连接，主动重连
+        if (!asleep && ws && ws.readyState === 1 && n - lastRx > 25000) { const old = ws; old.onmessage = old.onclose = null; try { old.close(); } catch (e) { } ws = null; onLost(curTok); return; }
+        // 省服务器时长和流量：没在牌局里的页面，切到后台 10 分钟、或开着 1 小时没人碰，就先断开；一回来马上重连
+        if (!asleep && ws && !engaged() && ((hiddenAt && n - hiddenAt > 600000) || (!hiddenAt && n - lastInput > 3600000))) sleep(!hiddenAt);
+        else if (!asleep && ws && hiddenAt && n - hiddenAt > 3 * 3600000) sleep(false);
+      }, 5000);
+    }
+  }
+  function engaged() { try { return !!(window.VX_ENGAGED && window.VX_ENGAGED()); } catch (e) { return true; } }
+  function sleep(showNote) {
+    asleep = true; clearTimeout(window.__vxRe);
+    if (ws) { const old = ws; old.onmessage = old.onclose = null; try { old.close(1000, 'idle'); } catch (e) { } ws = null; }
+    for (const id in wait) { const w = wait[id]; delete wait[id]; if (w.op === 'presence') presWait.push(w); else w.rej(Object.assign(new Error('unavailable'), { code: 'unavailable' })); }
+    queue.length = 0;
+    if (showNote) { const el = overlay('<p>页面很久没有操作，已暂时断开连接（省电、省流量）。</p><button id="vxWake">继续</button>'); el.querySelector('#vxWake').onclick = () => wakeUp(); }
+  }
+  function wakeUp() {
+    if (!asleep) return; asleep = false;
+    const el = document.getElementById('vxjoin'); if (el && el.querySelector('#vxWake')) closeOverlay();
+    tries = 0; connect(curTok);
+  }
+  function raw(op, a) {
+    const id = ++rid; const s = JSON.stringify({ id, op, a });
+    if (ws && ws.readyState === 1 && hello && hello.sid) ws.send(s);
+    else if (op !== 'sub' && op !== 'unsub') queue.push(s);   // 订阅在重连时会整体重发，不必排队
+    return id;
+  }
+  function call(op, a) { return new Promise((res, rej) => { const id = raw(op, a); wait[id] = { res, rej, op }; }); }
 
   const docSnap = d => ({ id: d.id, exists: d.exists, data: () => d.data, metadata: { fromCache: false, hasPendingWrites: false } });
   const colSnap = arr => { const docs = arr.map(d => ({ id: d.id, exists: true, data: () => d.data, metadata: {} })); return { docs, size: docs.length, empty: !docs.length, docChanges: () => [], metadata: { fromCache: false } }; };
   const Q = (path, o) => ({
     orderBy: (f, d) => Q(path, Object.assign({}, o, { order: [f, d || 'asc'] })), limit: n => Q(path, Object.assign({}, o, { limit: n })), where: () => Q(path, o),
     get: async () => colSnap(await call('query', Object.assign({ path }, o))),
-    onSnapshot(fn, err) { const id = ++sid; const a = Object.assign({ id, kind: 'col', path }, o); subs[id] = { a, on: m => fn(colSnap(m.docs)), err }; raw('sub', a); return () => { delete subs[id]; raw('unsub', { id }); }; },
+    onSnapshot(fn, err) { const id = ++sid; const a = Object.assign({ id, kind: 'col', path }, o); subs[id] = { a, kind: 'col', cache: null, on: m => fn(colSnap(m.docs)), err }; raw('sub', a); return () => { delete subs[id]; raw('unsub', { id }); }; },
     doc: id => D(path + '/' + id), add: async d => D(await call('add', { path, data: d }))
   });
   const D = path => ({
@@ -488,7 +574,7 @@ body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-ri
     get: async () => docSnap(await call('get', { path })),
     set: d => call('set', { path, data: d }), update: d => call('set', { path, data: d }), delete: () => call('delete', { path }),
     acquire: o => call('acquire', { path, holder: o.holder, ttl: o.ttlMs, data: o.data }),
-    onSnapshot(fn, err) { const id = ++sid; const a = { id, kind: 'doc', path }; subs[id] = { a, on: m => fn(docSnap(m.doc)), err }; raw('sub', a); return () => { delete subs[id]; raw('unsub', { id }); }; }
+    onSnapshot(fn, err) { const id = ++sid; const a = { id, kind: 'doc', path }; subs[id] = { a, kind: 'doc', last: null, on: m => fn(docSnap(m.doc)), err }; raw('sub', a); return () => { delete subs[id]; raw('unsub', { id }); }; }
   });
   const db = { doc: D, collection: p => Q(p, {}) };
   const user = { id: async () => hello.uid, isOwner: async () => !!hello.owner, canEdit: async () => !!hello.owner, profiles: ids => call('profiles', { ids }) };
@@ -501,9 +587,12 @@ body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-ri
   window.claude = { use: async n => { await ready; return ({ db, user, room })[n] || null; } };
   window.VX_CLOUD = {
     get club() { return club; },
+    get offset() { return offset; },   // 服务器时间 − 本机时间（毫秒）
     invite: async reset => { const inv = await call('invite', { reset: !!reset }); const u = new URL(location.href); u.search = ''; u.searchParams.set('c', club); u.searchParams.set('i', inv); return u.toString(); },
     deviceLink: () => { const u = new URL(location.href); u.search = ''; u.searchParams.set('c', club); u.searchParams.set('t', localStorage.getItem(tokKey(club)) || ''); return u.toString(); },
     rename: name => call('rename', { name }),
+    members: () => call('members', {}),
+    kick: uid => call('kickMember', { uid }),
     // 推送订阅：页面关掉后轮到你行动，也能收到通知（iPhone 需要先「添加到主屏幕」）
     push: async on => {
       if (!('serviceWorker' in navigator) || !('PushManager' in window)) return 'unsupported';
@@ -634,7 +723,7 @@ body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-ri
     // 混合局：德州和奥马哈每一圈（默认按座位数手）轮换
     if (cfg.game === 'mix') { t.mix = 'hp'; t.mixEvery = Math.max(2, Math.min(20, cfg.mixEvery || n)); }
     if (t.kind === 'sng') {
-      t.sng = { bounty: Math.floor((cfg.buyIn || 0) * (cfg.bountyPct || 0) / 100), bountyBank: 0, startAt: cfg.startAt || 0, lateLevels: cfg.lateLevels || 0, rebuyLevels: cfg.rebuyLevels || 0, rebuys: 0, buyIn: cfg.buyIn, startStack: cfg.startStack || 1500, levelMins: cfg.levelMins || 5,
+      t.sng = { addon: !!cfg.addon && (cfg.rebuyLevels || 0) > 0, payout: ['wta', 'top2', 'top3'].includes(cfg.payout) ? cfg.payout : '', bounty: Math.floor((cfg.buyIn || 0) * (cfg.bountyPct || 0) / 100), bountyBank: 0, startAt: cfg.startAt || 0, lateLevels: cfg.lateLevels || 0, rebuyLevels: cfg.rebuyLevels || 0, rebuys: 0, buyIn: cfg.buyIn, startStack: cfg.startStack || 1500, levelMins: cfg.levelMins || 5,
         level: 0, levelEndsAt: 0, entrants: [], finish: [], payouts: null, pool: 0 };
       t.sb = SNG_LEVELS[0][0]; t.bb = SNG_LEVELS[0][1];
     }
@@ -982,6 +1071,7 @@ body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-ri
     t.seats.forEach((s, i) => {
       if (!s) return;
       s.bet = 0; s.total = 0; s.inHand = false; s.folded = false; s.allIn = false;
+      if (s.addonPend && t.sng) { s.stack += t.sng.startStack; s.addonPend = false; }
       if (t.kind === 'sng') {
         if (s.stack <= 0 && t.status === 'playing') busted.push(i);
       } else {
@@ -1073,9 +1163,21 @@ body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-ri
     if (!s || !g || s.stack > 0 || !s.rebuyUntil) return false;
     s.stack = g.startStack; s.rebuyUntil = 0; s.rebuys = (s.rebuys || 0) + 1;
     g.pool += g.buyIn - (g.bounty || 0); g.bountyBank += g.bounty || 0; s.bounty = (s.bounty || 0) + (g.bounty || 0); g.rebuys = (g.rebuys || 0) + 1;
-    const pc = payoutPcts(g.entrants.length), amts = pc.map(p => Math.floor(g.pool * p / 100));
+    const pc = payoutPcts(g.entrants.length, g.payout), amts = pc.map(p => Math.floor(g.pool * p / 100));
     amts[0] += g.pool - amts.reduce((a, b) => a + b, 0); g.payouts = amts;
     log(t, `${label(t, i)} 重购 +${g.startStack} 筹码，奖池升至 ${g.pool}`);
+    return true;
+  }
+  /* 加购 Add-on：重购期最后一级，每人限一次，付一份报名费（不含赏金）换一份起始筹码；牌局中下单，本手结束到账 */
+  function canAddon(t, i) { const g = t.sng, s = S(t, i); return !!(g && g.addon && t.status === 'playing' && g.level === g.rebuyLevels - 1 && s && s.stack > 0 && !s.addonDone && !s.bot); }
+  function addon(t, i) {
+    if (!canAddon(t, i)) return false;
+    const s = S(t, i), g = t.sng; s.addonDone = true;
+    if (s.inHand && t.street !== 'idle') s.addonPend = true; else s.stack += g.startStack;
+    g.pool += g.buyIn; g.addons = (g.addons || 0) + 1;
+    const pc = payoutPcts(g.entrants.length, g.payout), amts = pc.map(p => Math.floor(g.pool * p / 100));
+    amts[0] += g.pool - amts.reduce((a, b) => a + b, 0); g.payouts = amts;
+    log(t, `${label(t, i)} 加购 +${g.startStack} 筹码${s.addonPend ? '（本手结束到账）' : ''}，奖池升至 ${g.pool}`);
     return true;
   }
   /* 延迟报名：开赛后前 N 级仍可入场，奖池与奖金随之更新 */
@@ -1085,19 +1187,22 @@ body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-ri
     const g = t.sng, i = t.seats.findIndex(s => !s);
     t.seats[i] = seatObj(uid, g.startStack, extra);
     g.entrants.push(uid); g.pool += g.buyIn - (g.bounty || 0); g.bountyBank += g.bounty || 0; t.seats[i].bounty = g.bounty || 0;
-    const pc = payoutPcts(g.entrants.length), amts = pc.map(p => Math.floor(g.pool * p / 100));
+    const pc = payoutPcts(g.entrants.length, g.payout), amts = pc.map(p => Math.floor(g.pool * p / 100));
     amts[0] += g.pool - amts.reduce((a, b) => a + b, 0); g.payouts = amts;
     log(t, `${label(t, i)} 延迟报名入场，奖池升至 ${g.pool}`);
     return i;
   }
-  function mttPcts(n) { return n <= 3 ? [100] : n <= 6 ? [65, 35] : n <= 9 ? [50, 30, 20] : n <= 18 ? [40, 25, 17, 10, 8] : [33, 21, 14, 10, 8, 6, 4, 4]; }
-  function payoutPcts(n) { return n <= 3 ? [100] : n <= 6 ? [65, 35] : [50, 30, 20]; }
+  // 奖金分配：默认按人数自动；房主也可以指定「赢家通吃 / 前两名 / 前三名」
+  const SCHEMES = { wta: [100], top2: [65, 35], top3: [50, 30, 20] };
+  const scheme = (n, sc, base) => SCHEMES[sc] ? SCHEMES[sc].slice(0, Math.max(1, n - 1)).map((p, k, a) => k === 0 ? p + SCHEMES[sc].slice(a.length).reduce((x, y) => x + y, 0) : p) : base;
+  function mttPcts(n, sc) { return scheme(n, sc, n <= 3 ? [100] : n <= 6 ? [65, 35] : n <= 9 ? [50, 30, 20] : n <= 18 ? [40, 25, 17, 10, 8] : [33, 21, 14, 10, 8, 6, 4, 4]); }
+  function payoutPcts(n, sc) { return scheme(n, sc, n <= 3 ? [100] : n <= 6 ? [65, 35] : [50, 30, 20]); }
   function sngStart(t, now) {
     const g = t.sng; const players = t.seats.filter(Boolean);
     if (players.length < 2) return false;
     g.entrants = players.map(s => s.uid); g.pool = (g.buyIn - (g.bounty || 0)) * players.length;
     g.bountyBank = (g.bounty || 0) * players.length; players.forEach(s => { s.bounty = g.bounty || 0; });
-    const pc = payoutPcts(players.length);
+    const pc = payoutPcts(players.length, g.payout);
     const amts = pc.map(p => Math.floor(g.pool * p / 100)); amts[0] += g.pool - amts.reduce((a, b) => a + b, 0);
     g.payouts = amts; g.level = 0; g.levelEndsAt = 0; g.finish = [];
     players.forEach(s => { s.stack = g.startStack; });
@@ -1217,7 +1322,7 @@ body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-ri
   }
 
   const API = { botStyle, is72, RANKS, SUITS, HAND_NAMES, SNG_LEVELS, newDeck, shuffle, eval5, evalBest, createTable, seatObj,
-    startHand, legal, act, tick, runoutStep, equity, rabbit, postHand, sngStart, botDecide, publicView, potSize, nextIdx, payoutPcts, mttPcts, randInt, icm, pause, resume, rebuy, expireRebuys, evalPLO, evalLow8, handEval, equityVsRandom, bombNext, canLateReg, lateRegister };
+    startHand, legal, act, tick, runoutStep, equity, rabbit, postHand, sngStart, botDecide, publicView, potSize, nextIdx, payoutPcts, mttPcts, randInt, icm, pause, resume, rebuy, expireRebuys, evalPLO, evalLow8, handEval, equityVsRandom, bombNext, canLateReg, lateRegister, canAddon, addon };
   if (typeof module !== 'undefined' && module.exports) module.exports = API; else G.PokerEngine = API;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 
@@ -1257,7 +1362,7 @@ window.__WTP = App;
   let n = 0; const seen = {};
   const report = (m, st) => {
     m = String(m || ''); const k = m.slice(0, 120); if (seen[k] || ++n > 10) return; seen[k] = 1;
-    const body = JSON.stringify({ m, s: String(st || '').slice(0, 1200), src: window.VX_CLOUD_MODE ? 'club' : 'pub', v: window.VX_BUILD || '', path: location.pathname, ua: navigator.userAgent });
+    const body = JSON.stringify({ m, s: String(st || '').slice(0, 1200), src: window.VX_CLOUD_MODE ? 'club' : 'pub', v: (window.VX_VER ? window.VX_VER + '/' : '') + (window.VX_BUILD || ''), path: location.pathname, ua: navigator.userAgent });
     try { if (navigator.sendBeacon) navigator.sendBeacon('/api/poker/err', new Blob([body], { type: 'text/plain' })); else fetch('/api/poker/err', { method: 'POST', body, keepalive: true }).catch(() => { }); } catch (e) { }
   };
   window.VX_REPORT = report;
@@ -1281,7 +1386,7 @@ const I18N_EN = {
   '练习桌 混合局': 'Practice Mixed', '练习桌': 'Practice table', '练习 MTT 主赛事': 'Practice MTT Main Event', '练习 SNG': 'Practice SNG',
   '无限注德州': "No-Limit Hold'em", '底池限注奥马哈': 'Pot-Limit Omaha', '五张底池限注奥马哈': '5-Card PLO', '奥马哈高低（8 或更小）': 'Omaha Hi/Lo (8 or better)', '混合局（德州⇄奥马哈）': "Mixed (Hold'em ⇄ Omaha)",
   '← 大厅': '← Lobby', '牌型': 'Hands', '座位选项': 'Seat options', '暂离': 'Sit out', '补码': 'Top up', '离桌': 'Leave', '暂停': 'Pause', '继续': 'Resume', '⟲ 上一手': '⟲ Last hand',
-  '空位': 'Empty', '坐下': 'Sit', '换到这里': 'Move here', '保留中': 'Reserved', '🪑 排队等位': '🪑 Join waitlist', '弃牌': 'Fold', '过牌': 'Check', '跟注': 'Call', '加注到': 'Raise to', '下注': 'Bet', '全下': 'All-in',
+  '空位': 'Empty', '坐下': 'Sit', '换到这里': 'Move here', '保留中': 'Reserved', '🪑 排队等位': '🪑 Join waitlist', '弃牌': 'Fold', '过牌': 'Check', '跟注': 'Call', '加注到': 'Raise', '下注': 'Bet', '全下': 'All-in',
   '½池': '½ pot', '¾池': '¾ pot', '底池': 'Pot', '⚡快速弃牌': '⚡Fast fold', '过/弃': 'Check/Fold', '自动过牌': 'Auto check', '跟任何': 'Call any',
   '赢得主池': 'wins the main pot', '赢得边池': 'wins a side pot', '赢得底池': 'wins the pot', '赢得': 'wins', '亮出我的牌': 'Show my cards', '只亮': 'Show', '🐇 看看后面的牌': '🐇 Rabbit hunt',
   '你在旁观。点空位「坐下」入局。': 'You are watching. Tap an empty seat to sit down.', '轮到你了': 'Your turn', '第一次': 'Run 1', '第二次': 'Run 2', '高牌': 'High', '低牌': 'Low',
@@ -1368,12 +1473,12 @@ const I18N_EN = {
   "所有人的": "everyone’s",
   "加起来应为": "should add up to",
   "暂计": "counted as entry",
-  "玩家点右上角「金币」申请后会出现在这里；你点确认后金币才会入账。": "Requests appear here when players tap “Coins”; coins are credited once you approve.",
+  "玩家点右上角「申请金币」申请后会出现在这里；你点确认后金币才会入账。": "Requests appear here when players tap “Coins”; coins are credited once you approve.",
   "（最近 100 条）": " (latest 100)",
   "当前余额": "balance",
   "▶ 看 AI 多桌赛": "▶ Watch AI MTT",
   "▶ 看 AI 对局": "▶ Watch AI game",
-  "不可重购": "no rebuys",
+  "不可重购": "No rebuys",
   "中局": "Mid stakes",
   "小局": "Small stakes",
   "五张奥马哈": "5-card Omaha",
@@ -1475,19 +1580,44 @@ const I18N_EN = {
   "请先保存你的房主登录链接。": "Save your host login link first.",
   "房主身份只存在这台设备的浏览器里，换手机或清了浏览器数据就找不回来，俱乐部和账本也就没人能管。点下面的按钮复制，存到只有你能看到的地方（比如发给自己的微信「文件传输助手」或备忘录）。": " Host access lives only in this browser — change phones or clear browser data and it cannot be recovered, and nobody can manage the club or ledger. Copy it below and keep it somewhere private.",
   "无": "None",
-  '结构': 'Structure', '筹码': 'chips', '分钟/级': 'min/level', '每桌': 'per table', '可延迟报名': 'late reg', '延迟报名': 'Late reg', '可重购': 'rebuys', '赏金': 'bounty', '锦标赛 Sit & Go': 'Sit & Go', '锦标赛': 'Tournament', '高低': 'Hi/Lo', '练习桌 PLO8 高低': 'Practice table PLO8 Hi/Lo',
+  "🪑 坐下": "🪑 Take a seat",
+  "点牌桌上的空位「坐下」，选好带入的筹码就能开始。": "Tap an empty seat, choose your buy-in and you are in.",
+  "🎯 轮到你": "🎯 Your turn",
+  "轮到你时下面会出现操作按钮：弃牌、过牌/跟注、加注。不在你回合时也可以先点「预操作」。": "When it is your turn the action buttons appear below: fold, check/call, raise. You can also pre-select an action before your turn.",
+  "🃏 牌型": "🃏 Hands",
+  "左上角「牌型」按钮可以随时看牌型大小；你的牌型会显示在自己座位上。": "The “Hands” button shows hand rankings; your current hand is shown on your seat.",
+  "⚙ 小帮手": "⚙ Helpers",
+  "右上角 ⚙ 设置里可以开「教练模式」（轮到你时提示胜率和赔率）、四色牌、搓牌和中英文切换。": "Settings (⚙) has coach mode (equity and pot odds on your turn), 4-colour deck, squeeze and language.",
+  "下一步": "Next",
+  "开始玩": "Let's play",
+  "跳过": "Skip",
+  '📥 导出账本 CSV': '📥 Export ledger CSV',
+  "成员": "Members",
+  "把人移出俱乐部后，他的登录链接立即失效；他的钱包和账本记录会保留，方便对账。邀请链接如果泄露，记得同时「重置链接」。": "Removing someone invalidates their login link immediately; their wallet and ledger history are kept for reconciliation. If the invite link leaked, reset it too.",
+  "👥 管理成员": "👥 Manage members",
+  "移出": "Remove",
+  "（你）": " (you)",
+  "自动批准金币申请（单次不超过，0 = 关闭）": "Auto-approve coin requests up to (0 = off)",
+  "系统": "System",
+  "自动批准": "auto-approved",
+  '结构': 'Structure', '筹码': 'chips', '分钟/级': 'min/level', '每桌': 'per table', '可延迟报名': 'late reg', '延迟报名': 'Late reg', '可重购': 'rebuys', '赏金': 'bounty', '奖金分配': 'Payouts', '退赛（退还报名费）': 'Unregister (refund)', '取消赛事': 'Cancel event', '我在这桌': 'my table', '观战': 'Watch', '回到牌桌': 'Back to table', '还没有人报名': 'No one registered yet', '比赛已结束': 'Tournament over', '最大筹码': 'Big stack', '回大厅': 'Back to lobby', '多桌': 'Multi-table', '牌桌已关闭。': 'This table is closed.', '赏金池': 'Bounty pool', 'ICM 奖金价值': 'ICM prize value', '按当前筹码估算每人在奖池中的「应得」，决赛桌谈分奖时参考': "Each player's fair share of the prize pool at current chip counts — handy for final-table deals", '你在旁观。': 'You are watching.', '等待报名，满员自动开赛': 'Waiting for players · starts when full', '满员自动开赛': 'starts when full', '重购期：': 'Rebuys: ', '重购已截止': 'Rebuys closed', '奖励：': 'Payouts: ', '奖金：': 'Payouts: ', '加购': 'Add-on', '可加购': 'add-on', '现可加购': 'add-on open now', '末级可加购': 'add-on in last level', '不开放': 'Off', '重购期最后一级可加购一次': 'Once, during the last rebuy level', '现在不能加购': 'Add-on not available now', '金币不足，无法加购': 'Not enough coins for the add-on', '按人数自动': 'Auto by field size', '赢家通吃': 'Winner takes all', '前两名 65/35': 'Top 2 · 65/35', '前三名 50/30/20': 'Top 3 · 50/30/20', '锦标赛 Sit & Go': 'Sit & Go', '锦标赛': 'Tournament', '高低': 'Hi/Lo', '练习桌 PLO8 高低': 'Practice table PLO8 Hi/Lo',
   '胜率约': 'Equity ≈', '的随机牌': ' random hands', '需要': 'need', '才划算': 'to call profitably', '胜率低于赔率，长期看弃牌更好': 'Equity below pot odds — folding is better long-term', '胜率高于赔率，跟注长期赚': 'Equity above pot odds — calling is profitable', '对 ': 'vs ',
   '© 万泰游戏开发 · VANTAX POKER 免费娱乐版 · 仅与电脑对战 · 练习币不能购买、不能兑换、无任何奖品': '© Vantax Games · VANTAX POKER Free Play · vs AI only · practice chips cannot be bought, sold or exchanged, no prizes',
   '免费娱乐版：只和电脑玩家对战。练习币仅供娱乐，不能购买、不能兑换，也没有任何奖品。': 'Free play: you only play against AI. Practice chips are for fun — they cannot be bought or exchanged, and there are no prizes.',
 };
 const I18N_RX = [
   [/^我$/, 'Me'], [/^我 /, 'Me '], [/每 (\d+) 手/g, 'every $1 hands'], [/等待 (.+) 行动…/g, 'Waiting for $1…'], [/前 (\d+) 级/g, 'first $1 levels'], [/第(\d+)名/g, '#$1'], [/（跟 (\d+) 赢 (\d+)）/g, '(call $1 to win $2)'],
-  [/第 ?(\d+) ?手/g, 'Hand $1'], [/第(\d+)级/g, 'Level $1'], [/(\d+) 手后换(德州|奥马哈)/g, (m, n, g) => `switch to ${g === '德州' ? "Hold'em" : 'Omaha'} in ${n} hands`], [/下一手换(德州|奥马哈)/g, (m, g) => `next hand: ${g === '德州' ? "Hold'em" : 'Omaha'}`],
+  [/第 ?(\d+) ?手/g, 'Hand $1'], [/第(\d+)级/g, 'Level $1'], [/第 (\d+) 级/g, 'Level $1'], [/(\d+) 次/g, '$1x'], [/(\d+) 手后换(德州|奥马哈)/g, (m, n, g) => `switch to ${g === '德州' ? "Hold'em" : 'Omaha'} in ${n} hands`], [/下一手换(德州|奥马哈)/g, (m, g) => `next hand: ${g === '德州' ? "Hold'em" : 'Omaha'}`],
   [/(\d+) 手/g, '$1 hands'], [/(\d+) 秒/g, '$1s'], [/[（(]秒[)）]/g, ' (s)'], [/first (\d+) 级/g, 'first $1 levels'], [/已开好「(.+?)」/g, 'Set up “$1”'], [/(\d+) 分钟/g, '$1 min'], [/(\d+) 人/g, '$1 players'], [/(\d+) 个大盲/g, '$1 BB'], [/第 (\d+) 名/g, '#$1'], [/前注/g, 'ante'],
 ];
+/*I18N-EXTRA-BEGIN*/
+Object.assign(I18N_EN, {"加载中…": "Loading…", "生成中…": "Generating…", "正在打包…": "Packing…", "正在接收底牌…": "Receiving your cards…", "正在重新同步…": "Resyncing…", "朋友邀请你来打德州扑克：点开链接、取个昵称就能加入。": "A friend invited you to play Texas Hold'em: open the link, pick a nickname and you're in.", "你被邀请加入一个牌局俱乐部。取个昵称就能进：": "You've been invited to a poker club. Pick a nickname to join:", "加入": "Join", "加入失败，请稍后再试": "Could not join, please try again", "邀请链接已失效，请向房主要新的": "This invite link has expired — ask the host for a new one", "俱乐部不存在": "Club not found", "还没有加入俱乐部。朋友发给你的邀请链接点开即可加入；也可以自己开一个：": "You haven't joined a club yet. Open the invite link a friend sent you, or start your own:", "你的昵称（你将是房主）": "Your nickname (you will be the host)", "创建俱乐部": "Create club", "创建失败，请稍后再试": "Could not create, please try again", "已经加入过？把「个人资料 → 复制我的登录链接」粘贴到这里：": "Joined before? Paste your link from “Profile → Copy my login link” here:", "用登录链接进入": "Enter with login link", "或者": "or", "先去免费娱乐版和电脑玩": "Play the free version against bots first", "链接不对，请复制完整的登录链接或邀请链接": "That link looks wrong — copy the full login or invite link", "你已被房主移出这个俱乐部。": "The host removed you from this club.", "如有疑问请联系房主。": "Contact the host if you have questions.", "暂时连不上这个俱乐部。可能是网络问题，也可能登录链接已经失效。": "Can't reach this club right now. It may be the network, or your login link may have expired.", "重试": "Retry", "如果一直不行，请向房主要新的邀请链接；或者": "If it keeps failing, ask the host for a new invite link, or", "清除本机登录": "Clear login on this device", "还没轮到你": "It's not your turn", "需要跟注": "You need to call", "不能加注": "You can't raise", "最少加注到": "Minimum raise to", "未知操作": "Unknown action", "翻牌": "Flop", "转牌": "Turn", "河牌": "River", "第二次发牌": "Second run", "所有全下玩家都开启了「发两次」：剩余公共牌发两次，每个底池各分一半": "All all-in players chose to run it twice: the rest of the board is dealt twice and each pot is split in half", "紧凶": "Tight-aggressive", "松凶": "Loose-aggressive", "岩石": "Rock", "跟注站": "Calling station", "简单": "Easy", "困难": "Hard", "归还": "Return", "入座带入": "Sit-in buy-in", "离桌带出": "Chips back on leave", "退赛退款": "Unregister refund", "调整": "Adjustment", "上一手": "Last hand", "上一步": "Back", "排队等位": "Join waitlist", "快速弃牌": "Fast fold", "看看后面的牌": "Peek at the rest of the board", "逐步回放": "Step-by-step replay", "导出俱乐部备份": "Export club backup", "中文 / English": "中文 / English", "已发放": "Paid", "未发": "Unpaid", "服务器在线": "Server online", "服务器连接中": "Connecting to server", "轮到你": "Your turn", "小帮手": "Helper", "导出账本 CSV": "Export ledger CSV", "管理成员": "Manage members", "奖金价值": "Prize value", "可以过牌，底池": "You can check, pot", "赛事不存在": "Event not found", "赛事不存在。": "Event not found.", "延迟报名已截止": "Late registration has closed", "你已参赛": "You're already in", "金币不足，请先向房主申请金币": "Not enough coins — request coins from the host first", "报名已截止": "Registration closed", "你已报名": "You're registered", "只有房主能开赛": "Only the host can start the event", "至少需要 2 人报名": "At least 2 players must register", "泡沫期：离钱圈只差 1 人，各桌逐手进行": "Bubble: one player from the money — tables play hand-for-hand", "泡沫破了，恢复正常发牌": "Bubble burst — back to normal dealing", "本桌已拆分，玩家已并入其他桌": "This table broke; players moved to other tables", "房主恢复了牌局": "The host resumed the game", "房主暂停了牌局": "The host paused the game", "被房主设为暂离": "set to sitting out by the host", "房主请离座": "Asked to leave by the host", "房主取消报名": "Unregistered by the host", "本手进行中，打完再关": "Hand in progress — closing after it finishes", "牌桌不存在": "Table not found", "这是锦标赛，请报名": "This is a tournament — please register", "你已在这张桌": "You're already at this table", "座位已被占": "Seat taken", "这个空位正为排队的玩家保留，请点「排队等位」": "This seat is held for the waitlist — tap “Join waitlist”", "这个座位已经有人了": "Someone is already in this seat", "这一手打完再换座": "Change seats after this hand", "这个空位正为排队的玩家保留": "This seat is held for the waitlist", "排队人数已满": "Waitlist is full", "本手结束后再补码": "Top up after this hand", "已达最大带入": "Already at the max buy-in", "金币不足": "Not enough coins", "弃牌后不能亮牌": "You can't show after folding", "下载失败：": "Download failed: ", "不允许": "Not allowed", "不在你回合时可以先点「预操作」，轮到你自动执行。": "When it's not your turn, tap a pre-action and it runs automatically on your turn.", "不抽水，奖池 100% 发给玩家。": "No rake — 100% of the prize pool goes to players.", "不能购买、不能兑换": "cannot be bought or exchanged", "与服务器的连接中断，正在自动重连；恢复后会自动同步": "Lost connection to the server — reconnecting; it will resync automatically", "个大盲": "BB", "中等牌力，过牌或小注都行": "Medium strength — check or bet small", "为你保留的座位已超时，已移出等位队列": "Your held seat expired; you were removed from the waitlist", "为排队的玩家保留中": "Held for the waitlist", "主持中": "Hosting", "主持权已转到另一个标签页": "Hosting moved to another tab", "领取": "Buy-in", "归还": "Return", "发放金币": "Issue coins", "收回金币": "Take back coins", "申请金币": "Request coins", "归还金币": "Return coins", "累计发放": "Total issued", "申请审核中…": "Request pending…", "备注（可选）": "Note (optional)", "报名费": "Entry fee", "去申请金币": "Request coins", "仅房主可见": "Host only", "今晚输赢：": "Tonight's results:", "今晚还没有已完成的手牌": "No finished hands tonight yet", "余额不足": "Insufficient balance", "余额不足以归还": "Balance too low to return", "余额不足以归还": "Balance too low to return", "你处于暂离状态": "You're sitting out", "你已在比赛中": "You're already in the tournament", "你是房主，本页正在主持牌局（请保持打开）": "You're the host — this page is running the game (keep it open)", "你是房主：请在「房主后台 → 手动登记」给自己记账": "You're the host: record your own buy-ins in “Host panel → Manual entry”", "你的禁言已解除": "You've been unmuted", "你的筹码输光了": "You're out of chips", "你被禁言了，暂时不能发消息": "You're muted and can't send messages for now", "例如：周三夜扑克会": "e.g. Wednesday Night Poker", "例如：河牌大注多半是诈唬": "e.g. big river bets are usually bluffs", "保存图片": "Save image", "保存备注": "Save note", "修改俱乐部信息": "Edit club info", "修改副房主名单": "Edit co-hosts", "俱乐部信息已保存": "Club info saved", "俱乐部公告": "Club notice", "归还不能超过钱包余额": "Can't return more than your wallet balance", "归还只能扣钱包余额（在桌筹码需先离桌）。你自己的金币也在这里登记。": "Returns come only from the wallet (leave the table first for table chips). Record your own coins here too.", "全下后剩余公共牌会逐张发出，并实时显示胜率。": "After an all-in the rest of the board is dealt card by card with live odds.", "全部流水，Excel 可直接打开": "All entries, opens directly in Excel", "公共牌": "Board", "公共牌：": "Board: ", "关桌": "Close table", "冠军收回自己的赏金": "The winner keeps their own bounty", "净盈亏 = 钱包余额 + 在桌筹码 + 已归还 − 累计发放。所有人的净盈亏加起来应为 0（锦标赛进行中按报名费暂计）。金币只是游戏积分，由房主确认发放，不能购买，也不能兑换成钱。": "Net = wallet + chips on table + returned − coins received. Everyone’s net should add up to 0 (running tournaments count at their entry fee). Coins are game points issued by the host and cannot be bought or exchanged.", "分钟": "min", "副房主只能确认或拒绝玩家提交的申请；手动加减请让房主操作": "Co-hosts can only approve or reject player requests; ask the host for manual adjustments", "副房主名单已保存": "Co-hosts saved", "加注": "Raise", "加载中": "Loading", "勉强划算，可以跟": "Borderline — calling is fine", "单手最大赢": "Biggest win", "发送失败": "Send failed", "发送失败：": "Send failed: ", "只亮这一张": "Show this card only", "只包含你自己的底牌和摊牌时亮出的牌，其他人盖住的牌不会出现。": "Only your own hole cards and cards shown at showdown — others' mucked cards are never included.", "只有房主能操作": "Only the host can do this", "可以先去「练习场」对 AI 熟悉操作，练习币不计入金币。": "Try the Practice area against AI first — practice chips are separate from coins.", "可作最小顺子 A-2-3-4-5。花色不分大小，牌型相同比点数。": "A can make the lowest straight A-2-3-4-5. Suits are equal; same hands compare by rank.", "可切换四色牌、按大盲显示筹码、音效、练习场电脑难度。": "Switch four-color deck, show stacks in BB, sound, and practice bot level.", "周三夜 1/2": "Wed night 1/2", "周末 SNG 冠军赛": "Weekend SNG", "回到页面": "Back to page", "回来继续": "I'm back", "图片已保存": "Image saved", "图片已生成": "Image ready", "坐满即开": "Start when full", "定时开赛": "Scheduled start", "基本玩法（无限注德州扑克）": "Basics (No-Limit Hold'em)", "备份失败：": "Backup failed: ", "备份已保存": "Backup saved", "备注已保存（仅本机）": "Note saved (this device only)", "备注（可选）": "Note (optional)", "复制失败，请手动选择文字": "Copy failed — select the text manually", "复制战报：": "Copy recap:", "复制文字": "Copy text", "复制这个链接：": "Copy this link:", "多桌赛": "MTT", "多桌赛开赛后自动排好下一场": "Schedules the next MTT automatically after it starts", "定时举行": "scheduled", "导出失败：": "Export failed: ", "已下载": "Downloaded", "已保存": "Saved", "已创建多桌锦标赛，去大厅查看": "MTT created — see the lobby", "已发送开桌指令": "Table creation sent", "已发送清理指令": "Cleanup sent", "已取消下一手炸弹锅": "Next-hand bomb pot cancelled", "已取消保存": "Save cancelled", "已复制，可以直接粘贴到群里": "Copied — paste it into your group chat", "已尝试复制；若没复制成功，长按/全选上面文字复制。": "Tried to copy; if it failed, long-press / select the text above.", "已开启：关掉页面后轮到你也会收到通知": "On: you'll be notified on your turn even with the page closed", "已开启：页面在后台时会弹通知": "On: notifications when the page is in the background", "已开桌": "Table opened", "已暂停": "Paused", "已满": "Full", "已登记": "Recorded", "已禁言": "Muted", "已解除禁言": "Unmuted", "已重新连接": "Reconnected", "已重置，旧链接失效": "Reset — the old link no longer works", "年度积分": "Season points", "底池上限": "Pot limit", "开打了，你在旁观。随时回大厅": "It's started — you're watching. Back to the lobby anytime", "开赛倒计时": "Starts in", "开赛时间已到，但报名不足 2 人，等待更多玩家": "Start time reached but fewer than 2 registered — waiting for players", "我已保存": "I've saved it", "我的备注（只保存在这台设备上，对方看不到）": "My note (saved on this device only, they can’t see it)", "战报已复制": "Recap copied", "战报已复制，粘贴到群里吧": "Recap copied — paste it into your group", "房主在线": "Host online", "房主离线": "Host offline", "房主当前不在线，牌桌暂停中。房主打开本页后牌局会自动继续。": "The host is offline, so the table is paused. It resumes automatically when the host opens the page.", "房主把你设为副房主：可以处理金币申请、开桌、开赛和管理牌桌": "The host made you a co-host: you can handle coin requests, open tables, start events and manage tables", "房主登录链接": "Host login link", "房主登录链接已复制，请马上存到安全的地方，不要发到群里": "Host login link copied — store it somewhere safe right now, don't post it in the group", "所有人各放几个大盲进底池，跳过翻前直接发翻牌": "Everyone puts in a few big blinds and it goes straight to the flop", "手动重连": "Reconnect", "手牌记录已下载": "Hand history downloaded", "手牌记录已保存": "Hand history saved", "掉线，已自动暂离": "disconnected — set to sitting out", "排队等位人数": "Waitlist", "提交失败": "Submit failed", "摊牌后停留（秒，看清牌再开下一手）": "Showdown pause (s, time to see the cards)", "摊牌时只亮赢家与全下者的牌，输家自动盖牌。": "At showdown only winners and all-in players show; losers muck automatically.", "数据连接较慢，稍后会自动刷新…": "Slow connection — will refresh shortly…", "断线重连中…": "Reconnecting…", "无法识别你的身份，请登录后再打开。": "Can't identify you — please log in and reopen.", "时间银行上限（秒，0＝不用时间银行）": "Time bank max (s, 0 = off)", "暂无申请。玩家点右上角「申请金币」申请后会出现在这里；你点确认后金币才会入账。": "No requests. Player coin requests appear here; coins are credited once you confirm.", "暂时连不上牌局服务器，正在自动重试…": "Can't reach the game server — retrying…", "暂离超时自动离座": "Removed after sitting out too long", "最多可全下。": "You can go all-in anytime.", "有空位了！为你保留 60 秒，快去坐下": "A seat opened! Held for you for 60 s — go sit down", "本俱乐部只允许发表情": "This club allows emoji only", "本俱乐部已关闭聊天": "Chat is off in this club", "本标签页不是主持端（可能你在另一个标签页开着本页）。关闭其他标签页后刷新即可。": "This tab isn't hosting (the page may be open in another tab). Close the other tabs and refresh.", "本页正在主持牌局，请保持打开": "This page is hosting the game — keep it open", "查看上一手的牌和结果": "See the last hand and result", "正好用 2 张手牌 + 3 张公共牌": "Exactly 2 hole cards + 3 board cards", "每人发 2 张底牌，桌面依次发 3 张翻牌、1 张转牌、1 张河牌。": "Everyone gets 2 hole cards; the board gets 3 flop cards, 1 turn and 1 river.", "每周同一时间": "Same time weekly", "每天同一时间": "Same time daily", "每手结束记一次（含桌上筹码）": "Recorded after each hand (incl. table chips)", "每次最多加注到底池大小。": "You can raise up to the size of the pot.", "每步行动时间（秒）": "Action time (s)", "每轮可以：": "Each round you can:", "比赛进行中不能单独关桌": "Can't close a table while the tournament runs", "没有任何活动送币": "No promotions give out coins", "没有需要清理的": "Nothing to clean up", "浏览器没有允许通知，可以在浏览器设置里打开": "Notifications are blocked — enable them in your browser settings", "涨盲(分钟)": "Blind level (min)", "涨盲倒计时": "Next level in", "淘汰此人可获得的赏金": "Bounty for knocking this player out", "淘汰赏金": "Bounty", "演示桌": "Demo table", "点「下一步」开始": "Tap “Next” to start", "点击取消排队": "Tap to leave the waitlist", "点我搓牌": "Tap to squeeze", "牌不错，可以下注拿价值": "Good hand — bet for value", "牌桌设置已更新": "Table settings updated", "玩家申请领取": "Player coin requests", "玩家申请归还": "Player return requests", "玩家申请归还": "Player return requests", "玩家申请领取": "Player coin request", "玩家申请的金币不超过这个数时，系统直接批准，不用等你在线；0 = 关闭，全部人工确认。归还申请始终人工确认。": "Requests up to this amount are approved automatically, even when you're offline; 0 = off, approve everything by hand. Returns always need manual approval.", "玩法与赛制": "Rules & formats", "现金桌可开「发两次」：全下的人都开着时，剩余公共牌发两次，每个底池各分一半。": "Cash tables can run it twice: if every all-in player opts in, the rest of the board is dealt twice and each pot is split.", "现金桌：本手结束后离座，筹码退回钱包。锦标赛进行中：改为暂离（被盲注吃掉）。": "Cash table: you leave after this hand and chips return to your wallet. In a running tournament: you sit out (blinded away).", "甚至可以加注": "even raise", "生成图片失败": "Could not create image", "用 7 张里最好的 5 张组成牌型，比大小（点「牌型」按钮查看）。": "Your best 5 of 7 cards make your hand (see the “Hands” button).", "电脑上可用快捷键：F 弃牌、C 过牌/跟注、R 加注、A 全下。": "Keyboard: F fold, C check/call, R raise, A all-in.", "电脑玩家（仅练习）": "Bots (practice only)", "电脑难度：": "Bot level:", "登录链接已复制，只发给你自己": "Login link copied — keep it to yourself", "知道了": "Got it", "离钱圈只差 1 人：每张桌打完一手要等其他桌都打完才发下一手": "One from the money: each table waits for the others before dealing the next hand", "秒，过时即淘汰": "s, then you are eliminated", "移出失败：": "Remove failed: ", "立即生效（当前这一步的倒计时不变）。": "Takes effect now (the current timer is unchanged).", "类型不对": "Wrong type", "累计发放": "Total coins in", "累计归还": "Total returned", "练习币已恢复到 10,000": "Practice chips reset to 10,000", "练习模式没有账本": "No ledger in practice mode", "结算单": "Settlement", "结算单已复制": "Settlement copied", "结算规则": "Settlement rules", "网络恢复": "Back online", "翻前主动入池比例；PFR = 翻前加注比例。一般 VPIP 20–30% 偏紧，40% 以上偏松。锦标赛只计入手数，不计盈亏。": "how often you voluntarily put money in preflop; PFR = preflop raise rate. VPIP 20–30% is tight, 40%+ is loose. Tournaments count hands only, not profit.", "翻前加注": "Preflop raise", "联机不可用": "Online unavailable", "联机通道未连接": "Not connected", "联机通道未连接，暂时无法操作": "Not connected — can't act right now", "联机服务不可用（需要登录 claude.ai 并被房主邀请）。可以先进练习场体验。": "Online play unavailable (log in to claude.ai and get a host invite). Try the Practice area meanwhile.", "连接俱乐部中…可以先进练习场体验。": "Online play isn't supported here (open the link in claude.ai and log in). Try the Practice area meanwhile.", "自动复制失败，请长按/全选手动复制保存：": "Auto-copy failed — long-press / select all and copy it manually:", "至少 2 人": "At least 2 players", "补到桌上": "Top up", "请离座": "Ask to leave", "请输入金额": "Enter an amount", "请选择一个将来的开赛时间": "Pick a start time in the future", "请选择玩家并填写金额": "Pick a player and enter an amount", "请检查盲注和带入（最小带入至少 10 个大盲）": "Check blinds and buy-ins (min buy-in at least 10 big blinds)", "读取成员失败：": "Could not load members: ", "谁用 7-2 独赢主池（含让对手弃牌），其他本手拿到牌的人各付这么多大盲给他": "Whoever wins the main pot alone with 7-2 (incl. by making others fold) gets this many big blinds from everyone else dealt in", "账本写入失败：": "Ledger write failed: ", "账本已保存": "Ledger saved", "资料同步失败，稍后会自动重试": "Profile sync failed — will retry", "资料已保存": "Profile saved", "赏金赛 KO": "Bounty KO", "赢下手数": "Hands won", "轮到你行动": "Your turn", "这个操作只有房主能做": "Only the host can do this", "这个浏览器不支持通知": "This browser doesn't support notifications", "这是多桌赛的牌桌，比赛进行中不能单独关闭": "This is an MTT table — can't close it while the event runs", "这里不能保存文件": "Files can't be saved here", "这里不能保存文件，可以截图分享": "Files can't be saved here — take a screenshot to share", "连接俱乐部中…可以先进练习场体验。": "Connecting to the club… try the Practice area meanwhile.", "退出练习": "Leave practice", "邀请链接已复制": "Invite link copied", "部分报名费变成每个人头上的赏金 🎯，淘汰谁就立刻拿到谁的赏金。": "Part of the entry becomes a bounty 🎯 on each player — knock someone out and take their bounty on the spot.", "重购": "Rebuy", "重购剩余": "Rebuy time left", "重购时间已过": "Rebuy window closed", "重购期最后一级，限一次": "Last rebuy level, once only", "金币 · 申请 / 归还": "Coins · request / return", "金币不足，无法重购": "Not enough coins to rebuy", "金币不足，请先向房主申请金币": "Not enough coins — buy in first", "金币只是游戏积分，由房主发放，": "Coins are just game points issued by the host,", "金币只是游戏积分，由房主确认发放，不能购买，也不能兑换成钱。需要金币就在这里申请；不玩了可以把金币归还给房主。": "Coins are game points issued by the host — no promotions, and they cannot be bought or exchanged. Submit a request here; coins arrive once the host confirms. Returns work the same way.", "金币只能向房主领取，": "Coins come only from the host,", "金额不对": "Invalid amount", "锦标赛盲注定时上涨，第 6 级起有前注；前几名分奖池，冠军获得金手链和年度积分。": "Tournament blinds rise on a timer with antes from level 6; the top finishers split the pool and the winner gets a bracelet and season points.", "随到随坐，筹码=金币，离桌带走。新入座第一手补一个大盲；暂离超过 10 分钟自动离座。": "Sit anytime; chips = coins and leave with you. New players post a big blind on their first hand; sitting out over 10 min removes you.", "输光后 20 秒内再买一份）、": "buy again within 20 s of busting), ", "重购期最后一级每人可加买一份筹码）、": "one extra stack per player in the last rebuy level), ", "开赛后前几级仍可入场）。": "join during the first few levels).", "坐满或到点开赛；可设": "Starts when full or at a set time; options: ", "多桌同时开打，全场统一涨盲，自动平衡座位、并桌，最后合成决赛桌；被移桌时页面自动跟随。": "Several tables play at once with shared blind levels; seats auto-balance and tables merge into a final table — your page follows when you move.", "混合局：每": "Mixed game: every", "张底牌，任何时候可以全下。": "hole cards, all-in anytime.", "张底牌，比牌必须": "hole cards; at showdown you must use", "账本结算」页公开每人的领取、归还、余额、净盈亏，所有人净盈亏合计为 0；可一键复制结算单发群。": "Ledger” page shows everyone’s coins in, returned, balance and net — all nets add up to 0; copy the settlement to your group in one tap.", "账本结算」页公开每人的领取、归还、余额、净盈亏，所有人净盈亏合计为 0；可一键复制结算单发群。": "Ledger” page shows everyone’s coins received, returned, balance and net — all nets add up to 0; copy the settlement to your group in one tap.", "万泰游戏开发 · 好友私局，仅限受邀朋友 · 不抽水 · 金币是游戏积分，仅供娱乐，不能购买或兑换": "Vantax Games · private friends club, invite only · no rake · coins are game points for fun only, cannot be bought or exchanged", "万泰游戏开发 · VANTAX POKER 免费娱乐版 · 仅与电脑对战 · 练习币不能购买、不能兑换、无任何奖品": "Vantax Games · VANTAX POKER free edition · vs bots only · practice chips cannot be bought or exchanged and win no prizes", "和电脑玩家对战德州扑克与奥马哈：现金桌、单桌赛、多桌锦标赛。纯娱乐，练习币不能购买或兑换。": "Play Hold'em and Omaha against bots: cash games, Sit & Go and multi-table tournaments. Just for fun — practice chips can't be bought or exchanged.", "演示多桌赛 #": "Demo MTT #", "最近 100 条）": "last 100)", "发群对账）": "for the group)", "我）": "me)", "你）": "you)", "次：": "x:", "秒": "s", "条金手链": "bracelets", "清理已结束的赛事": "cleaned up finished events", "页面很久没有操作，已暂时断开连接（省电、省流量）。": "This page has been idle for a while, so it disconnected to save battery and data.", "继续": "Continue", "创建太频繁了，请过一会儿再试": "Too many clubs created — please try again later", "本手进行中，打完再关；着急的话先「暂停」再关桌（这一手作废、筹码退回）": "A hand is in progress — close after it ends, or pause first to void the hand and refund the chips", "⚠ 牌桌出错，已自动暂停。房主可以「关桌」：这一手作废，筹码全部退回钱包。": "⚠ Table error — paused automatically. The host can close the table: the hand is voided and all chips go back to wallets.", "连接中…": "Connecting…", "申请": "requests", "确认发放": "Approve", "确认收回": "Confirm return", "当前余额": "balance", "自己的申请要房主确认": "Host must approve your own request", "自己的金币申请要房主确认": "Your own coin requests must be approved by the host", "前两名分奖": "top 2 paid", "前三名分奖": "top 3 paid", "🎉 俱乐部建好了，三步开局": "🎉 Your club is ready — three steps to start", "① 保存你的房主登录链接（换手机也能找回房主身份）": "① Save your host login link (so you can get host access back on a new phone)", "复制保存": "Copy & save", "✓ 已保存": "✓ Saved", "② 一键开好今晚的牌桌": "② Set up tonight's tables in one tap", "今晚标准局": "Standard night", "③ 复制邀请链接发到群里，朋友点开取个昵称就能来": "③ Copy the invite link to your group — friends open it, pick a nickname and join", "去复制": "Copy link", "📱 iPhone 想收到「轮到你」的通知：在 Safari 点底部「分享」→「添加到主屏幕」，以后从主屏幕图标打开（第一次打开要先在「个人资料 → 复制我的登录链接」复制好，粘贴进去登录一次），这里就会出现通知开关。": "📱 iPhone turn alerts: in Safari tap “Share” → “Add to Home Screen”, then open the game from that icon (the first time, paste your login link from “Profile → Copy my login link”) — the notification switch will appear here.", "● 在线": "● Online", "● 连接中…": "● Connecting…", "下一手炸弹锅": "Next-hand bomb pot", "小提示": "Tip", "怎么加入": "How to join", "怎么开始": "Getting started", "归还不能超过钱包余额": "Can't return more than your wallet balance", "万泰游戏": "Vantax Games", "万泰游戏开发 · VANTAX POKER": "Vantax Games · VANTAX POKER", "人数变化时自动平衡座位，最后合并为决赛桌。": "Tables auto-balance as players bust and merge into a final table.", "的申请": "'s request"});
+const I18N_PRE2 = [[/^【管理员 ?(.*?)】/g, "[Admin $1] "], [/房主已确认你的(?:领取|领取) ([\d,]+)/g, "The host approved your coin request of $1"], [/已确认你的(?:领取|领取) ([\d,]+)/g, "approved your coin request of $1"], [/房主已确认你的(?:归还|归还) ([\d,]+)/g, "The host confirmed your return of $1 coins"], [/已确认你的(?:归还|归还) ([\d,]+)/g, "confirmed your return of $1 coins"], [/你的申请被房主拒绝，请联系房主/g, "The host rejected your request — please contact the host"], [/你的申请被拒绝，请联系房主/g, "rejected your request — please contact the host"], [/自动批准 (.+?) 的申请 ([\d,]+)/g, "auto-approved $2 coins for $1"], [/给 (.+?) 发放 ([\d,]+)/g, "issued $2 coins to $1"], [/从 (.+?) 收回 ([\d,]+)/g, "took back $2 coins from $1"], [/开桌「(.+?)」/g, "opened table “$1”"], [/开赛「(.+?)」/g, "created event “$1”"], [/关闭「(.+?)」/g, "closed “$1”"], [/暂停\/继续「(.*?)」/g, "paused/resumed “$1”"], [/「(.*?)」下一手炸弹锅/g, "next-hand bomb pot at “$1”"], [/禁言 (.+?) (\d+) 分钟/g, "muted $1 for $2 min"], [/解除 (.+?) 的禁言/g, "unmuted $1"], [/你在「(.+?)」获得第 (\d+) 名/g, "You finished #$2 in “$1”"], [/你在 (.+?) 获得第 (\d+) 名/g, "You finished #$2 in $1"], [/你在「(.+?)」拿到一份赏金 ([\d,]+)/g, "You collected a $2 bounty in “$1”"], [/你在「(.+?)」暂离超过 10 分钟，已自动离座，筹码已回到钱包/g, "You sat out over 10 min in “$1” and were removed; chips returned to your wallet"], [/你在「(.+?)」筹码输光了，20 秒内可以重购/g, "You busted in “$1” — rebuy within 20 s"], [/你的申请被(.+?)拒绝，请联系房主/g, "Your request was rejected by $1 — contact the host"], [/你离开了「(.+?)」：带入 ([\d,]+)，带出 ([\d,]+)，本次 ([+\-−]?[\d,]+)/g, "You left “$1”: in $2, out $3, net $4"], [/你被禁言 (\d+) 分钟/g, "You are muted for $1 min"], [/已移出「(.+?)」/g, "Removed “$1”"], [/已自动批准你的金币申请 ([\d,]+)/g, "Your coin request of $1 was approved automatically"], [/已跟随到「(.+?)」/g, "Followed to “$1”"], [/已提交：(?:领取|领取) ([\d,]+)，等待房主确认（房主需在线）。/g, "Submitted: request for $1 coins — waiting for the host to confirm (host must be online)."], [/已提交：(?:归还|归还) ([\d,]+)，等待房主确认（房主需在线）。/g, "Submitted: return of $1 coins — waiting for the host to confirm (host must be online)."], [/已提交：(\S+) ([\d,]+)，等待房主确认（房主需在线）。/g, "Submitted: $1 $2 — waiting for the host to confirm (host must be online)."], [/已清理 (\d+) 个已结束的赛事\/牌桌（战绩、金手链、账本都保留）/g, "Cleaned up $1 finished events/tables (stats, bracelets and ledger kept)"], [/已清理 (\d+) 个已结束的赛事\/牌桌/g, "Cleaned up $1 finished events/tables"], [/已导出 (\d+) 条流水/g, "Exported $1 entries"], [/已下载 (\d+) 手/g, "Downloaded $1 hands"], [/下载最近 (\d+) 手/g, "Download last $1 hands"], [/分享第 (\d+) 手/g, "Share hand $1"], [/回放 · 第 (\d+) 手/g, "Replay · hand $1"], [/从 (.+?) 移到本桌/g, "moved here from $1"], [/并桌\/平衡：你被移到「(.+?)」/g, "Table balance: you moved to “$1”"], [/房主请你离开了「(.+?)」，筹码已回到钱包/g, "The host asked you to leave “$1”; chips returned to your wallet"], [/关桌返还 ([\d,]+)/g, "Table closed, returned $1"], [/锦标赛中止按筹码比例退还 ([\d,]+)/g, "Tournament cancelled, refunded $1 by chip share"], [/带入需在 ([\d,]+)–([\d,]+) 之间/g, "Buy-in must be between $1 and $2"], [/这张桌最少带入 ([\d,]+)，你的余额 ([\d,]+)。/g, "Min buy-in here is $1; your balance is $2."], [/换到 (\d+) 号座/g, "Moved to seat $1"], [/排队中 · 第 (\d+) 位/g, "Waitlisted · #$1"], [/等位 (\d+)/g, "Waitlist $1"], [/空位为你保留 (\d+) 秒，点空位坐下/g, "Seat held for you for $1 s — tap it to sit"], [/多桌锦标赛开始！共 (\d+) 人 (\d+) 桌，奖池 ([\d,]+)/g, "MTT started! $1 players, $2 tables, prize pool $3"], [/淘汰 (.+?)，获得赏金 ([\d,]+)/g, "knocked out $1 and collected a $2 bounty"], [/重购 \+([\d,]+) 筹码，奖池升至 ([\d,]+)/g, "rebuys +$1 chips, prize pool now $2"], [/加购 \+([\d,]+) 筹码（本手结束到账），奖池升至 ([\d,]+)/g, "adds on +$1 chips (after this hand), prize pool now $2"], [/加购 \+([\d,]+) 筹码，奖池升至 ([\d,]+)/g, "adds on +$1 chips, prize pool now $2"], [/延迟报名入场，奖池升至 ([\d,]+)/g, "late-registers, prize pool now $1"], [/用 7-2 赢下底池，收到 7-2 奖金共 ([\d,]+)（每人 ([\d,]+)）/g, "wins with 7-2 and collects a $1 bonus ($2 each)"], [/收到 7-2 奖金 ([\d,]+)/g, "7-2 bonus $1"], [/用 7-2 独赢主池，其他本手拿到牌的人各付 (\d+) 个大盲/g, "Win the main pot alone with 7-2 and everyone else dealt in pays $1 big blinds"], [/第二次发牌：/g, "Second run: "], [/最大底池：([\d,]+)（([\d.]+)BB），(.+?) 拿下/g, "Biggest pot: $1 ($2 BB), won by $3"], [/盲注升级：([\d,]+)\/([\d,]+)/g, "Blinds up: $1/$2"], [/每 (\d+) 手一次炸弹锅/g, "Bomb pot every $1 hands"], [/房主调整：行动时间 (\d+) 秒，时间银行上限 (\d+) 秒，摊牌停留 (\d+) 秒/g, "Host changed: action time $1 s, time bank max $2 s, showdown pause $3 s"], [/调整「(.+?)」牌桌设置/g, "Table settings for “$1”"], [/牌桌设置 · (.+)/g, "Table settings · $1"], [/拒绝了 (.+?) 的申请/g, "rejected the request from $1"], [/请 (.+?) 离开「(.+?)」/g, "Ask $1 to leave “$2”"], [/请 (.+?) 离座？/g, "Ask $1 to leave the seat?"], [/确定把「(.+?)」移出俱乐部吗？他的登录链接会立即失效（钱包和账本记录保留）。/g, "Remove “$1” from the club? Their login link stops working immediately (wallet and ledger history are kept)."], [/差额 ([+\-−]?[\d,]+)/g, "Difference $1"], [/合计净盈亏：([+\-−]?[\d,]+)（应为 0）/g, "Total net: $1 (should be 0)"], [/奖金 ([\d,]+) · 获得金手链/g, "Prize $1 · wins a bracelet"], [/延迟报名中 · 第 (\d+) 级/g, "Late reg · level $1"], [/练习场：对 AI，使用练习筹码，不计入金币、不产生任何收益。/g, "Practice: vs AI with practice chips — no coins and no winnings of any kind."], [/轮到你时有 (\d+) ?秒，用完自动启用时间银行；再超时会自动过牌或弃牌并进入暂离。/g, "You get $1 s on your turn, then your time bank kicks in; after that you auto check/fold and sit out."], [/账号：/g, "Account: "], [/赢家 /g, "Winner "], [/直播视角 /g, "Live view "], [/领取 ([\d,]+) \/ 归还 ([\d,]+) \/ 余额 ([\d,]+)/g, "Coins in $1 / returned $2 / balance $3"], [/领取 ([\d,]+) \/ 归还 ([\d,]+) \/ 余额 ([\d,]+)/g, "Received $1 / returned $2 / balance $3"], [/第 (\d+) 级 · (\d+) 桌/g, "Level $1 · $2 tables"], [/第(\d+)次/g, "#$1"], [/(\d+)月(\d+)日 /g, "$1/$2 "], [/重购 ([\d,]+) (练习币|金币) → ([\d,]+) 筹码/g, "Rebuy $1 $2 → $3 chips"], [/加购 ([\d,]+) (练习币|金币) → \+([\d,]+) 筹码/g, "Add-on $1 $2 → +$3 chips"], [/共 (\d+) 手/g, "$1 hands"], [/开赛后前 (\d+) 级可延迟报名/g, "late reg for the first $1 levels"], [/混合局：每 (\d+) 手在德州和奥马哈之间轮换/g, "Mixed game: switches between Hold'em and Omaha every $1 hands"], [/最近 (\d+) 手，只含你自己的底牌和摊牌亮出的牌/g, "Last $1 hands — only your own hole cards and cards shown at showdown"], [/房主设定：下一手是炸弹锅（每人 ([\d,]+)）/g, "Host set: next hand is a bomb pot ($1 each)"], [/备份已下载：(\d+) 位玩家、(\d+) 条账本/g, "Backup downloaded: $1 players, $2 ledger entries"], [/低牌半池 ([\d,]+)（(.+?)）/g, " low half-pot $1 ($2)"], [/备份已下载：/g, "Backup downloaded: "]];
+/*I18N-EXTRA-END*/
 // 1–2 个字的词只在整段文字完全相同时才替换，避免「开发」里的「开」被换成 On 这种中英混拼
 const I18N_KEYS = Object.keys(I18N_EN).filter(k => k.length > 2).sort((a, b) => b.length - a.length);
-const I18N_SHORT = new RegExp('(?<![\\u4e00-\\u9fff])(' + Object.keys(I18N_EN).filter(k => k.length <= 2).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')).join('|') + ')(?![\\u4e00-\\u9fff])', 'g');
+// 不用「后行断言」写法：旧版 iPhone Safari（iOS 16.4 以前）不支持，会让整个页面脚本报错
+const I18N_SHORT = new RegExp('(^|[^\\u4e00-\\u9fff])(' + Object.keys(I18N_EN).filter(k => k.length <= 2).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')(?![\\u4e00-\\u9fff])', 'g');
 let i18nNameCache = null, i18nNameAt = 0;
 function i18nNames() {
   if (i18nNameCache && Date.now() - i18nNameAt < 2000) return i18nNameCache;
@@ -1501,6 +1631,8 @@ function i18nNames() {
   i18nNameCache = [...set].filter(n => /[\u4e00-\u9fff]/.test(n)).sort((a, b) => b.length - a.length); i18nNameAt = Date.now();
   return i18nNameCache;
 }
+// 整句模板：在逐词替换之前先整体翻，避免拆成中英混杂
+const I18N_PRE = [[/「(.+?)」轮到你行动/g, 'Your turn at “$1”'], [/报名名单（(\d+)）/g, 'Registered ($1)'], [/延迟报名至第 ?(\d+) ?级/g, 'Late reg until level $1'], [/第 ?(\d+) ?桌/g, 'Table $1'], [/第 (\d+) 名/g, '#$1'], [/起始 ([\d,]+) 筹码 · 每 (\d+) 分钟涨一级（全场统一）· 每桌 (\d+) 人/g, 'Start $1 chips · blinds up every $2 min (all tables) · $3 per table'], [/ · 开赛后前 (\d+) 级可延迟报名/g, ' · late reg for the first $1 levels'], [/ · 每天定时举行/g, ' · runs daily'], [/ · 每周定时举行/g, ' · runs weekly'], [/。人数变化时自动平衡座位，最后合并为决赛桌。/g, '. Tables auto-balance as players bust and merge into a final table.'], [/锦标赛开始！(\d+) 人参赛，奖池 ([\d,]+)/g, 'Tournament started! $1 players, prize pool $2'], [/剩 ?(\d+) ?人/g, '$1 left'], [/剩 ?(\d+)\/(\d+) ?人/g, '$1/$2 left'], [/共 ?(\d+) ?人/g, '$1 players']];
 function trEN(str) {
   if (!/[一-鿿]/.test(str)) return str;
   const tr = str.trim(); if (I18N_EN[tr] !== undefined) return str.replace(tr, I18N_EN[tr]);
@@ -1508,11 +1640,15 @@ function trEN(str) {
   const keep = [];
   let s = str.replace(/玩家([0-9a-zA-Z]{2,6})/g, 'Player $1');
   for (const nm of i18nNames()) if (nm && s.indexOf(nm) >= 0) s = s.split(nm).join('\u0001' + (keep.push(nm) - 1) + '\u0002');
+  for (const [rx, to] of I18N_PRE2.concat(I18N_PRE)) s = s.replace(rx, to);
   for (const k of I18N_KEYS) if (s.indexOf(k) >= 0) s = s.split(k).join(I18N_EN[k]);
   // 短词：前后不是汉字时才替换（「跟注 2」可以，「开发」不行）
-  s = s.replace(I18N_SHORT, m => I18N_EN[m]);
+  s = s.replace(I18N_SHORT, (m, pre, k) => pre + I18N_EN[k]);
   for (const [rx, to] of I18N_RX) s = s.replace(rx, to);
-  return s.replace(/\u0001(\d+)\u0002/g, (m, k) => keep[+k]);
+  s = s.replace(/\u0001(\d+)\u0002/g, (m, k) => keep[+k]);
+  // 整句已经翻完（不剩汉字）时，把全角标点换成英文标点
+  if (!/[一-鿿]/.test(s)) s = s.replace(/（/g, ' (').replace(/）/g, ')').replace(/，/g, ', ').replace(/：/g, ': ').replace(/；/g, '; ').replace(/。/g, '. ').replace(/  +/g, ' ');
+  return s;
 }
 let i18nObs = null;
 function applyLang() {
@@ -1756,10 +1892,31 @@ async function openSealed(hostPubJwk, box) {
 /* =====================================================================
    Host：房主主持（权威引擎）。练习模式也用它（本地、带机器人、不计金币）
    ===================================================================== */
+/* 电脑玩家在后台线程算牌（练习场）：不占页面主线程，低端手机不卡；建不起来就退回同步计算 */
+const BotWorker = (() => {
+  let w = null, seq = 0; const cbs = {};
+  try {
+    const src = [...document.scripts].map(x => x.textContent).find(x => x.indexOf('G.PokerEngine = API') >= 0);
+    if (src && typeof Worker !== 'undefined' && typeof Blob !== 'undefined') {
+      w = new Worker(URL.createObjectURL(new Blob([src + '\nonmessage=e=>{let d=null;try{d=self.PokerEngine.botDecide(e.data.t,e.data.t.toAct)}catch(x){}postMessage({id:e.data.id,d})};'], { type: 'text/javascript' })));
+      w.onmessage = e => { const f = cbs[e.data.id]; delete cbs[e.data.id]; if (f) f(e.data.d); };
+      w.onerror = () => { w = null; };
+    }
+  } catch (e) { w = null; }
+  return {
+    get ok() { return !!w; },
+    ask(t, cb) {
+      const id = ++seq; cbs[id] = cb;
+      const c = Object.assign({}, t, { log: [], history: [], priv: { hole: t.priv.hole, deck: [] } });
+      try { w.postMessage({ id, t: JSON.parse(JSON.stringify(c)) }); } catch (e) { delete cbs[id]; cb(null); }
+      setTimeout(() => { if (cbs[id]) { delete cbs[id]; cb(null); } }, 4000);
+    }
+  };
+})();
 class Host {
   constructor(mode) {
     this.mode = mode; // 'online' | 'practice'
-    this.tables = {}; this.wallets = {}; this.stats = {}; this.profiles = {}; this.hl = null; this.seen = {}; this.mtts = {}; this.mdirty = new Set(); this.lastSeq = {}; this.pks = {}; this.handKeys = {};
+    this.tables = {}; this.wallets = {}; this.stats = {}; this.profiles = {}; this.hl = null; this.seen = {}; this.mtts = {}; this.mdirty = new Set(); this.lastSeq = {}; this.pks = {}; this.pkm = {}; this.handKeys = {};
     this.dirty = new Set(); this.writing = {}; this.again = {}; this.metaDirty = false;
     this.timer = null; this.listeners = [];
   }
@@ -1796,6 +1953,8 @@ class Host {
   }
   writeDoc(path, data) {
     if (this.mode !== 'online') return;
+    // 服务器主持：直接写（同一轮的写入由 Durable Object 合并成一个原子事务，不能拖到下一轮）
+    if (App.serverMode) { App.db.doc(path).set(data).catch(e => console.warn('write', path, e)); return; }
     if (this.writing[path]) { this.again[path] = data; return; }
     this.writing[path] = true;
     App.db.doc(path).set(JSON.parse(JSON.stringify(data))).catch(e => console.warn('write', path, e)).finally(() => {
@@ -1804,25 +1963,43 @@ class Host {
     });
   }
   flush() {
-    for (const tid of this.dirty) {
+    const dirty = [...this.dirty]; this.dirty.clear();
+    for (const tid of dirty) {
       const t = this.tables[tid];
       if (!t) {
         if (this.mode === 'online') { App.db.doc('live/' + tid).delete().catch(() => { }); App.db.doc(`data/users/${App.me}/eng-${tid}`).delete().catch(() => { }); }
         continue;
       }
       if (this.mode === 'online') {
-        const pv = E.publicView(t); pv.at = now();
-        this.writeDoc('live/' + tid, pv);
-        this.writeDoc(`data/users/${App.me}/eng-${tid}`, { t });
+        // 一张桌保存出错不影响其它桌
+        try {
+          const pv = E.publicView(t); pv.at = now();
+          this.writeDoc('live/' + tid, pv);
+          this.writeDoc(`data/users/${App.me}/eng-${tid}`, { t });
+        } catch (e) { this.fault(tid, e); }
       }
     }
-    this.dirty.clear();
     for (const mid of this.mdirty) { const m = this.mtts[mid]; if (this.mode === 'online') { if (m) this.writeDoc('events/' + mid, m); else App.db.doc('events/' + mid).delete().catch(() => { }); } }
     this.mdirty.clear();
     if (this.metaDirty && this.mode === 'online') { this.metaDirty = false; this.writeDoc(`data/users/${App.me}/meta`, { lastSeq: this.lastSeq }); }
   }
 
   /* ---- 牌桌管理 ---- */
+  // 开桌参数清洗：房主/副房主的指令也不能造出负报名费、0 人桌、超大数字（负报名费会凭空生出金币）
+  cleanCfg(c) {
+    const I = (v, lo, hi, d) => { v = Math.round(+v); return Number.isFinite(v) ? Math.max(lo, Math.min(hi, v)) : d; };
+    const o = Object.assign({}, c);
+    o.kind = ['cash', 'sng'].includes(c.kind) ? c.kind : 'cash'; o.game = ['nlh', 'plo', 'plo5', 'plo8', 'mix'].includes(c.game) ? c.game : 'nlh';
+    o.name = String(c.name || '').slice(0, 30) || '牌桌';
+    o.maxSeats = I(c.maxSeats, 2, 10, 6); o.actionSecs = I(c.actionSecs, 8, 120, 25);
+    o.sb = I(c.sb, 1, 1e6, 1); o.bb = I(c.bb, o.sb, 2e6, Math.max(2, o.sb));
+    o.minBuy = I(c.minBuy, 0, 1e8, o.bb * 40); o.maxBuy = I(c.maxBuy, o.minBuy, 1e8, Math.max(o.minBuy, o.bb * 200));
+    o.buyIn = I(c.buyIn, 0, 1e7, 0); o.startStack = I(c.startStack, 100, 1e7, 1500); o.levelMins = I(c.levelMins, 1, 60, 5);
+    o.rebuyLevels = I(c.rebuyLevels, 0, 10, 0); o.lateLevels = I(c.lateLevels, 0, 8, 0); o.bountyPct = [0, 25, 50].includes(+c.bountyPct) ? +c.bountyPct : 0;
+    o.bombEvery = I(c.bombEvery, 0, 50, 0); o.bombBB = I(c.bombBB, 1, 10, 2); o.sd72 = I(c.sd72, 0, 10, 0); o.mixEvery = c.mixEvery ? I(c.mixEvery, 2, 20, 6) : 0;
+    o.startAt = I(c.startAt, 0, 9e15, 0);
+    return o;
+  }
   createTable(cfg) {
     const id = cfg.id || ((cfg.kind === 'sng' ? 'sng-' : 'cash-') + Math.random().toString(36).slice(2, 7));
     const t = E.createTable(Object.assign({}, cfg, { id, now: now() }));
@@ -1833,7 +2010,7 @@ class Host {
   createMtt(cfg) {
     const id = 'mtt-' + Math.random().toString(36).slice(2, 7);
     const m = { id, name: cfg.name || '多桌锦标赛', game: cfg.game || 'nlh', buyIn: cfg.buyIn, startStack: cfg.startStack || 3000, levelMins: cfg.levelMins || 6,
-      seatsPer: Math.min(cfg.game === 'plo5' ? 8 : 10, cfg.maxSeats || 6), actionSecs: cfg.actionSecs || 25, startAt: cfg.startAt || 0, repeat: cfg.startAt && ['day', 'week'].includes(cfg.repeat) ? cfg.repeat : '', lateLevels: Math.max(0, Math.min(8, +cfg.lateLevels || 0)), status: 'waiting', entrants: [], tables: [], finish: [],
+      seatsPer: Math.min(cfg.game === 'plo5' ? 8 : 10, cfg.maxSeats || 6), actionSecs: cfg.actionSecs || 25, startAt: cfg.startAt || 0, repeat: cfg.startAt && ['day', 'week'].includes(cfg.repeat) ? cfg.repeat : '', lateLevels: Math.max(0, Math.min(8, +cfg.lateLevels || 0)), payout: ['wta', 'top2', 'top3'].includes(cfg.payout) ? cfg.payout : '', status: 'waiting', entrants: [], tables: [], finish: [],
       level: 0, levelEndsAt: 0, pool: 0, payouts: null, createdAt: now() };
     this.mtts[id] = m; this.mdirty.add(id); scheduleRender(); return m;
   }
@@ -1847,7 +2024,7 @@ class Host {
       m.entrants.push(uid); m.total = (m.total || 0) + 1; m.pool += m.buyIn;
       // 新人加入：已出局的人名次各往后挪一位；奖金按新人数重算
       m.finish.forEach(f => { f.place++; });
-      const pc = E.mttPcts(m.total), amts = pc.map(p => Math.floor(m.pool * p / 100)); amts[0] += m.pool - amts.reduce((x, y) => x + y, 0); m.payouts = amts;
+      const pc = E.mttPcts(m.total, m.payout), amts = pc.map(p => Math.floor(m.pool * p / 100)); amts[0] += m.pool - amts.reduce((x, y) => x + y, 0); m.payouts = amts;
       const live = m.tables.map(id => this.tables[id]).filter(Boolean);
       const cnt = x => x.seats.filter(q => q && q.stack > 0).length;
       let t = live.filter(x => x.seats.some(q => !q)).sort((a, b) => cnt(a) - cnt(b))[0];
@@ -1890,7 +2067,7 @@ class Host {
     if (ents.length < 2) return false;
     const nT = Math.ceil(ents.length / m.seatsPer);
     m.pool = m.buyIn * ents.length;
-    const pc = E.mttPcts(ents.length), amts = pc.map(p => Math.floor(m.pool * p / 100)); amts[0] += m.pool - amts.reduce((x, y) => x + y, 0);
+    const pc = E.mttPcts(ents.length, m.payout), amts = pc.map(p => Math.floor(m.pool * p / 100)); amts[0] += m.pool - amts.reduce((x, y) => x + y, 0);
     m.payouts = amts; m.status = 'playing'; m.startedAt = n0; m.level = 0; m.levelEndsAt = n0 + m.levelMins * 60000; m.tables = []; m.total = ents.length;
     for (let k = 0; k < nT; k++) {
       const t = E.createTable({ id: m.id + '-t' + (k + 1), kind: 'sng', game: m.game, name: `${m.name} · 第${k + 1}桌`, buyIn: m.buyIn, startStack: m.startStack, levelMins: m.levelMins, maxSeats: m.seatsPer, actionSecs: m.actionSecs, now: n0 });
@@ -1909,7 +2086,7 @@ class Host {
     const per = m.repeat === 'day' ? 86400000 : 7 * 86400000;
     let at = m.startAt + per; while (at < now() + 60000) at += per;
     m.nextMade = true; this.mdirty.add(m.id);
-    this.createMtt({ name: m.name, game: m.game, buyIn: m.buyIn, startStack: m.startStack, levelMins: m.levelMins, maxSeats: m.seatsPer, actionSecs: m.actionSecs, startAt: at, repeat: m.repeat, lateLevels: m.lateLevels });
+    this.createMtt({ name: m.name, game: m.game, buyIn: m.buyIn, startStack: m.startStack, levelMins: m.levelMins, maxSeats: m.seatsPer, actionSecs: m.actionSecs, startAt: at, repeat: m.repeat, lateLevels: m.lateLevels, payout: m.payout });
   }
   mkSeat(u, stack) { return String(u).startsWith('bot-') ? E.seatObj(u, stack, { bot: true, name: u.slice(4) }) : E.seatObj(u, stack); }
   mttAlive(m) { let c = 0; m.tables.forEach(id => { const t = this.tables[id]; if (t) t.seats.forEach(s => { if (s && s.stack > 0) c++; }); }); return c; }
@@ -2035,10 +2212,13 @@ class Host {
   }
   closeTable(tid) {
     const t = this.tables[tid]; if (!t) return;
-    if (['preflop', 'flop', 'turn', 'river'].includes(t.street)) return toast('本手进行中，打完再关');
+    const mid = ['preflop', 'flop', 'turn', 'river'].includes(t.street);
+    if (mid && !t.paused) return toast('本手进行中，打完再关；着急的话先「暂停」再关桌（这一手作废、筹码退回）');
     t.seats.forEach((s, i) => {
       if (!s || s.bot) return;
-      if (t.kind === 'cash' && s.stack > 0) this.credit(s.uid, s.stack, 'table-out', `关桌返还 ${t.name}`);
+      // 暂停中途关桌：这一手作废，每个人本手投入的筹码也一起退回
+      const back = s.stack + (t.kind === 'cash' && mid ? (s.total || 0) : 0);
+      if (t.kind === 'cash' && back > 0) this.credit(s.uid, back, 'table-out', `关桌返还 ${t.name}${mid ? '（本手作废）' : ''}`);
       if (t.kind === 'sng' && t.status === 'waiting') this.credit(s.uid, t.sng.buyIn, 'sng-refund', `锦标赛取消 ${t.name}`);
       if (t.kind === 'sng' && t.status === 'playing') { const tot = t.seats.reduce((x, o) => x + (o ? o.stack + (o.total || 0) : 0), 0) || 1; this.credit(s.uid, Math.floor((t.sng.pool + (t.sng.bountyBank || 0)) * (s.stack + (s.total || 0)) / tot), 'sng-refund', `锦标赛中止按筹码比例退还 ${t.name}`); }
     });
@@ -2058,7 +2238,7 @@ class Host {
       case 'sit': {
         if (t.kind !== 'cash') return err('这是锦标赛，请报名');
         if (mySeat >= 0) return err('你已在这张桌');
-        const seat = +it.seat; if (!(seat >= 0 && seat < t.maxSeats) || t.seats[seat]) return err('座位已被占');
+        const seat = +it.seat; if (!Number.isInteger(seat) || !(seat >= 0 && seat < t.maxSeats) || t.seats[seat]) return err('座位已被占');
         if (t.hold && t.hold.uid !== uid && t.hold.until > n && t.seats.filter(x => !x).length <= 1) return err('这个空位正为排队的玩家保留，请点「排队等位」');
         const amt = Math.floor(+it.amt || 0);
         if (amt < t.minBuy || amt > t.maxBuy) return err(`带入需在 ${t.minBuy}–${t.maxBuy} 之间`);
@@ -2072,7 +2252,7 @@ class Host {
       case 'move': {
         if (t.kind !== 'cash' || mySeat < 0) return false;
         const to = +it.seat, s0 = t.seats[mySeat];
-        if (!(to >= 0 && to < t.maxSeats) || t.seats[to]) return err('这个座位已经有人了');
+        if (!Number.isInteger(to) || !(to >= 0 && to < t.maxSeats) || t.seats[to]) return err('这个座位已经有人了');
         if (t.street !== 'idle' && (s0.inHand || t.street === 'showdown')) return err('这一手打完再换座');
         if (t.hold && t.hold.uid !== uid && t.hold.until > n && t.seats.filter(x => !x).length <= 1) return err('这个空位正为排队的玩家保留');
         t.seats[to] = s0; t.seats[mySeat] = null;
@@ -2120,12 +2300,19 @@ class Host {
         const s = t.seats[mySeat], h = t.priv.hole[mySeat];
         if (s.folded) return err('弃牌后不能亮牌');
         if (!h || (s.shown && !s.shown.includes('XX'))) return false;
-        const one = it.card >= 0 && it.card < h.length ? +it.card : -1;
+        const one = Number.isInteger(+it.card) && +it.card >= 0 && +it.card < h.length ? +it.card : -1;
         // 只亮一张：其余显示牌背；之后还可以再全亮
         s.shown = one >= 0 ? h.map((c, k) => k === one || (s.shown && s.shown[k] !== 'XX') ? c : 'XX') : h;
         log2(t, `@{${uid}} 亮牌 ${s.shown.map(c => c === 'XX' ? '🂠' : c).join(' ')}`);
         // 亮牌也写进这一手的历史记录（手牌回看、下载都能看到）
         [t.priv.hist, t.history].forEach(L => { const hh = L && L[L.length - 1]; if (hh && hh.hand === t.handNo) { const pp = hh.players.find(x => x.seat === mySeat); if (pp) pp.cards = s.shown.slice(); } }); t.nextHandAt = Math.max(t.nextHandAt, n + 2500); this.changed(t.id); return true;
+      }
+      case 'addon': {
+        if (mySeat < 0 || t.kind !== 'sng') return false;
+        if (!E.canAddon(t, mySeat)) return err('现在不能加购');
+        if (this.bal(uid) < t.sng.buyIn) return err('金币不足，无法加购');
+        this.credit(uid, -t.sng.buyIn, 'sng-in', `${t.name} 加购`);
+        E.addon(t, mySeat); this.changed(t.id); return true;
       }
       case 'rebuy': {
         if (mySeat < 0 || t.kind !== 'sng') return false;
@@ -2180,10 +2367,11 @@ class Host {
     // 副房主只能处理玩家自己提交的金币申请（金额以申请为准），不能随手给人加减金币
     if (co && it.op === 'credit') {
       const who = String(it.uid || ''), rs = it.extra && +it.extra.reqSeq, d = Math.round(+it.delta || 0);
+      if (who === uid && d !== 0) return err('自己的金币申请要房主确认');
       const pr = (App.peers || []).map(p => p.by === who && p.presence && p.presence.req).find(q => q && +q.seq === rs);
       if (!rs || !pr || (d !== 0 && d !== (pr.kind === 'out' ? -1 : 1) * Math.round(+pr.amt || 0))) return err('副房主只能确认或拒绝玩家提交的申请；手动加减请让房主操作');
     }
-    if (co && it.op === 'notify') it = Object.assign({}, it, { msg: '【管理员' + ((this.profiles[uid] && this.profiles[uid].name) ? ' ' + this.profiles[uid].name : '') + '】' + String(it.msg || '').replace(/^【[^】]*】/, '') });
+    if (co && it.op === 'notify') it = Object.assign({}, it, { msg: '【管理员' + (((App.nameOf && App.nameOf(uid)) || (this.profiles[uid] && this.profiles[uid].nick)) ? ' ' + ((App.nameOf && App.nameOf(uid)) || this.profiles[uid].nick) : '') + '】' + String(it.msg || '').replace(/^【[^】]*】/, '') });
     const r = this.admin2(uid, it, err);
     if (r && it.op !== 'notify') this.adminLog(uid, it);
     return r;
@@ -2221,8 +2409,8 @@ class Host {
         this.credit(who, d, ty, String(it.note || '').slice(0, 80), rs ? { reqSeq: rs } : null); return true;
       }
       case 'notify': this.notify(String(it.uid || ''), String(it.msg || '').slice(0, 200)); return true;
-      case 'createTable': if (it.cfg && typeof it.cfg === 'object') { this.createTable(Object.assign({}, it.cfg, { id: undefined })); return true; } return false;
-      case 'createMtt': if (it.cfg && typeof it.cfg === 'object') { this.createMtt(it.cfg); return true; } return false;
+      case 'createTable': if (it.cfg && typeof it.cfg === 'object') { this.createTable(Object.assign(this.cleanCfg(it.cfg), { id: undefined })); return true; } return false;
+      case 'createMtt': if (it.cfg && typeof it.cfg === 'object') { this.createMtt(this.cleanCfg(it.cfg)); return true; } return false;
       case 'closeTable': { const t = T(it.tid); if (!t) return false; if (t.mtt && this.mtts[t.mtt] && this.mtts[t.mtt].status === 'playing') return err('比赛进行中不能单独关桌'); this.closeTable(it.tid); return true; }
       case 'removeSeat': this.removeSeat(it.tid, +it.seat); return true;
       case 'pause': this.togglePause(it.tid); return true;
@@ -2307,6 +2495,7 @@ class Host {
     v.chat = ['on', 'emoji', 'off'].includes(c.chat) ? c.chat : 'on';
     v.logo = CLUB_ICONS.includes(c.logo) ? c.logo : ''; v.color = CLUB_COLORS[c.color] ? c.color : 'gold';
     if (o.admins) v.admins = o.admins; if (o.muted) v.muted = o.muted;
+    v.autoMax = Math.max(0, Math.min(100000, Math.round(+c.autoMax || 0)));
     v.noticeAt = v.notice && v.notice !== o.notice ? now() : (o.noticeAt || 0);
     this.club = v;
     if (this.mode === 'online') this.writeDoc('club/info', v); else App.club = v;
@@ -2350,8 +2539,10 @@ class Host {
   /* ---- 主循环 ---- */
   loop() {
     const n = now();
-    this.mttTick(n);
+    try { this.mttTick(n); } catch (e) { this.fault(null, e); }
     for (const tid in this.tables) {
+      // 每张桌单独兜住异常：一张桌出错不能拖垮其它桌，也不能让本轮的保存（flush）跳过
+      try {
       const t = this.tables[tid];
       let ch = false;
       if (t.paused) continue;
@@ -2370,6 +2561,21 @@ class Host {
             // 快速弃牌时电脑在同一周期里连续行动（最多 40 步）
             for (let k = 0; k < (ff ? 40 : 1); k++) {
               const q = t.toAct >= 0 && t.seats[t.toAct]; if (!q || !q.bot) break;
+              if (!ff && this.mode === 'practice' && typeof BotWorker !== 'undefined' && BotWorker.ok) {
+                // 后台算：同一个决策点只发一次请求，回来时牌局没变才执行
+                const key = t.handNo + ':' + t.street + ':' + t.toAct + ':' + t.currentBet;
+                if (t._botReq === key) break;
+                t._botReq = key;
+                BotWorker.ask(t, d => {
+                  if (t._botReq !== key) return; t._botReq = null;
+                  if (t.handNo + ':' + t.street + ':' + t.toAct + ':' + t.currentBet !== key) return;
+                  const cur = t.seats[t.toAct]; if (!cur || !cur.bot) return; delete cur._think;
+                  d = d || E.botDecide(t, t.toAct);
+                  const r = E.act(t, t.toAct, d.a, d.amt, now()); if (!r.ok) { const L = E.legal(t, t.toAct); E.act(t, t.toAct, L.canCheck ? 'check' : 'call', 0, now()); }
+                  this.changed(t.id); scheduleRender();
+                });
+                break;
+              }
               delete q._think; const d = E.botDecide(t, t.toAct); const r = E.act(t, t.toAct, d.a, d.amt, n); if (!r.ok) { const L = E.legal(t, t.toAct); E.act(t, t.toAct, L.canCheck ? 'check' : 'call', 0, n); }
               if (ff && t.runoutAt) t.runoutAt = n;
             }
@@ -2441,8 +2647,18 @@ class Host {
         if (ready >= 2) { t.nextHandAt = n + 1500; ch = true; }
       }
       if (ch) this.changed(tid);
+      if (t._err) t._err = 0;
+      } catch (e) { this.fault(tid, e); }
     }
     this.flush();
+  }
+  // 牌桌出错：上报；同一张桌连续出错 3 次就自动暂停，房主可以「关桌」把这一手作废、筹码退回
+  fault(tid, e) {
+    console.error('host loop', tid, e);
+    try { if (App.onError) App.onError(tid ? 'table ' + tid : 'mtt', e); } catch (x) { }
+    const t = tid && this.tables[tid]; if (!t) return;
+    t._err = (t._err || 0) + 1;
+    if (t._err >= 3 && !t.paused) { t.paused = true; log2(t, '⚠ 牌桌出错，已自动暂停。房主可以「关桌」：这一手作废，筹码全部退回钱包。'); this.changed(tid); }
   }
   onEvents(t, evs) {
     if (t.mtt) { const b = evs.filter(e => e.type === 'bust'); evs = evs.filter(e => e.type !== 'bust' && e.type !== 'sngEnd'); evs.forEach(e => this.onEvents({ ...t, mtt: null, name: t.name }, [e])); if (b.length) this.mttBusts(t, b); return; }
@@ -2504,23 +2720,38 @@ class Host {
     if (t.handNo !== hand) return;
     t.priv.handKey = await crypto.subtle.exportKey('jwk', kp.privateKey);
     t.hostPub = { kty: pub.kty, crv: pub.crv, x: pub.x, y: pub.y };
-    t.enc = {}; t.encFor = {};
+    t.enc = {}; t.encm = {};
     await Promise.all(t.seats.map((s, i) => s && s.inHand && !s.bot ? this.sealSeat(t, i) : null));
     this.changed(t.id);
   }
+  // 记下某人设备的公钥：同一个人手机和电脑同时在线时，两台设备各用各的钥匙，都能看到自己的底牌
+  notePk(uid, pk) {
+    if (!pk || typeof pk.x !== 'string' || typeof pk.y !== 'string') return false;
+    const k = pk.x.slice(0, 16), m = this.pkm[uid] = this.pkm[uid] || {}, isNew = !m[k];
+    m[k] = { pk, at: now() }; this.pks[uid] = pk;
+    const ks = Object.keys(m); if (ks.length > 3) { ks.sort((a, b) => m[a].at - m[b].at); delete m[ks[0]]; }
+    return isNew;
+  }
   async sealSeat(t, i) {
-    const s = t.seats[i], pk = this.pks[s.uid], hk = this.handKeys[t.id];
-    if (!pk || !hk || hk.hand !== t.handNo || !t.priv.hole[i]) return;
+    const s = t.seats[i], m = this.pkm[s.uid], hk = this.handKeys[t.id];
+    if (!m || !hk || hk.hand !== t.handNo || !t.priv.hole[i]) return;
     const hand = t.handNo;
-    const box = await sealFor(hk.priv, pk, { hand, tid: t.id, cards: t.priv.hole[i] });
-    if (t.handNo !== hand) return;
-    t.enc = t.enc || {}; t.encFor = t.encFor || {};
-    t.enc[s.uid] = box; t.encFor[s.uid] = JSON.stringify(pk).length + pk.x;
-    this.changed(t.id);
+    t.encm = t.encm || {}; const have = t.encm[s.uid] = t.encm[s.uid] || {};
+    let any = false;
+    for (const k in m) {
+      if (have[k]) continue;
+      const box = await sealFor(hk.priv, m[k].pk, { hand, tid: t.id, cards: t.priv.hole[i] }).catch(() => null);
+      if (t.handNo !== hand) return;
+      if (!box) continue;
+      have[k] = box; t.enc = t.enc || {}; t.enc[s.uid] = box; any = true;
+    }
+    if (any) this.changed(t.id);
   }
   async restoreKeys() {
     for (const tid in this.tables) {
       const t = this.tables[tid];
+      // 重启恢复：已处理的打牌动作序号存在各自牌桌里，取最大值，防止重连时把旧动作再执行一遍
+      if (t.priv && t.priv.lseq) for (const u in t.priv.lseq) if (t.priv.lseq[u] > (this.lastSeq[u] || 0)) this.lastSeq[u] = t.priv.lseq[u];
       if (t.priv && t.priv.handKey) {
         try { this.handKeys[tid] = { hand: t.handNo, priv: await crypto.subtle.importKey('jwk', t.priv.handKey, EC, true, ['deriveKey']) }; } catch (e) { }
       }
@@ -2530,8 +2761,7 @@ class Host {
     peers.forEach(p => {
       if (!p.by || p.kind !== 'viewer') return;
       const pr = p.presence || {};
-      if (pr.pk && pr.pk.x && (!this.pks[p.by] || this.pks[p.by].x !== pr.pk.x)) {
-        this.pks[p.by] = pr.pk;
+      if (pr.pk && pr.pk.x && this.notePk(p.by, pr.pk)) {
         for (const tid in this.tables) {
           const t = this.tables[tid];
           t.seats.forEach((s, i) => { if (s && s.uid === p.by && s.inHand && ['preflop', 'flop', 'turn', 'river'].includes(t.street)) this.sealSeat(t, i); });
@@ -2544,8 +2774,21 @@ class Host {
           for (const tid in this.tables) if (this.tables[tid].seats.some(x => x && x.uid === p.by)) this.changed(tid);
         }
       }
+      // 自动批准：房主设了上限时，不超过上限的金币申请由系统直接批准（归还申请仍要人工确认）
+      const am = this.mode === 'online' && this.club && +this.club.autoMax || 0;
+      if (am > 0 && pr.req && pr.req.kind !== 'out') {
+        const w = this.wallets[p.by], seq = +pr.req.seq || 0, amt = Math.round(+pr.req.amt || 0);
+        if (seq > ((w && w.reqSeq) || 0) && amt > 0 && amt <= am) {
+          this.credit(p.by, amt, 'buyin', '自动批准', { reqSeq: seq });
+          this.notify(p.by, `已自动批准你的金币申请 ${fmt(amt)}`);
+          App.db.collection('adminlog').add({ by: 'auto', op: 'credit', txt: `自动批准 @{${p.by}} 的申请 ${amt}`, at: now() }).catch(() => { });
+        }
+      }
       if (!(p.isMe && p.sameTab) && pr.intent && pr.intent.seq > (this.lastSeq[p.by] || 0)) {
-        this.lastSeq[p.by] = pr.intent.seq; this.metaDirty = true;
+        this.lastSeq[p.by] = pr.intent.seq;
+        // 打牌动作的序号跟着那张牌桌的状态一起保存（反正这一轮要写牌桌），省掉每个动作一次单独写入；其它操作才单独记
+        const at = pr.intent.t === 'act' && this.mode === 'online' && this.tables[pr.intent.table];
+        if (at) { at.priv.lseq = at.priv.lseq || {}; at.priv.lseq[p.by] = pr.intent.seq; } else this.metaDirty = true;
         try { this.handleIntent(p.by, pr.intent); } catch (e) { console.warn(e); }
       }
     });
@@ -2613,7 +2856,7 @@ let decrypting = {};
 function syncHoles(tables) {
   if (!App.key) return;
   for (const tid in tables) {
-    const t = tables[tid], box = t.enc && t.enc[App.me];
+    const t = tables[tid], mine = t.encm && t.encm[App.me], box = (mine && App.pubJwk && mine[App.pubJwk.x.slice(0, 16)]) || (t.enc && t.enc[App.me]);
     if (!box || !t.hostPub) continue;
     const sig = t.handNo + ':' + box.ct.slice(0, 16);
     if (decrypting[tid] === sig) continue;
@@ -2626,7 +2869,8 @@ function syncHoles(tables) {
 /* ---------------- 发送意图 ---------------- */
 let lastSeqSent = 0;
 function send(it) {
-  it.seq = lastSeqSent = Math.max(Date.now(), lastSeqSent + 1);
+  // 序号按服务器时间算：同一个人换设备（两台设备时钟差几分钟）时，新设备的操作也不会被当成旧的丢掉
+  it.seq = lastSeqSent = Math.max(Date.now() + ((window.VX_CLOUD && VX_CLOUD.offset) || 0), lastSeqSent + 1);
   if (App.ctx === 'practice') return App.practice.handleIntent('me', it), scheduleRender();
   if (App.host) return App.host.handleIntent(App.me, it), scheduleRender();
   if (!App.room) return toast('联机通道未连接，暂时无法操作');
@@ -2694,9 +2938,9 @@ function renderTop() {
   const bal = myBalance();
   const lab = App.ctx === 'practice' ? '练习币' : '金币';
   const pend = App.pendingReq && App.ctx === 'online' && !(App.wallets[App.me] && App.wallets[App.me].reqSeq >= App.pendingReq.seq);
-  const hs = App.ctx !== 'online' || !App.online ? '' : App.netDown ? `<span class="pill bad" title="与服务器的连接中断，正在自动重连；恢复后会自动同步" onclick="WTP.reconnect()">● 断线重连中…</span>` : App.host ? '<span class="pill ok" title="本页正在主持牌局，请保持打开">● 主持中</span>' : window.VX_SERVER_HOST ? (hostAlive() ? '<span class="pill ok" title="牌局由服务器主持，关掉页面也会继续">● 服务器在线</span>' : '<span class="pill live">● 服务器连接中</span>') : App.gotBeat ? (hostAlive() ? '<span class="pill ok">● 房主在线</span>' : '<span class="pill live">● 房主离线</span>') : '';
+  const hs = App.ctx !== 'online' || !App.online ? '' : App.netDown ? `<span class="pill bad" title="与服务器的连接中断，正在自动重连；恢复后会自动同步" onclick="WTP.reconnect()">● 断线重连中…</span>` : App.host ? '<span class="pill ok" title="本页正在主持牌局，请保持打开">● 主持中</span>' : window.VX_SERVER_HOST ? (hostAlive() ? '<span class="pill ok" title="牌局由服务器主持，关掉页面也会继续">● 在线</span>' : '<span class="pill live">● 连接中…</span>') : App.gotBeat ? (hostAlive() ? '<span class="pill ok">● 房主在线</span>' : '<span class="pill live">● 房主离线</span>') : '';
   setHTML($('#walletBox'), 'wb', `${hs}<div class="wallet"><span class="coin"></span><b>${fmt(bal)}</b><span class="pill">${lab}</span>
-    ${App.ctx === 'online' ? `<button class="btn gold sm" onclick="WTP.buyModal()">${pend ? '申请审核中…' : '金币'}</button>` : ''}<button class="btn sm meb" title="个人资料" onclick="WTP.profile()">${esc((Prefs.prof && Prefs.prof.emo) || '👤')}</button><button class="btn sm" title="设置" onclick="WTP.settings()">⚙</button>${PUB || window.VX_CLOUD_MODE ? `<button class="btn sm" title="中文 / English" onclick="WTP.toggleLang()">${Prefs.lang === 'en' ? '中' : 'EN'}</button>` : ''}</div>`);
+    ${App.ctx === 'online' ? `<button class="btn gold sm" onclick="WTP.buyModal()">${pend ? '申请审核中…' : '申请金币'}</button>` : ''}<button class="btn sm meb" title="个人资料" onclick="WTP.profile()">${esc((Prefs.prof && Prefs.prof.emo) || '👤')}</button><button class="btn sm" title="设置" onclick="WTP.settings()">⚙</button>${PUB || window.VX_CLOUD_MODE ? `<button class="btn sm" title="中文 / English" onclick="WTP.toggleLang()">${Prefs.lang === 'en' ? '中' : 'EN'}</button>` : ''}</div>`);
 }
 
 function clubNoticeSeen() { try { return +localStorage.getItem('wtp_notice_' + (window.VX_CLOUD ? VX_CLOUD.club : 'art')) || 0; } catch (e) { return 0; } }
@@ -2712,6 +2956,14 @@ function lobbyHTML() {
     <div class="lhstats">${App.ctx === 'online' ? `<div><b>${online}</b><span>在线</span></div>` : ''}<div><b>${T.length}</b><span>开放牌桌</span></div><div><b>${T.reduce((x, t) => x + seatedCount(t), 0)}</b><span>在座玩家</span></div>
     ${App.ctx === 'online' ? `<button class="btn" onclick="WTP.enterPractice()">练习场（对 AI，不计金币）</button>` : ''}
     <button class="btn" onclick="WTP.demo('cash')">▶ 看 AI 对局</button><button class="btn" onclick="WTP.demo('mtt')">▶ 看 AI 多桌赛</button></div></div>`;
+  // 新俱乐部的房主：三步开局引导（还没开任何桌时显示）
+  if (App.ctx === 'online' && App.isOwner && window.VX_CLOUD && !T.length && !MT.length) {
+    let saved = false; try { saved = !!localStorage.getItem('vx_link_saved_' + VX_CLOUD.club); } catch (e) { }
+    h += `<div class="panel" style="margin:6px 0 16px;border-color:#5a4a20"><h3 style="margin-top:0">🎉 俱乐部建好了，三步开局</h3>
+      <div style="display:flex;gap:10px;align-items:center"><span style="flex:1">① 保存你的房主登录链接（换手机也能找回房主身份）</span>${saved ? '<span class="pill ok">✓ 已保存</span>' : '<button class="btn sm gold" onclick="WTP.saveOwnerLink()">复制保存</button>'}</div>
+      <div style="display:flex;gap:10px;align-items:center;margin-top:10px"><span style="flex:1">② 一键开好今晚的牌桌</span><button class="btn sm gold" onclick="WTP.preset(0)">今晚标准局</button></div>
+      <div style="display:flex;gap:10px;align-items:center;margin-top:10px"><span style="flex:1">③ 复制邀请链接发到群里，朋友点开取个昵称就能来</span><button class="btn sm" onclick="WTP.go('admin')">去复制</button></div></div>`;
+  }
   if (App.ctx === 'online' && App.online && !App.host && App.gotBeat && !hostAlive()) h += window.VX_SERVER_HOST ? `<div class="banner info">暂时连不上牌局服务器，正在自动重试…</div>` : `<div class="banner info">房主当前不在线，牌桌暂停中。房主打开本页后牌局会自动继续。</div>`;
   h += `<div class="ltabs"><span class="on">现金桌</span></div>`;
   h += cash.length ? `<div class="ltable"><div class="lrow lh"><span>牌桌</span><span>盲注</span><span>玩家</span><span>带入</span><span>状态</span><span></span></div>${cash.map(cashCard).join('')}</div>` : `<div class="empty">还没有现金桌${App.isOwner && App.ctx === 'online' ? '，去「房主后台」开一张' : ''}</div>`;
@@ -2728,7 +2980,7 @@ function mttRow(m) {
   const me = myUid(), mine = m.entrants.includes(me);
   const st = m.status === 'waiting' ? `<span class="lst ok">${m.startAt ? '开赛 ' + new Date(m.startAt).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : '报名中'}</span>` : m.status === 'playing' ? `<span class="lst live">● 第 ${m.level + 1} 级 · ${m.tables.length} 桌</span>` : `<span class="lst">已结束</span>`;
   const late = m.status === 'playing' && !mine && mttLateOpen(m, getTables()) ? ' <span class="lst ok">可延迟报名</span>' : '';
-  return `<div class="lrow" onclick="WTP.openMtt('${m.id}')"><span class="lname"><b class="gtag" style="background:#b45309">MTT</b>${esc(m.name)}${mine ? ' <em>已报名</em>' : ''}</span><span class="num">${fmt(m.buyIn)}</span><span>${m.status === 'playing' ? mttLeft(m) + '/' + m.total : m.entrants.length + ' 人'}</span><span class="note">${fmt(m.startStack)} 筹码 · ${m.levelMins} 分钟/级 · 每桌 ${m.seatsPer} 人${m.lateLevels ? ' · 可延迟报名' : ''}${m.repeat ? (m.repeat === 'day' ? ' · 每天' : ' · 每周') : ''}</span>${st}${late}<span><button class="btn sm ${mine ? 'gold' : ''}">查看</button></span></div>`;
+  return `<div class="lrow" onclick="WTP.openMtt('${m.id}')"><span class="lname"><b class="gtag" style="background:#b45309">MTT</b>${esc(m.name)}${mine ? ' <em>已报名</em>' : ''}</span><span class="num">${fmt(m.buyIn)}</span><span>${m.status === 'playing' ? mttLeft(m) + '/' + m.total : m.entrants.length + ' 人'}</span><span class="note">${fmt(m.startStack)} 筹码 · ${m.levelMins} 分钟/级 · 每桌 ${m.seatsPer} 人${m.lateLevels ? ' · 可延迟报名' : ''}${m.repeat ? (m.repeat === 'day' ? ' · 每天' : ' · 每周') : ''}${m.payout === 'wta' ? ' · 赢家通吃' : m.payout === 'top2' ? ' · 前两名分奖' : m.payout === 'top3' ? ' · 前三名分奖' : ''}</span>${st}${late}<span><button class="btn sm ${mine ? 'gold' : ''}">查看</button></span></div>`;
 }
 function mttHTML() {
   const m = getEvents()[App.curMtt];
@@ -2736,7 +2988,7 @@ function mttHTML() {
   const me = myUid(), mine = m.entrants.includes(me), T = getTables(), host = App.ctx === 'practice' || admH();
   const tabs = (m.tables || []).map(id => T[id]).filter(Boolean);
   const pool = m.status === 'waiting' ? m.buyIn * m.entrants.length : m.pool;
-  const pays = m.payouts || E.mttPcts(Math.max(2, m.entrants.length)).map(p => Math.floor(pool * p / 100));
+  const pays = m.payouts || E.mttPcts(Math.max(2, m.entrants.length), m.payout).map(p => Math.floor(pool * p / 100));
   let h = `<div class="tv-head"><button class="btn sm" onclick="WTP.go('lobby')">← 大厅</button><span class="nm">${esc(m.name)}</span><span class="pill">${gname(m.game)} · 多桌锦标赛</span>
     ${m.status === 'playing' ? `<span class="pill live">第 ${m.level + 1} 级 ${E.SNG_LEVELS[m.level][0]}/${E.SNG_LEVELS[m.level][1]}</span><span class="pill" data-until="${m.levelEndsAt}">涨盲</span><span class="pill">剩 ${mttLeft(m)}/${m.total} 人</span>` : ''}
     ${m.status === 'waiting' && m.startAt ? `<span class="pill ok" data-until="${m.startAt}" data-pre="开赛倒计时 "></span>` : ''}<span style="flex:1"></span>
@@ -2764,7 +3016,7 @@ function cashCard(t) {
 function sngCard(t) {
   const g = t.sng, me = myUid(), mine = t.seats.some(s => s && s.uid === me);
   const st = t.status === 'waiting' ? `<span class="lst ok">${g.startAt ? '开赛 ' + new Date(g.startAt).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : '报名中 · 满员开赛'}</span>` : t.status === 'playing' && E.canLateReg(t) ? `<span class="lst ok">● 延迟报名中 · 第 ${g.level + 1} 级</span>` : t.status === 'playing' ? `<span class="lst live">● 第 ${g.level + 1} 级 · 奖池 ${fmt(g.pool)}</span>` : `<span class="lst">已结束</span>`;
-  return `<div class="lrow" onclick="WTP.open('${t.id}')"><span class="lname">${gtag(t.game, t)}${esc(t.name)}${mine ? ' <em>已报名</em>' : ''}</span><span class="num">${fmt(g.buyIn)}</span><span>${seatDots(t)} ${seatedCount(t)}/${t.maxSeats}</span><span class="note">${fmt(g.startStack)} 筹码 · ${g.levelMins} 分钟/级${g.rebuyLevels ? ' · 可重购' : ''}${g.bounty ? ' · 赏金 ' + fmt(g.bounty) : ''}${g.lateLevels ? ' · 可延迟报名' : ''}</span>${st}<span><button class="btn sm ${mine ? 'gold' : ''}">${mine ? '回到比赛' : '查看'}</button></span></div>`;
+  return `<div class="lrow" onclick="WTP.open('${t.id}')"><span class="lname">${gtag(t.game, t)}${esc(t.name)}${mine ? ' <em>已报名</em>' : ''}</span><span class="num">${fmt(g.buyIn)}</span><span>${seatDots(t)} ${seatedCount(t)}/${t.maxSeats}</span><span class="note">${fmt(g.startStack)} 筹码 · ${g.levelMins} 分钟/级${g.rebuyLevels ? ' · 可重购' : ''}${g.addon ? ' · 可加购' : ''}${g.payout === 'wta' ? ' · 赢家通吃' : g.payout === 'top2' ? ' · 前两名分奖' : g.payout === 'top3' ? ' · 前三名分奖' : ''}${g.bounty ? ' · 赏金 ' + fmt(g.bounty) : ''}${g.lateLevels ? ' · 可延迟报名' : ''}</span>${st}<span><button class="btn sm ${mine ? 'gold' : ''}">${mine ? '回到比赛' : '查看'}</button></span></div>`;
 }
 
 function walletsMap() { return App.ctx === 'practice' ? {} : (App.host ? App.host.wallets : App.wallets); }
@@ -2789,7 +3041,7 @@ function ledgerHTML() {
   let h = `<h2 class="sec">账本结算</h2><div class="panel"><table class="list"><thead><tr><th>玩家</th><th class="num">累计发放</th><th class="num">累计归还</th><th class="num">钱包余额</th><th class="num">在桌/在赛</th><th class="num">净盈亏</th></tr></thead><tbody>`;
   h += rows.map(r => `<tr><td>${esc(dualName(r.u))}${r.u === App.me ? ' <span class="pill gold">我</span>' : ''}</td><td class="num">${fmt(r.w.totalIn)}</td><td class="num">${fmt(r.w.totalOut)}</td><td class="num">${fmt(r.w.balance)}</td><td class="num">${fmt(r.on)}</td><td class="num ${r.net > 0 ? 'pos' : r.net < 0 ? 'neg' : ''}">${r.net > 0 ? '+' : ''}${fmt(r.net)}</td></tr>`).join('') || `<tr><td colspan="6" class="note">还没有记录</td></tr>`;
   h += `</tbody><tfoot><tr><th>合计</th><th class="num">${fmt(sum(r => r.w.totalIn))}</th><th class="num">${fmt(sum(r => r.w.totalOut))}</th><th class="num">${fmt(sum(r => r.w.balance))}</th><th class="num">${fmt(sum(r => r.on))}</th><th class="num">${fmt(sum(r => r.net))}</th></tr></tfoot></table>
-    <button class="btn sm gold" style="margin-top:10px" onclick="WTP.copyLedger()">📋 复制结算单（发群对账）</button>
+    <button class="btn sm gold" style="margin-top:10px" onclick="WTP.copyLedger()">📋 复制结算单（发群对账）</button><button class="btn sm" style="margin-top:10px;margin-left:6px" onclick="WTP.ledgerCSV()" title="全部流水，Excel 可直接打开">📥 导出账本 CSV</button>
     <p class="note">净盈亏 = 钱包余额 + 在桌筹码 + 已归还 − 累计发放。所有人的净盈亏加起来应为 0（锦标赛进行中按报名费暂计）。金币只是游戏积分，由房主确认发放，不能购买，也不能兑换成钱。</p></div>`;
   h += `<h2 class="sec">流水（最近 100 条）</h2><div class="panel"><table class="list"><thead><tr><th>时间</th><th>玩家</th><th>类型</th><th class="num">变动</th><th class="num">余额</th><th>备注</th></tr></thead><tbody>`;
   h += App.ledger.map(l => `<tr><td>${new Date(l.at).toLocaleString('zh-CN', { hour12: false })}</td><td>${esc(dualName(l.uid))}</td><td>${LEDGER_TYPES[l.type] || esc(l.type)}</td><td class="num ${l.amount > 0 ? 'pos' : 'neg'}">${l.amount > 0 ? '+' : ''}${fmt(l.amount)}</td><td class="num">${fmt(l.bal)}</td><td class="note">${esc(l.note)}</td></tr>`).join('') || `<tr><td colspan="6" class="note">暂无</td></tr>`;
@@ -2828,6 +3080,7 @@ function guideEN() {
     ${st(4, 'Ledger', 'The Ledger page shows everyone’s net result in points; all results add up to zero.')}`;
   return `<h2 class="sec">${PUB ? 'How to play' : 'Guide'}</h2><div class="two"><div class="panel"><h3 style="margin-top:0">Getting started</h3>${how}</div>
     <div class="panel"><h3 style="margin-top:0">Rules (No-Limit Hold'em)</h3>${rules}
+    <h3>Game formats</h3><div class="note" style="line-height:1.9">• <b>Cash games</b>: sit anytime and leave anytime; your chips go back to your wallet.<br>• <b>Sit &amp; Go</b>: starts when full or at a set time. Options: <b>rebuys</b> (buy again within 20 s of busting), <b>add-on</b> (one extra stack in the last rebuy level), <b>late registration</b>, <b>bounties</b> 🎯 (knock someone out, take their bounty) and the <b>payout</b> split (auto, winner-takes-all, top 2 or top 3).<br>• <b>MTT</b>: several tables with shared blind levels; seats auto-balance and tables merge into a final table.<br>• <b>Omaha</b> (PLO / PLO5 / Hi-Lo) and a <b>mixed game</b> that alternates Hold'em and Omaha.<br>• Cash-table extras: <b>run it twice</b>, <b>bomb pots</b> and the <b>7-2 bonus</b>.</div>
     <h3>Tips</h3><div class="note" style="line-height:1.9">⚙ Settings: 4-colour deck, chips in big blinds, sound, AI difficulty, notifications.<br>Keyboard: F fold, C check/call, R raise, A all-in.<br>Practice mode lets you learn against AI without using coins.</div></div></div>`;
 }
 function guideHTML() {
@@ -2841,7 +3094,7 @@ function guideHTML() {
     </div><div class="panel"><h3 style="margin-top:0">基本玩法（无限注德州扑克）</h3>${guideRules()}</div></div>`;
   return `<h2 class="sec">新手指南</h2><div class="two"><div class="panel"><h3 style="margin-top:0">怎么加入</h3>
     ${st(1, '打开房主发的链接', '需要登录 claude.ai。登录后右上角会显示你的金币。')}
-    ${st(2, '申请金币', '点右上角「金币」提交申请，房主确认后金币到账。金币只是游戏积分，不能购买、不能兑换，也没有任何赠送活动。')}
+    ${st(2, '申请金币', '点右上角「申请金币」提交申请，房主确认后金币到账。金币只是游戏积分，不能购买、不能兑换，也没有任何赠送活动。')}
     ${st(3, '入座或报名', '现金桌：点空位「坐下」，选择带入筹码，离桌时筹码回到钱包。锦标赛：点「报名」，满员自动开赛。')}
     ${st(4, '结算', '「账本结算」页能看到每个人的净盈亏。金币不能兑换成钱，账本只用来记录朋友之间的输赢积分。')}
     </div><div class="panel"><h3 style="margin-top:0">基本玩法（无限注德州扑克）</h3>
@@ -2850,7 +3103,7 @@ ${guideRules()}
     • <b>NLH 无限注德州</b>：2 张底牌，任何时候可以全下。<br>
     • <b>PLO 底池限注奥马哈</b>：4 张底牌，比牌必须<b>正好用 2 张手牌 + 3 张公共牌</b>；每次最多加注到底池大小。<br>
     • <b>现金桌</b>：随到随坐，筹码=金币，离桌带走。新入座第一手补一个大盲；暂离超过 10 分钟自动离座。<br>
-    • <b>SNG 单桌赛</b>：坐满或到点开赛；可设<b>重购</b>（输光后 20 秒内再买一份）、<b>延迟报名</b>（开赛后前几级仍可入场）。<br>
+    • <b>SNG 单桌赛</b>：坐满或到点开赛；可设<b>重购</b>（输光后 20 秒内再买一份）、<b>加购</b>（重购期最后一级每人可加买一份筹码）、<b>延迟报名</b>（开赛后前几级仍可入场）。<br>
     • <b>赏金赛 KO</b>：部分报名费变成每个人头上的赏金 🎯，淘汰谁就立刻拿到谁的赏金。<br>
     • <b>MTT 多桌赛</b>：多桌同时开打，全场统一涨盲，自动平衡座位、并桌，最后合成决赛桌；被移桌时页面自动跟随。<br>
     • 摊牌时只亮赢家与全下者的牌，输家自动盖牌。</div>
@@ -2946,7 +3199,7 @@ function hallHTML() {
 /* ---------- 房主后台 ---------- */
 function pendingReqs() {
   if (!admH()) return [];
-  return App.peers.filter(p => p.by && p.presence && p.presence.req && p.presence.req.seq > ((admH().wallets[p.by] || {}).reqSeq || 0))
+  return App.peers.filter(p => p.by && p.presence && p.presence.req && p.presence.req.seq > ((admH().wallets[p.by] || {}).reqSeq || 0) && Math.round(+p.presence.req.amt) > 0 && +p.presence.req.amt <= 1e7)
     .map(p => ({ uid: p.by, req: p.presence.req }));
 }
 function adminHTML() {
@@ -2968,12 +3221,14 @@ function adminHTML() {
       <div class="frow" style="gap:4px;margin-top:4px">${Object.keys(CLUB_COLORS).map(k => `<button class="btn sm ${(c.color || 'gold') === k ? 'gold' : ''}" onclick="WTP.pickLogo(this,'color','${k}')"><span class="cbadge" style="background:radial-gradient(circle at 35% 30%,${CLUB_COLORS[k][0]},${CLUB_COLORS[k][1]})"></span></button>`).join('')}</div></div>
     <label class="f">公告<input id="ciA" maxlength="200" value="${esc(c.notice || '')}" placeholder="例如：本周三 20:00 主赛事，记得报名"></label>
     <label class="f">规则<textarea id="ciR" rows="4" maxlength="1000" style="width:100%;box-sizing:border-box" placeholder="例如：1. 不要在群里说牌  2. 每周三 20:00 主赛事  3. 友善聊天">${esc(c.rules || '')}</textarea></label>
+    <label class="f" title="玩家申请的金币不超过这个数时，系统直接批准，不用等你在线；0 = 关闭，全部人工确认。归还申请始终人工确认。">自动批准金币申请（单次不超过，0 = 关闭）<input id="ciAuto" type="number" min="0" step="100" value="${+c.autoMax || 0}" style="width:120px"></label>
     <label class="f">聊天<select id="ciC">${[['on', '允许聊天'], ['emoji', '只允许表情'], ['off', '关闭聊天']].map(([k, l]) => `<option value="${k}" ${(c.chat || 'on') === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
     <button class="btn gold sm" onclick="WTP.saveClub()">保存俱乐部信息</button></div>`;
     const ads = c.admins || [], ppl = Object.keys(admH().wallets || {}).filter(u => u !== App.me);
     h += `<div class="panel" style="margin-bottom:14px"><h3 style="margin-top:0">副房主（最多 5 位）</h3><div class="note">副房主可以处理金币申请、开桌、开赛、暂停、请人离座和禁言；俱乐部设置和副房主名单只有你能改。所有管理操作都会记在下面的「管理记录」里。</div>
       <div class="frow" style="flex-wrap:wrap;gap:8px">${ppl.map(u => `<label style="display:flex;gap:4px;align-items:center"><input type="checkbox" class="adChk" value="${esc(u)}" ${ads.includes(u) ? 'checked' : ''}>${esc(nameOf(u))}</label>`).join('') || '<span class="note">还没有其他玩家</span>'}</div>
-      <button class="btn gold sm" style="margin-top:6px" onclick="WTP.saveAdmins()">保存副房主</button></div>`; }
+      <button class="btn gold sm" style="margin-top:6px" onclick="WTP.saveAdmins()">保存副房主</button></div>`;
+    if (window.VX_CLOUD && VX_CLOUD.members) h += `<div class="panel" style="margin-bottom:14px"><h3 style="margin-top:0">成员</h3><div class="note">把人移出俱乐部后，他的登录链接立即失效；他的钱包和账本记录会保留，方便对账。邀请链接如果泄露，记得同时「重置链接」。</div><button class="btn sm" onclick="WTP.members()">👥 管理成员</button></div>`; }
   { const ppl = Object.keys(admH().wallets || {}).filter(u => u !== App.me), mu = ((admH().club || App.club || {}).muted) || {};
     h += `<div class="panel" style="margin-bottom:14px"><h3 style="margin-top:0">禁言</h3><div class="frow" style="flex-wrap:wrap"><label class="f">玩家<select id="muU">${ppl.map(u => `<option value="${esc(u)}">${esc(nameOf(u))}${mu[u] > now() ? '（禁言中）' : ''}</option>`).join('')}</select></label>
       <label class="f">时长<select id="muM"><option value="10">10 分钟</option><option value="60">1 小时</option><option value="720">今晚（12 小时）</option><option value="0">解除禁言</option></select></label><button class="btn sm gold" onclick="WTP.muteSel()">确定</button></div>
@@ -2988,7 +3243,7 @@ function adminHTML() {
   h += `<div class="panel"><h3 style="margin-top:0">开桌</h3>
     <div class="frow"><label class="f">类型<select id="ntK" onchange="WTP.ntKind()"><option value="cash">现金桌</option><option value="sng">锦标赛 SNG</option><option value="mtt">多桌锦标赛 MTT</option></select></label>
     <label class="f">玩法<select id="ntG"><option value="nlh">无限注德州 NLH</option><option value="plo">底池限注奥马哈 PLO</option><option value="plo5">五张奥马哈 PLO5</option><option value="plo8">奥马哈高低 PLO8</option><option value="mix">混合局 德州⇄奥马哈 每圈轮换</option></select></label>
-    <label class="f">名称<input id="ntN" value="周三夜 1/2" style="width:140px"></label>
+    <label class="f">名称<input id="ntN" value="${Prefs.lang === 'en' && (window.VX_PUBLIC || window.VX_CLOUD_MODE) ? 'Wed night 1/2' : '周三夜 1/2'}" style="width:140px"></label>
     <label class="f">人数<select id="ntS"><option>2</option><option selected>6</option><option>9</option></select></label></div>
     <div class="frow" id="ntCash" style="margin-top:8px"><label class="f">小盲<input id="ntSB" type="number" value="1" style="width:70px"></label><label class="f">大盲<input id="ntBB" type="number" value="2" style="width:70px"></label>
       <label class="f">最小带入<input id="ntMin" type="number" value="80" style="width:90px"></label><label class="f">最大带入<input id="ntMax" type="number" value="400" style="width:90px"></label>
@@ -2998,8 +3253,10 @@ function adminHTML() {
       <label class="f">开赛<select id="ntST" onchange="document.getElementById('ntAt').style.display=this.value==='at'?'':'none'"><option value="full">坐满即开</option><option value="at">定时开赛</option></select></label>
       <label class="f" id="ntAt" style="display:none">开赛时间<input id="ntAtV" type="datetime-local"> <select id="ntRep" style="display:none" title="多桌赛开赛后自动排好下一场"><option value="">不重复</option><option value="day">每天同一时间</option><option value="week">每周同一时间</option></select></label>
       <label class="f">延迟报名<select id="ntLR"><option value="0">不允许</option><option value="2">前 2 级</option><option value="4">前 4 级</option></select></label>
-      <label class="f">赏金<select id="ntBT"><option value="0">无</option><option value="25">25% 报名费做赏金</option><option value="50">50% 报名费做赏金</option></select></label>
-      <label class="f">重购<select id="ntRB"><option value="0">不可重购</option><option value="3">前 3 级可重购</option><option value="6">前 6 级可重购</option></select></label></div>
+      <label class="f">奖金分配<select id="ntPO"><option value="">按人数自动</option><option value="wta">赢家通吃</option><option value="top2">前两名 65/35</option><option value="top3">前三名 50/30/20</option></select></label>
+      <label class="f sngOnly">赏金<select id="ntBT"><option value="0">无</option><option value="25">25% 报名费做赏金</option><option value="50">50% 报名费做赏金</option></select></label>
+      <label class="f sngOnly">重购<select id="ntRB"><option value="0">不可重购</option><option value="3">前 3 级可重购</option><option value="6">前 6 级可重购</option></select></label>
+      <label class="f sngOnly">加购<select id="ntAO"><option value="0">不开放</option><option value="1">重购期最后一级可加购一次</option></select></label></div>
     <div class="frow" style="margin-top:8px"><label class="f">思考时间(秒)<input id="ntAS" type="number" value="25" style="width:70px"></label><button class="btn gold" onclick="WTP.newTable()">开桌</button></div>
     <h3>一键开局</h3><div class="frow">${PRESETS.map((p, k) => `<button class="btn sm" onclick="WTP.preset(${k})">${p.name}</button>`).join('')}</div><p class="note">一键开好一套桌，开后可在下方单独关闭。</p>
     <h3>牌桌</h3><div id="admTables"></div><button class="btn sm" style="margin-top:8px" onclick="WTP.cleanup()">清理已结束的锦标赛</button><h3>对账</h3><div id="admRecon"></div></div></div>`;
@@ -3013,7 +3270,7 @@ const PRESETS = [
 function admLogHTML() {
   const L = App.admLog; if (!L) return '加载中…';
   const d = x => { const t = new Date(x); return `${t.getMonth() + 1}/${t.getDate()} ${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`; };
-  return L.length ? L.map(x => `<div style="padding:3px 0;border-bottom:1px dashed #262c36">${d(x.at)} · <b>${esc(nameOf(x.by))}</b> ${fillNames(x.txt || '')}</div>`).join('') : '还没有管理操作';
+  return L.length ? L.map(x => `<div style="padding:3px 0;border-bottom:1px dashed #262c36">${d(x.at)} · <b>${x.by === 'auto' ? '系统' : esc(nameOf(x.by))}</b> ${fillNames(x.txt || '')}</div>`).join('') : '还没有管理操作';
 }
 function renderAdminLive() {
   const H = admH(); if (!H || !$('#admReqs')) return;
@@ -3029,8 +3286,8 @@ function renderAdminLive() {
   setHTML($('#admReqs'), 'admReqs', reqs.length ? reqs.map(r => `<div class="frow" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0">
       <div><b>${esc(nameOf(r.uid))}</b> 申请${r.req.kind === 'out' ? '<span class="neg">归还</span>' : '<span class="pos">领取</span>'} <b>${fmt(r.req.amt)}</b>
       <div class="note">${esc(r.req.note || '')} · 当前余额 ${fmt(H.bal(r.uid))}</div></div>
-      <div><button class="btn green sm" onclick="WTP.approve('${esc(r.uid)}',${+r.req.seq})">确认${r.req.kind === 'out' ? '收回' : '发放'}</button>
-      <button class="btn sm" onclick="WTP.reject('${esc(r.uid)}',${+r.req.seq})">拒绝</button></div></div>`).join('') : `<div class="note">暂无申请。玩家点右上角「金币」申请后会出现在这里；你点确认后金币才会入账。</div>`);
+      <div>${coAdmin() && r.uid === App.me ? '<span class="note">自己的申请要房主确认</span>' : `<button class="btn green sm" onclick="WTP.approve('${esc(r.uid)}',${+r.req.seq})">确认${r.req.kind === 'out' ? '收回' : '发放'}</button>
+      <button class="btn sm" onclick="WTP.reject('${esc(r.uid)}',${+r.req.seq})">拒绝</button>`}</div></div>`).join('') : `<div class="note">暂无申请。玩家点右上角「申请金币」申请后会出现在这里；你点确认后金币才会入账。</div>`);
   const known = [...new Set(Object.keys(H.wallets).concat(App.peers.filter(p => p.by).map(p => p.by)).concat([App.me]))];
   const sel = $('#adjU'), cur = sel.value;
   setHTML(sel, 'adjU', known.map(u => `<option value="${esc(u)}">${esc(nameOf(u))}${u === App.me ? '（我）' : ''}</option>`).join(''));
@@ -3216,7 +3473,7 @@ function renderTable() {
   const mtbar = mine.length >= 2 ? `<div class="mtbar">${mine.map(x => { const k = x.seats.findIndex(q => q && q.uid === myUid()); const turn = x.toAct === k && k >= 0; return `<button class="${x.id === t.id ? 'on' : ''} ${turn ? 'turn' : ''}" onclick="WTP.open('${x.id}')">${turn ? '<i></i>' : ''}${esc(x.name)}${x.id !== t.id && turn ? ' · 轮到你' : ''}</button>`; }).join('')}</div>` : '';
   let head = mtbar + `<button class="btn sm" onclick="${t.mtt ? `WTP.openMtt('${t.mtt}')` : `WTP.go('lobby')`}">← ${t.mtt ? '赛事' : '大厅'}</button><span class="nm">${esc(t.name)}</span><button class="btn sm" onclick="WTP.ranks()" title="牌型大小">牌型</button>${mi >= 0 && chatMode() !== 'off' ? `<button class="btn sm rbtn" title="表情" onclick="event.stopPropagation();WTP.reacts()">😀</button>` : ''}
     <span class="pill">${gname(t.game)}</span>${t.mix ? (() => { const left = t.mixEvery - ((Math.max(1, t.handNo) - 1) % t.mixEvery) - 1; return `<span class="pill" style="border-color:#0e7490;color:#67e8f9" title="混合局：每 ${t.mixEvery} 手在德州和奥马哈之间轮换">🔀 ${left ? left + ' 手后换' : '下一手换'}${t.game === 'plo' ? '德州' : '奥马哈'}</span>`; })() : ''}<span class="pill gold">盲注 ${t.sb}/${t.bb}${t.ante ? ' · 前注 ' + t.ante : ''}</span><span class="pill">第 ${t.handNo} 手</span>${t.sd72 && t.kind === 'cash' && t.game === 'nlh' ? `<span class="pill" style="border-color:#7c3aed;color:#c4b5fd" title="用 7-2 独赢主池，其他本手拿到牌的人各付 ${t.sd72} 个大盲">7-2 ×${t.sd72}</span>` : ''}`;
-  if (g) head += t.status === 'waiting' ? `<span class="pill ok">报名中 ${seatedCount(t)}/${t.maxSeats}</span>` : t.status === 'playing' ? `<span class="pill live">第 ${g.level + 1} 级</span><span class="pill" data-until="${g.levelEndsAt}">涨盲倒计时</span><span class="pill">剩 ${t.seats.filter(s => s && (s.stack > 0 || s.inHand)).length} 人 · 奖池 ${fmt(g.pool)}${g.rebuys ? ' · 重购 ' + g.rebuys + ' 次' : ''}${g.bounty ? ' · 赏金池 ' + fmt(g.bountyBank) : ''}</span>${g.rebuyLevels ? `<span class="pill ${g.level < g.rebuyLevels ? 'ok' : ''}">${g.level < g.rebuyLevels ? '重购期：前 ' + g.rebuyLevels + ' 级' : '重购已截止'}</span>` : ''}` : `<span class="pill">已结束</span>`;
+  if (g) head += t.status === 'waiting' ? `<span class="pill ok">报名中 ${seatedCount(t)}/${t.maxSeats}</span>` : t.status === 'playing' ? `<span class="pill live">第 ${g.level + 1} 级</span><span class="pill" data-until="${g.levelEndsAt}">涨盲倒计时</span><span class="pill">剩 ${t.seats.filter(s => s && (s.stack > 0 || s.inHand)).length} 人 · 奖池 ${fmt(g.pool)}${g.rebuys ? ' · 重购 ' + g.rebuys + ' 次' : ''}${g.addons ? ' · 加购 ' + g.addons + ' 次' : ''}${g.bounty ? ' · 赏金池 ' + fmt(g.bountyBank) : ''}</span>${g.rebuyLevels ? `<span class="pill ${g.level < g.rebuyLevels ? 'ok' : ''}">${g.level < g.rebuyLevels ? '重购期：前 ' + g.rebuyLevels + ' 级' + (g.addon ? (g.level === g.rebuyLevels - 1 ? ' · 现可加购' : ' · 末级可加购') : '') : '重购已截止'}</span>` : ''}` : `<span class="pill">已结束</span>`;
   if (t.kind === 'cash' && (t.bombHand && t.handNo && t.street !== 'idle' || t.bombNext)) head += `<span class="pill bomb">💣 ${t.bombNext ? '下一手炸弹锅' : '炸弹锅'}</span>`;
   if (t.kind === 'cash' && (App.ctx === 'practice' || admH())) head += `<button class="btn sm ${t.bombNext ? 'gold' : ''}" title="下一手所有人各放 ${t.bombBB || 2} 个大盲进底池，直接发翻牌" onclick="WTP.bomb('${t.id}')">💣</button>`;
   if (mi >= 0) {
@@ -3331,12 +3588,13 @@ function renderTable() {
     a = `<div class="actbar">${a}</div>${coachHTML(t, hole, toCall)}`;
     setHTML($('#actbar'), 'act', a + `<!--${t.handNo}:${t.street}:${t.currentBet}:${s.bet}:${Prefs.coach ? 1 : 0}-->`);
   } else {
-    let msg = '', pre = '';
+    let msg = '', pre = '', addBtn = '';
     if (mi >= 0 && g && t.seats[mi].rebuyUntil && t.seats[mi].stack <= 0) {
-      pre = `<button class="btn gold big" onclick="WTP.send('rebuy')">重购 ${fmt(g.buyIn)} 金币 → ${fmt(g.startStack)} 筹码</button>`;
+      pre = `<button class="btn gold big" onclick="WTP.send('rebuy')">重购 ${fmt(g.buyIn)} ${App.ctx === 'practice' ? '练习币' : '金币'} → ${fmt(g.startStack)} 筹码</button>`;
       msg = `<b style="color:#ff6b86">你的筹码输光了</b> · 重购剩余 <span data-cd="${t.seats[mi].rebuyUntil}">20</span> 秒，过时即淘汰`;
     } else if (mi >= 0) {
       const s = t.seats[mi];
+      if (g && E.canAddon(t, mi)) addBtn = `<button class="btn gold sm" onclick="WTP.send('addon')" title="重购期最后一级，限一次">加购 ${fmt(g.buyIn)} ${App.ctx === 'practice' ? '练习币' : '金币'} → +${fmt(g.startStack)} 筹码</button>`;
       if (s.inHand && !s.folded && !s.allIn && t.toAct >= 0) {
         const pa = App.preAct[t.id], on = k => pa && pa.k === k ? 'gold' : '';
         const toCall = Math.max(0, t.currentBet - s.bet);
@@ -3345,14 +3603,14 @@ function renderTable() {
       msg = s.inHand && !s.folded && t.toAct >= 0 ? `等待 ${esc(seatName(t.seats[t.toAct]))} 行动…` : s.out ? '你处于暂离状态' : t.street === 'idle' ? '等待下一手…' : '';
       if (App.ctx === 'online' && !App.host && s.inHand && !hole && !s.folded) msg += ' · 正在接收底牌…';
     } else msg = t.kind === 'cash' ? '你在旁观。点空位「坐下」入局。' : '你在旁观。';
-    setHTML($('#actbar'), 'act', `<div class="actbar"><span class="note" style="flex:1">${msg}</span>${pre}</div>`);
+    setHTML($('#actbar'), 'act', `<div class="actbar"><span class="note" style="flex:1">${msg}</span>${addBtn}${pre}</div>`);
   }
 
   // 侧栏
   let blind = '';
   if (g) {
     blind = `<div class="panel"><h3 style="margin:0 0 8px">盲注结构</h3><table class="list"><tbody>${E.SNG_LEVELS.slice(0, 10).map((L, k) => `<tr style="${k === g.level && t.status === 'playing' ? 'color:var(--gold2);font-weight:700' : ''}"><td>第${k + 1}级</td><td class="num">${L[0]}/${L[1]}</td><td class="num">${L[2] ? '前注 ' + L[2] : ''}</td></tr>`).join('')}</tbody></table>
-      <div class="note" style="margin-top:6px">${(() => { const MM = App.ctx === 'practice' ? (App.practice && App.practice.mtts) : (App.host ? App.host.mtts : App.events); const M = t.mtt && MM && MM[t.mtt]; return M && M.payouts ? '奖金：' + M.payouts.map((v, k) => `第${k + 1}名 ${fmt(v)}`).join(' · ') : '奖励：' + E.payoutPcts(Math.max(2, g.entrants.length || seatedCount(t))).join('% / ') + '%'; })()}</div></div>`;
+      <div class="note" style="margin-top:6px">${(() => { const MM = App.ctx === 'practice' ? (App.practice && App.practice.mtts) : (App.host ? App.host.mtts : App.events); const M = t.mtt && MM && MM[t.mtt]; return M && M.payouts ? '奖金：' + M.payouts.map((v, k) => `第${k + 1}名 ${fmt(v)}`).join(' · ') : '奖励：' + E.payoutPcts(Math.max(2, g.entrants.length || seatedCount(t)), g.payout).join('% / ') + '%'; })()}</div></div>`;
     if (t.status === 'playing' && g.payouts) {
       const live = t.seats.map((s, i) => s && (s.stack + (s.total || 0)) > 0 ? i : -1).filter(i => i >= 0);
       const paid = g.payouts.slice(0, live.length);
@@ -3400,7 +3658,14 @@ function modal(html) { $('#modal').innerHTML = html ? `<div class="modal-bg" onc
 window.App_kick = (tid, seat) => { admH().removeSeat(tid, seat); render(); };
 const WTP = window.WTP = {
   go(v) { App.view = v; render(); window.scrollTo(0, 0); },
-  open(tid) { App.curTable = tid; App.view = 'table'; render(); },
+  open(tid) { App.curTable = tid; App.view = 'table'; render(); const tt = getTables()[tid]; if (!Prefs.tour && !navigator.webdriver && !(tt && (tt.demo || tt.mtt))) setTimeout(() => WTP.tour(0), 400); },
+  // 第一次进牌桌的新手引导（4 步，看完或跳过后不再出现）
+  tour(k) {
+    const S = [['🪑 坐下', '点牌桌上的空位「坐下」，选好带入的筹码就能开始。'], ['🎯 轮到你', '轮到你时下面会出现操作按钮：弃牌、过牌/跟注、加注。不在你回合时也可以先点「预操作」。'], ['🃏 牌型', '左上角「牌型」按钮可以随时看牌型大小；你的牌型会显示在自己座位上。'], ['⚙ 小帮手', '右上角 ⚙ 设置里可以开「教练模式」（轮到你时提示胜率和赔率）、四色牌、搓牌和中英文切换。']];
+    if (k >= S.length) { Prefs.tour = 1; savePrefs(); return WTP.closeModal(); }
+    modal(`<h3>${S[k][0]} <span class="note">${k + 1}/${S.length}</span></h3><div class="note" style="font-size:14px;line-height:1.8">${S[k][1]}</div>
+      <div class="frow" style="margin-top:12px"><button class="btn gold" onclick="WTP.tour(${k + 1})">${k + 1 < S.length ? '下一步' : '开始玩'}</button><button class="btn" onclick="WTP.tour(99)">跳过</button></div>`);
+  },
   openMtt(id) { App.curMtt = id; App.view = 'mtt'; render(); window.scrollTo(0, 0); },
   msend(t) { send({ t, mtt: App.curMtt }); },
   closeModal() { modal(''); },
@@ -3509,10 +3774,10 @@ const WTP = window.WTP = {
       if (H.bal(uid) < amt) return toast('余额不足以归还');
       H.credit(uid, -amt, 'cashout', r.req.note || '玩家申请归还', { reqSeq: seq });
     } else H.credit(uid, amt, 'buyin', r.req.note || '玩家申请领取', { reqSeq: seq });
-    H.notify(uid, `${App.isOwner ? '房主' : '管理员 ' + nameOf(App.me)} 已确认你的${r.req.kind === 'out' ? '归还' : '领取'} ${fmt(amt)}`);
+    H.notify(uid, `${App.isOwner ? '房主' : ''}已确认你的${r.req.kind === 'out' ? '归还' : '领取'} ${fmt(amt)}`);
     render();
   },
-  reject(uid, seq) { const H = admH(); H.credit(uid, 0, null, '', { reqSeq: seq }); H.notify(uid, `你的申请被${App.isOwner ? '房主' : '管理员 ' + nameOf(App.me)}拒绝，请联系房主`); render(); },
+  reject(uid, seq) { const H = admH(); H.credit(uid, 0, null, '', { reqSeq: seq }); H.notify(uid, `你的申请被${App.isOwner ? '房主' : ''}拒绝，请联系房主`); render(); },
   adjust() {
     const H = admH(), u = $('#adjU').value, ty = $('#adjT').value, a = Math.floor(+$('#adjA').value || 0);
     if (!u || a <= 0) return toast('请选择玩家并填写金额');
@@ -3520,12 +3785,12 @@ const WTP = window.WTP = {
     H.credit(u, ty === 'cashout' ? -a : a, ty, '房主手动登记');
     toast('已登记'); render();
   },
-  ntKind() { const s = $('#ntK').value !== 'cash'; $('#ntRep').style.display = $('#ntK').value === 'mtt' ? '' : 'none'; $('#ntCash').style.display = s ? 'none' : ''; $('#ntSng').style.display = s ? '' : 'none'; $('#ntN').value = s ? '周末 SNG 冠军赛' : '周三夜 1/2'; },
+  ntKind() { const s = $('#ntK').value !== 'cash'; $('#ntRep').style.display = $('#ntK').value === 'mtt' ? '' : 'none'; $('#ntCash').style.display = s ? 'none' : ''; $('#ntSng').style.display = s ? '' : 'none'; document.querySelectorAll('#ntSng .sngOnly').forEach(e => { e.style.display = $('#ntK').value === 'mtt' ? 'none' : ''; }); const en = Prefs.lang === 'en' && (window.VX_PUBLIC || window.VX_CLOUD_MODE); $('#ntN').value = s ? ($('#ntK').value === 'mtt' ? (en ? 'Main Event MTT' : '多桌锦标赛') : (en ? 'Weekend SNG' : '周末 SNG 冠军赛')) : (en ? 'Wed night 1/2' : '周三夜 1/2'); },
   newTable() {
     const kind = $('#ntK').value, v = id => +$(id).value;
     const cfg = { kind, game: $('#ntG').value, name: $('#ntN').value.trim().slice(0, 24) || '牌桌', maxSeats: v('#ntS'), actionSecs: Math.max(8, v('#ntAS')) };
     if (kind === 'cash') Object.assign(cfg, { sb: v('#ntSB'), bb: v('#ntBB'), minBuy: v('#ntMin'), maxBuy: v('#ntMax'), bombEvery: v('#ntBE'), bombBB: v('#ntBX'), sd72: v('#ntSD') });
-    else Object.assign(cfg, { repeat: kind === 'mtt' ? $('#ntRep').value : '', buyIn: v('#ntBI'), startStack: v('#ntSS'), levelMins: Math.max(1, v('#ntLM')), rebuyLevels: v('#ntRB'), bountyPct: v('#ntBT'), lateLevels: v('#ntLR'), startAt: $('#ntST').value === 'at' && $('#ntAtV').value ? new Date($('#ntAtV').value).getTime() : 0 });
+    else Object.assign(cfg, { repeat: kind === 'mtt' ? $('#ntRep').value : '', buyIn: v('#ntBI'), startStack: v('#ntSS'), levelMins: Math.max(1, v('#ntLM')), rebuyLevels: v('#ntRB'), bountyPct: v('#ntBT'), payout: $('#ntPO') ? $('#ntPO').value : '', addon: $('#ntAO') ? $('#ntAO').value === '1' : false, lateLevels: v('#ntLR'), startAt: $('#ntST').value === 'at' && $('#ntAtV').value ? new Date($('#ntAtV').value).getTime() : 0 });
     if ((kind === 'sng' || kind === 'mtt') && $('#ntST').value === 'at' && !(cfg.startAt > now())) return toast('请选择一个将来的开赛时间');
     if (kind === 'mtt') { admH().createMtt(cfg); toast('已创建多桌锦标赛，去大厅查看'); render(); return; }
     if (kind === 'cash' && (!(cfg.bb > cfg.sb && cfg.sb > 0) || !(cfg.maxBuy >= cfg.minBuy && cfg.minBuy >= cfg.bb * 10))) return toast('请检查盲注和带入（最小带入至少 10 个大盲）');
@@ -3561,11 +3826,12 @@ const WTP = window.WTP = {
       <label class="f">搓牌<select onchange="WTP.pref('squeeze',this.value==='1');WTP.rerender()"><option value="0" ${!Prefs.squeeze ? 'selected' : ''}>关：底牌直接亮给自己</option><option value="1" ${Prefs.squeeze ? 'selected' : ''}>开：每手先盖着，点一下慢慢翻开</option></select></label>
       <label class="f">教练模式（练习场）<select onchange="WTP.pref('coach',this.value==='1');WTP.rerender()"><option value="0" ${!Prefs.coach ? 'selected' : ''}>关</option><option value="1" ${Prefs.coach ? 'selected' : ''}>开：轮到我时显示胜率和底池赔率</option></select></label>
       ${canNotify() ? `<label class="f">系统通知（页面在后台时：轮到你、有空位、比赛开赛）<select onchange="WTP.setNotif(this.value==='1')"><option value="0" ${!Prefs.notif ? 'selected' : ''}>关</option><option value="1" ${Prefs.notif ? 'selected' : ''}>开${Prefs.notif && Notification.permission !== 'granted' ? '（浏览器还没允许）' : ''}</option></select></label>` : ''}
+      ${!canNotify() && window.VX_CLOUD_MODE && /iPhone|iPad|iPod/.test(navigator.userAgent) && !navigator.standalone ? `<div class="note">📱 iPhone 想收到「轮到你」的通知：在 Safari 点底部「分享」→「添加到主屏幕」，以后从主屏幕图标打开（第一次打开要先在「个人资料 → 复制我的登录链接」复制好，粘贴进去登录一次），这里就会出现通知开关。</div>` : ''}
       ${PUB || window.VX_CLOUD_MODE ? `<label class="f">语言 Language<select onchange="WTP.setLang(this.value)"><option value="zh" ${Prefs.lang !== 'en' ? 'selected' : ''}>中文</option><option value="en" ${Prefs.lang === 'en' ? 'selected' : ''}>English</option></select></label>` : ''}
       <label class="f">音效<select onchange="WTP.pref('sound',this.value==='1')"><option value="1" ${Prefs.sound ? 'selected' : ''}>开</option><option value="0" ${!Prefs.sound ? 'selected' : ''}>关</option></select></label>
       <label class="f">音量 <span id="volV">${Prefs.vol == null ? 80 : Prefs.vol}</span>%<input type="range" min="0" max="100" step="5" value="${Prefs.vol == null ? 80 : Prefs.vol}" oninput="document.getElementById('volV').textContent=this.value;WTP.pref('vol',+this.value);WTP.volTest()"></label>
       <div class="note">每人每手自动积累时间银行（上限 60 秒），思考时间用完后自动启用。</div>
-      <button class="btn gold" onclick="WTP.closeModal()">完成</button>`);
+      <button class="btn gold" onclick="WTP.closeModal()">完成</button>${window.VX_VER ? `<div class="note" style="margin-top:10px;opacity:.6">VANTAX POKER ${window.VX_VER} · ${window.VX_BUILD || ''}</div>` : ''}`);
   },
   ranks() {
     const ex = [['同花顺', 'As Ks Qs Js Ts'], ['四条', '9c 9d 9h 9s Kd'], ['葫芦', 'Qh Qd Qc 7s 7h'], ['同花', 'Ad Jd 8d 6d 2d'], ['顺子', 'Tc 9d 8h 7s 6c'], ['三条', '7h 7d 7c Ks 2d'], ['两对', 'Jh Jc 4s 4d Ac'], ['一对', 'Th Ts Ad 8c 3h'], ['高牌', 'Ah Qd 9c 6s 3h']];
@@ -3653,10 +3919,22 @@ const WTP = window.WTP = {
   peek(k) { App.peeked[k] = 1; SFX.card && SFX.card(); sigs.felt = null; render(); setTimeout(() => { App.peeked[k] = 2; }, 900); },
   seenNotice(at) { try { localStorage.setItem('wtp_notice_' + (window.VX_CLOUD ? VX_CLOUD.club : 'art'), at); } catch (e) { } render(); },
   clubRules() { const c = App.host ? App.host.club : App.club; modal(`<h3>📜 ${esc((c && c.name) || '俱乐部')}规则</h3><div class="rules">${esc((c && c.rules) || '').replace(/\n/g, '<br>')}</div><button class="btn" style="margin-top:10px" onclick="WTP.closeModal()">关闭</button>`); },
+  async members() {
+    try {
+      const L = (await VX_CLOUD.members()).sort((a, b) => (b.online - a.online) || a.name.localeCompare(b.name));
+      modal(`<h3>👥 成员（${L.length}）</h3><div style="max-height:60vh;overflow:auto">${L.map(m => `<div class="frow" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${m.online ? '🟢' : '⚪'} ${esc(m.name)}${m.uid === App.me ? ' <span class="note">（你）</span>' : ''} <span class="note">余额 ${fmt((admH().wallets[m.uid] || {}).balance || 0)}</span></span>${m.uid === App.me ? '' : `<button class="btn sm red" onclick="WTP.kick('${esc(m.uid)}','${esc(m.name).replace(/'/g, '')}')">移出</button>`}</div>`).join('')}</div><button class="btn" style="margin-top:10px" onclick="WTP.closeModal()">关闭</button>`);
+    } catch (e) { toast('读取成员失败：' + (e.code || e.message)); }
+  },
+  async kick(uid, name) {
+    if (!confirm(`确定把「${name}」移出俱乐部吗？他的登录链接会立即失效（钱包和账本记录保留）。`)) return;
+    const H = admH(), t = Object.values(getTables()).find(x => x.seats.some(s => s && s.uid === uid));
+    if (t && H && H.removeSeat) H.removeSeat(t.id, t.seats.findIndex(s => s && s.uid === uid));
+    try { await VX_CLOUD.kick(uid); toast(`已移出「${name}」`); WTP.members(); } catch (e) { toast('移出失败：' + (e.code || e.message)); }
+  },
   saveAdmins() { const H = admH(); if (!H || !H.setAdmins) return; H.setAdmins([...document.querySelectorAll('.adChk:checked')].map(x => x.value)); toast('副房主名单已保存'); },
   muteSel() { const H = admH(); if (!H || !H.mute) return; H.mute($('#muU').value, +$('#muM').value); toast(+$('#muM').value ? '已禁言' : '已解除禁言'); },
   pickLogo(el, k, v) { App.logoPick = Object.assign({}, App.logoPick || {}, { [k]: v }); el.parentNode.querySelectorAll('.btn').forEach(b => b.classList.remove('gold')); el.classList.add('gold'); },
-  saveClub() { const H = admH(); if (!H) return; const c = H.club || App.club || {}, lp = App.logoPick || {}; H.setClubInfo({ name: $('#ciN').value, notice: $('#ciA').value, rules: $('#ciR').value, chat: $('#ciC').value, logo: 'logo' in lp ? lp.logo : c.logo, color: lp.color || c.color }); App.logoPick = null; toast('俱乐部信息已保存'); },
+  saveClub() { const H = admH(); if (!H) return; const c = H.club || App.club || {}, lp = App.logoPick || {}; H.setClubInfo({ name: $('#ciN').value, notice: $('#ciA').value, rules: $('#ciR').value, chat: $('#ciC').value, autoMax: +($('#ciAuto') ? $('#ciAuto').value : 0), logo: 'logo' in lp ? lp.logo : c.logo, color: lp.color || c.color }); App.logoPick = null; toast('俱乐部信息已保存'); },
   tset(tid) {
     const t = getTables()[tid]; if (!t) return;
     modal(`<h3>牌桌设置 · ${esc(t.name)}</h3><div class="note">立即生效（当前这一步的倒计时不变）。</div>
@@ -3719,6 +3997,20 @@ const WTP = window.WTP = {
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fn; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); toast(`已下载 ${list.length} 手`);
     } catch (e) { toast('下载失败：' + (e.code || e.message || e)); }
   },
+  async ledgerCSV() {
+    try {
+      let rows = App.ledger || [];
+      if (App.db) { const sn = await App.db.collection('ledger').orderBy('at', 'desc').limit(5000).get().catch(() => null); if (sn) rows = sn.docs.map(d => d.data()); }
+      rows = rows.filter(Boolean).sort((a, b) => a.at - b.at);
+      const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+      const d2 = x => { const t = new Date(x), p = n => String(n).padStart(2, '0'); return `${t.getFullYear()}-${p(t.getMonth() + 1)}-${p(t.getDate())} ${p(t.getHours())}:${p(t.getMinutes())}`; };
+      const csv = '\ufeff' + [Prefs.lang === 'en' && (window.VX_PUBLIC || window.VX_CLOUD_MODE) ? 'Time,Player,Type,Change,Balance after,Note' : '时间,玩家,类型,变动,变动后余额,备注'].concat(rows.map(r => [d2(r.at), nameOf(r.uid), Prefs.lang === 'en' && (window.VX_PUBLIC || window.VX_CLOUD_MODE) ? trEN(LEDGER_TYPES[r.type] || r.type) : LEDGER_TYPES[r.type] || r.type, r.amount, r.bal, r.note].map(q).join(','))).join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' }), dt = new Date(), fn = `vantax-poker-ledger-${dt.getFullYear()}${String(dt.getMonth() + 1).padStart(2, '0')}${String(dt.getDate()).padStart(2, '0')}.csv`;
+      const C = window.claude; const dl = C && C.use && !PUB && !window.VX_CLOUD ? await C.use('downloads').catch(() => null) : null;
+      if (dl) return dl.save({ filename: fn, data: blob }).then(() => toast('账本已保存')).catch(e => toast(e && e.code === 'declined' ? '已取消保存' : '这里不能保存文件'));
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fn; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); toast(`已导出 ${rows.length} 条流水`);
+    } catch (e) { toast('导出失败：' + (e.message || e)); }
+  },
   dlHist() {
     const t = getTables()[App.curTable]; if (!t || !(t.history || []).length) return;
     const d = new Date(), pad = x => String(x).padStart(2, '0');
@@ -3767,7 +4059,7 @@ const WTP = window.WTP = {
       while (po8.seats.filter(Boolean).length < 4) P.refillBots(po8);
       const pm = P.createTable({ id: 'p-mix', kind: 'cash', game: 'mix', mixEvery: 6, name: '练习桌 混合局 1/2', sb: 1, bb: 2, minBuy: 80, maxBuy: 400, maxSeats: 6, actionSecs: 30 });
       while (pm.seats.filter(Boolean).length < 4) P.refillBots(pm);
-      const g = P.createTable({ id: 'p-sng', kind: 'sng', name: '练习 SNG', buyIn: 200, startStack: 1500, levelMins: 3, maxSeats: 6, actionSecs: 30, rebuyLevels: 3, bountyPct: 50 });
+      const g = P.createTable({ id: 'p-sng', kind: 'sng', name: '练习 SNG', buyIn: 200, startStack: 1500, levelMins: 3, maxSeats: 6, actionSecs: 30, rebuyLevels: 3, bountyPct: 50, addon: true });
       ['老K', '阿杰', 'Lucky', '小鱼', '莎莎'].forEach((nm, i) => g.seats[i + 1] = E.seatObj('bot-' + nm, 0, { bot: true, name: nm }));
       const mt = P.createMtt({ name: '练习 MTT 主赛事', buyIn: 300, startStack: 1500, levelMins: 3, maxSeats: 6, actionSecs: 30, lateLevels: 2 });
       mt.entrants = ['老K', '阿杰', 'Lucky', '小鱼', '莎莎', '铁头', '大卫', 'Ace哥', '小白', '阿强', '美美'].map(n => 'bot-' + n);
@@ -3916,6 +4208,14 @@ function reconnect(why) {
   subscribeAll();
   if (App.room) App.room.presence({ pk: App.pubJwk, prof: Prefs.prof || null }).catch(() => markNet(true));
 }
+// 是否正在牌局里：坐着（没暂离）、报名了还没结束的比赛、或有待房主确认的金币申请（申请挂在在线状态上，断开就看不到了）。
+// 在牌局里的页面不会因为闲置被断开（见 cloud.js 的省电断开）
+window.VX_ENGAGED = () => {
+  const me = App.me; if (!me) return false;
+  if (Object.values(App.tables || {}).some(t => t && t.seats && t.seats.some(s => s && s.uid === me && !s.out))) return true;
+  if (Object.values(App.events || {}).some(m => m && (m.status === 'waiting' || m.status === 'playing') && (m.entrants || []).includes(me))) return true;
+  return !!(App.pendingReq && !(App.wallets && App.wallets[me] && App.wallets[me].reqSeq >= App.pendingReq.seq));
+};
 function subscribeAll() {
   const db = App.db; if (!db) return;
   unsubs.forEach(u => { try { typeof u === 'function' && u(); } catch (e) { } }); unsubs = [];

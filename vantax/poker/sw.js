@@ -1,5 +1,5 @@
 /* VANTAX POKER 离线支持：页面走网络优先（总拿最新版），断网时用缓存，练习场离线也能玩 */
-const C = 'vxpoker-v3';
+const C = 'vxpoker-v4';
 const PRE = ['/poker/', '/poker/assets.js', '/poker/vp-192.png', '/poker/vp-logo-512.png', '/poker/manifest.webmanifest'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(C).then(c => c.addAll(PRE)).catch(() => { })); self.skipWaiting(); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C && k.startsWith('vxpoker-')).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
@@ -15,7 +15,14 @@ self.addEventListener('fetch', e => {
   if (/\.(png|svg|webmanifest)$/.test(u.pathname) || isA) {
     // 图片资源：先用缓存，同时后台更新；assets.js 按版本号缓存，新版本还没缓存时（离线）退回任意旧版本
     e.respondWith(caches.match(key).then(m => {
-      const net = fetch(r).then(res => { if (res.ok) { const cp = res.clone(); caches.open(C).then(c => c.put(key, cp)); } return res; });
+      const net = fetch(r).then(res => {
+        if (res.ok) {
+          const cp = res.clone();
+          // assets.js 每个版本一个缓存：存新版本时把旧版本删掉，缓存不会越积越多
+          caches.open(C).then(c => c.put(key, cp).then(() => isA ? c.keys().then(ks => Promise.all(ks.filter(q => q.url !== key && new URL(q.url).pathname.endsWith('/assets.js')).map(q => c.delete(q)))) : null)).catch(() => { });
+        }
+        return res;
+      });
       if (m) { net.catch(() => { }); return m; }
       return net.catch(() => caches.match(r, { ignoreSearch: true }));
     }));

@@ -6,7 +6,10 @@
 - App 版内容合规：没有真钱购买、没有广告、没有兑换码、没有「添加到桌面」；分享链接指向 eleronzentechnology.com；隐私政策/协议从 App 内打开公司域名页面。
 - 云存档、无尽排行榜、反馈、数据统计都走 Supabase（已在线），App 首发不需要另外部署服务器。`hero-server/` 只给网页版 Stripe 充值用，等 Stripe 开通再部署。
 - 发布前自动测试：6 种语言 × 手机/平板尺寸，零报错、无漏翻、无违规入口（`/home/claude/tools/qa_app.py`）。
-- 图标、启动图、截图（中/英 × iPhone 6.9 寸 / iPad 13 寸 / Android）、Google Play 置顶图、6 种语言商店文案（`LISTING.md`）。
+- 图标、启动图、截图（中/英 × iPhone 6.9 寸 / iPad 13 寸 / Android，2026-11-21 按放大字体后重拍）、Google Play 置顶图、6 种语言商店文案（`LISTING.md`）。
+- 宣传视频（29 秒，带游戏配乐）：`video/promo_en_1920x886.mp4`、`video/promo_zh_1920x886.mp4` 用作 App Store「App 预览」（iPhone 横屏规格）；`video/promo_en_1920x1080.mp4` 传到 YouTube 后把链接填到 Google Play「宣传视频」。
+- 玩家数据：游戏标题页连点左下角版本号 5 次，输入开发者密码，可看总玩家、日活、次日回访、每关人数和胜率、英雄使用、反馈和报错。
+- App 内购代码已预留（默认关闭），商品 ID 和开启步骤见 `mobile/IAP_SETUP.md`。
 - 隐私政策 / 用户协议 / 概率公示：https://eleronzentechnology.com/hero-defense/privacy.html 等，联系邮箱 info@eleronzentechnology.com；游戏内「设置 → 删除我的数据」可立即删除云端数据和匿名账号。
 
 ## 需要 Kev 本人做的（要身份验证、付费、签协议）
@@ -35,7 +38,7 @@
 5. 出口合规：Info.plist 已写好「不使用非豁免加密」，提交时选「否」。
 
 ## 之后再决定（不影响首发）
-- **App 内付费**：要收费需接 Apple / Google 应用内支付（不能用 Stripe）。先在两个后台建商品，我再接代码。
+- **App 内付费**：代码已预留。按 `mobile/IAP_SETUP.md` 在两个后台建好商品后告诉我，我来打开并测试。
 - **兑换码**：App 版已隐藏（Apple 规定不能用自己的码解锁内容）。网页版照常可用。
 - **第三方登录**：现在是匿名账号自动登录，不需要。如果以后加 Google/Facebook 登录，Apple 要求同时提供「通过 Apple 登录」。
 - 隐私政策和用户协议正式上线前建议律师看一眼。

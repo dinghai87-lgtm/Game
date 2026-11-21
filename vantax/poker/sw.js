@@ -33,10 +33,18 @@ self.addEventListener('notificationclick', e => {
   e.notification.close();
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
     const c = cs.find(x => new URL(x.url).pathname.startsWith('/poker/club')) || cs.find(x => new URL(x.url).pathname.startsWith('/poker/'));
-    return c ? c.focus() : self.clients.openWindow(e.notification.tag === 'vx-turn' ? '/poker/club/' : '/poker/');
+    // 俱乐部的通知（轮到你/空位/金币申请，标签都以 vx- 开头）点开回到对应的俱乐部
+    const club = e.notification.data && e.notification.data.club;
+    return c ? c.focus() : self.clients.openWindow(String(e.notification.tag || '').startsWith('vx-') ? '/poker/club/' + (club ? '?c=' + encodeURIComponent(club) : '') : '/poker/');
   }));
 });
 // 服务器推送（无内容）：轮到你行动或有空位为你保留
 self.addEventListener('push', e => {
-  e.waitUntil(self.registration.showNotification('万泰扑克 · 轮到你了', { body: '牌桌在等你行动，点开回到俱乐部', tag: 'vx-turn', renotify: true, icon: '/poker/vp-192.png', badge: '/poker/vp-192.png' }));
+  // 新版服务器会带加密内容（哪张桌、轮到你还是有空位）；旧版没有内容就显示通用提示
+  let m = null; try { m = e.data && e.data.json(); } catch (x) { m = null; }
+  const title = (m && typeof m.title === 'string' && m.title.slice(0, 60)) || '万泰扑克 · 轮到你了';
+  const body = (m && typeof m.body === 'string' && m.body.slice(0, 120)) || '牌桌在等你行动，点开回到俱乐部';
+  const tag = (m && typeof m.tag === 'string' && m.tag.slice(0, 40)) || 'vx-turn';
+  const club = m && typeof m.club === 'string' && /^[\w-]{1,40}$/.test(m.club) ? m.club : '';
+  e.waitUntil(self.registration.showNotification(title, { body, tag, renotify: true, icon: '/poker/vp-192.png', badge: '/poker/vp-192.png', data: { club } }));
 });
